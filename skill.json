@@ -26,16 +26,19 @@
       "routes": {
         "results": "GET /ims/oneroster/gradebook/v1p2/assessmentResults?filter=metadata.appName='Math Academy' AND scoreDate>='<date>'",
         "lineItem": "GET /ims/oneroster/gradebook/v1p2/assessmentLineItems/{sourcedId}",
-        "enrollments": "GET /ims/oneroster/rostering/v1p2/enrollments/?filter=user.sourcedId='<sid>' AND status='active'",
-        "classes": "GET /ims/oneroster/rostering/v1p2/classes/?filter=title~'Math Academy'",
+        "enrollments": "GET /ims/oneroster/rostering/v1p2/enrollments/?filter=user.sourcedId='<sid>' AND status='active'   (or filter=class.sourcedId='<cid>' AND status='active' for a section's roster)",
+        "classes": "GET /ims/oneroster/rostering/v1p2/classes/?filter=course.sourcedId='<courseId>'   (every section of a course; title~'Math Academy' lists all Math Academy sections)",
+        "courses": "GET /ims/oneroster/rostering/v1p2/courses/?filter=title~'Math Academy'   and GET .../courses/{id} for metadata.metrics.totalXp",
         "dailyActivity": "GET /edubridge/analytics/activity?studentId=<sid>&startDate=<iso>&endDate=<iso>&timezone=<IANA>",
         "weeklyFacts": "GET /edubridge/analytics/facts/weekly?studentId=<sid>&weekDate=<date>&timezone=<IANA>"
       }
     },
     "store": {
       "what": "a dated snapshot of Math Academy's student records (bulk students list + per-student lookups, Math Academy public API beta10), matched to Timeback students and held by this skill; no refresh is scheduled and every response carries snapshotAt",
-      "status": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store  (snapshotAt, apiVersion, counts, calls; no student values; no credential)",
-      "student": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/student/{user.sourcedId}  or  GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/student?email=<email>",
+      "status": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store  (snapshotAt, snapshotAgeHours, staleAfterDays, stale, history, counts, byCourse, calls; no student values; no credential)",
+      "course": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/course/{course.sourcedId}  (one Timeback course's roster at snapshot time counted by courseAgreement, testUsers, maNotStarted; no credential)",
+      "student": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/student/{user.sourcedId}  or  GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/student?email=<email>  (about one second each; two Timeback calls replayed)",
+      "freshness": "one-off snapshot, no refresh scheduled; every row carries snapshotAt, figuresAsOf and stale (true past staleAfterDays, 7 as served); past that, quote Math Academy figures only with their date and take progress from Timeback's newest result (ENABLEMENT ex. 3); ask for a refresh on the feedback wire",
       "gate": "Authorization: Bearer <the reader's own Timeback token>. The route replays it against Timeback (GET users/{sourcedId}, GET enrollments) and serves the row only if Timeback answers 200 for that student under that token; a reader sees exactly the students its Timeback key can read. No Math Academy call is made at read time, and this skill holds no Math Academy key on its wire.",
       "fields": "mathAcademy {id, username, firstName, lastName, created, deactivated, currentCourse {id, name, startDate, progress, xpRemaining, completed, grade, letterGrade, estimatedScore}, schedule, league}, matchedBy (username | email | lookup | name), timeback.currentMathAcademySeats (live), courseAgreement (agree | disagree | disagree, math academy course completed | no current timeback seat | math academy has no current course | no math academy record | not in snapshot); DICTIONARY § The Math Academy snapshot store"
     },
@@ -43,7 +46,7 @@
     "enablement": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/ENABLEMENT.md",
     "reference": {
       "courses": { "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/reference/timeback-math-academy-courses.json", "sha256": "392c3a1d60e4c93b4b982c52974f9596cb976332f230164541b0f63991ea6855", "purpose": "the domain of the course field: every OneRoster course titled Math Academy, with ids; a dated snapshot (readAt inside), regenerate with the call it names" },
-      "courseXpSize": { "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/reference/course-xp-size.json", "sha256": "1f1e27d3ed0bb5f6568398456834eb2e2914d5a216aaff9ea0c3d88298fe5c6f", "purpose": "the XP-remaining rule list; reads the course's totalXp live, carries no figure" },
+      "courseXpSize": { "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/reference/course-xp-size.json", "sha256": "f734202c48a6fe0ca227319fdda28012146517638e0b3f53f9112ae5d9341ba5", "purpose": "the XP-remaining rule list; reads the course's totalXp live, carries no figure" },
       "topicCourseMap": { "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/reference/topic-course-map.json", "sha256": "c52b6d58a55a84f0679abbf1a61b7fee5eb633d9b247dc0491d0b0189e1215b2", "purpose": "topic id -> majority filed course id, a dated heuristic snapshot for ENABLEMENT example 7; regenerate rather than trust" }
     }
   },
@@ -51,14 +54,14 @@
     "DICTIONARY.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/DICTIONARY.md",
       "purpose": "DICTIONARY.md carries what the OpenAPI cannot: how each Math Academy field inside Timeback is born, what its values mean, the containers and their range, the invariants and their standing, and the numbered traps. Open it before trusting any field.",
-      "sha256": "a5d84c53ffaaa3389feb9c8b743b670d586531842bdebc4f66e101717ce9a724",
-      "gitVersion": "0c92ee8"
+      "sha256": "539a91c15bfd72b81d1953284dd4306aa69c670ee1c99dff1c36028c95fbd084",
+      "gitVersion": "ce8d701"
     },
     "ENABLEMENT.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/ENABLEMENT.md",
       "purpose": "ENABLEMENT.md puts the source to work: ten capabilities, a question-to-call catalog, and ten worked examples with exact routes, output shapes and failure modes. Open it when you need to act.",
-      "sha256": "7ca09238381b0f4d330c9e7ced0bf0129ea61fec12c5b59762929c7e06249aee",
-      "gitVersion": "0c92ee8"
+      "sha256": "fa3f0c23ab571ae56f81f75ca2e9f2238b4c8e28593c3849ba53428eea04c508",
+      "gitVersion": "ce8d701"
     },
     "note": "sha256 + gitVersion pin the exact bytes served at each url on this deploy; the .md routes echo them as X-Doc-SHA256 / X-Doc-Version headers."
   },
