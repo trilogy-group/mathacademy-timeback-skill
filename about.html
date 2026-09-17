@@ -92,7 +92,7 @@
     <tr><td>Activity: one row per Math Academy task, with elapsed, engaged and productive time</td><td>Each unpulled school day, plus a re-pull of the newest one</td><td><span class="pill b">appended</span> by day, keyed by task so re-pulls overwrite</td></tr>
     <tr><td>Knowledge maps</td><td>Untouched</td><td><span class="pill w">on demand</span> cached seven days per student per course</td></tr>
   </table>
-  <p class="muted">Cost to Math Academy per night: 4 bulk calls, one lookup per newly added student, and one activity call per student who was active that day, roughly 400. Nothing is called during the school day except a first-time knowledge map or a missing student.</p>
+  <p class="muted">Cost to Math Academy per night: 4 bulk calls, one lookup per newly added student, and two activity calls per student who was active that day (two Math Academy days cover one Central day), roughly 800 to 900. Nothing is called during the school day except a first-time knowledge map or a missing student.</p>
 </section>
 
 <section>
