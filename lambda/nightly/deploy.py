@@ -105,6 +105,9 @@ if a.cmd == "deploy":
 
 if a.cmd == "invoke":
     mode = a.arg[0] if a.arg else "snapshot"; payload = {"mode": mode, "source": "manual"}
+    if mode == "backfill":
+        payload["start"] = a.arg[1] if len(a.arg) > 1 else "2025-07-01"; payload["matchFirst"] = True
+        lam.invoke(FunctionName=FN, InvocationType="Event", Payload=json.dumps(payload).encode()); print("backfill started asynchronously from", payload["start"], "; it re-invokes itself until done; watch GET /store -> backfill and CloudWatch logs"); sys.exit(0)
     if len(a.arg) > 1: payload["day"] = a.arg[1]
     if len(a.arg) > 2 and a.arg[2] == "force": payload["force"] = True
     lam_long = s.client("lambda", config=botocore.config.Config(read_timeout=920, connect_timeout=10, retries={"max_attempts": 0}))

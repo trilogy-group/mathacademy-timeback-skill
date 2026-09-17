@@ -381,3 +381,76 @@ def run_activity(c, ddb, table, day, tz_offset_hours=None, time_left=lambda: 10 
                     ExpressionAttributeValues={":d": S(max(day, prev)), ":r": S(json.dumps({"day": day, "students": total, "done": done, "errors": errors, "noMaId": no_id, "finishedAt": finished, "maCalls": c.calls["ma_activity"], "windowUtc": f"{day_start.isoformat()}/{day_end.isoformat()}", "rePull": bool(force)}))})
     c.log(f"activity {day}: done {done}/{total}, errors {errors}, calls {c.calls}")
     return {"day": day, "status": "done", "done": done, "total": total, "errors": errors, "noMaId": no_id}
+
+
+# ---- one-off backfill: per student, by date range ------------------------------------------------------------------------------
+def _quarters(start, end):
+    out, a = [], start
+    while a <= end:
+        b = min(a + datetime.timedelta(days=91), end)
+        out.append((a.isoformat(), b.isoformat())); a = b + datetime.timedelta(days=1)
+    return out
+
+def _chicago_day(ms):
+    return datetime.datetime.fromtimestamp(ms / 1000, tz=UTC).astimezone(CHICAGO).date().isoformat()
+
+def backfill_students_without_rows(c, ddb, table, time_left=lambda: 10 ** 9):
+    """Students who ever held a Math Academy seat in Timeback (any status) but have no store row: look each up once by email."""
+    have = {it["sk"]["S"] for it in _query_all(ddb, table, "student", "sk")} | {it["sk"]["S"] for it in _query_all(ddb, table, "tb_unmatched", "sk")}
+    courses = [x for x in c.tb_all("/ims/oneroster/rostering/v1p2/courses/", "courses", {"filter": "title~'Math Academy'"}) if (x.get("title") or "").lower().startswith("math academy")]
+    sids = set()
+    for co in courses:
+        for cl in c.tb_all("/ims/oneroster/rostering/v1p2/classes/", "classes", {"filter": f"course.sourcedId='{co['sourcedId']}'"}):
+            for e in c.tb_all("/ims/oneroster/rostering/v1p2/enrollments/", "enrollments", {"filter": f"class.sourcedId='{cl['sourcedId']}'"}):
+                if e.get("role") == "student" and (e.get("user") or {}).get("sourcedId"): sids.add(e["user"]["sourcedId"])
+    missing = sorted(sids - have); found = 0
+    c.log(f"backfill: {len(sids)} students ever seated, {len(missing)} without a store row")
+    for s_ in missing:
+        if time_left() < 120: break
+        try: usr = c.tb(f"/ims/oneroster/rostering/v1p2/users/{s_}").get("user") or {}
+        except Exception: continue
+        email = (usr.get("email") or usr.get("username") or "").lower(); now = datetime.datetime.now(UTC).isoformat(timespec="seconds")
+        d, err = c.ma(f"/students/{urllib.parse.quote(email)}", "ma_lookup") if email else (None, "no email")
+        if d is not None and (d.get("student") or {}):
+            st = d["student"]; st = {**st, "id": st.get("id") or st.get("studentId")}
+            ddb.put_item(TableName=table, Item={"pk": S("student"), "sk": S(s_), "ma": S(json.dumps(st, ensure_ascii=False)), "maId": S(st["id"]), "matchedBy": S("backfill-lookup"),
+                                                "courseAgreementAtSnapshot": S(agreement(st, [])), "seats": S("[]"), "isTestUser": {"BOOL": bool((usr.get("metadata") or {}).get("isTestUser"))}, "snapshotAt": S(now), "figuresAsOf": S(now)})
+            found += 1
+        else:
+            ddb.put_item(TableName=table, Item={"pk": S("tb_unmatched"), "sk": S(s_), "reason": S(err or "empty"), "seats": S("[]"), "isTestUser": {"BOOL": bool((usr.get("metadata") or {}).get("isTestUser"))}, "snapshotAt": S(now), "lastTriedAt": S(now), "email": S(email)})
+        time.sleep(0.2)
+    c.log(f"backfill: matched {found} of {len(missing)} previously unmatched students")
+    return {"everSeated": len(sids), "missing": len(missing), "found": found}
+
+def run_backfill(c, ddb, table, start_day, time_left=lambda: 10 ** 9, cursor=None):
+    """Per store student with a Math Academy id, pull activity from start_day to today in ~quarter ranges; write task rows under
+    their America/Chicago day and recompute day totals. Resumable through a cursor (the last student id done)."""
+    end = datetime.datetime.now(CHICAGO).date(); start = datetime.date.fromisoformat(start_day)
+    rows = sorted(((it["sk"]["S"], it["maId"]["S"]) for it in _query_all(ddb, table, "student", "sk, maId") if "maId" in it), key=lambda x: x[0])
+    if cursor: rows = [r for r in rows if r[0] > cursor]
+    done = 0; tasks_written = 0; last = cursor; days_touched = set()
+    for sid, ma_id in rows:
+        if time_left() < 150: return {"status": "partial", "cursor": last, "studentsDone": done, "tasksWritten": tasks_written, "daysTouched": len(days_touched), "calls": c.calls}
+        by_day = {}
+        for a, b in _quarters(start, end):
+            d, err = c.ma(f"/students/{ma_id}/activity?startDate={a}&endDate={b}", "ma_activity")
+            if d is None: continue
+            for t in ((d.get("activity") or {}).get("tasks") or []):
+                if not t.get("completed"): continue
+                by_day.setdefault(_chicago_day(int(t["completed"])), []).append(t)
+            time.sleep(0.25)
+        items = []
+        for day, tasks in by_day.items():
+            for t in tasks: items.append({"PutRequest": {"Item": task_item(sid, day, t)}})
+            an = lambda k: sum(int((t.get("analysis") or {}).get(k) or 0) for t in tasks)
+            items.append({"PutRequest": {"Item": {"pk": S(f"actday#{sid}"), "sk": S(day), "numTasks": {"N": str(len(tasks))},
+                                                  "timeElapsedMs": {"N": str(an("timeElapsed"))}, "timeEngagedMs": {"N": str(an("timeEngaged"))}, "timeProductiveMs": {"N": str(an("timeProductive"))},
+                                                  "xpAwarded": {"N": str(sum(int(t.get("xpAwarded") or 0) for t in tasks))},
+                                                  "questions": {"N": str(sum(int(t.get("questions") or 0) for t in tasks))}, "questionsCorrect": {"N": str(sum(int(t.get("questionsCorrect") or 0) for t in tasks))},
+                                                  "windowUtc": S("/".join(x.isoformat() for x in local_day_window(day))), "source": S("backfill"), "fetchedAt": S(datetime.datetime.now(UTC).isoformat(timespec="seconds"))}}})
+            days_touched.add(day)
+        _batch(ddb, table, items); tasks_written += sum(len(v) for v in by_day.values()); done += 1; last = sid
+        if done % 50 == 0: c.log(f"backfill: {done} students, {tasks_written} tasks, {len(days_touched)} distinct days, calls {c.calls['ma_activity']}")
+    ddb.update_item(TableName=table, Key={"pk": S("meta"), "sk": S("snapshot")}, UpdateExpression="SET backfill = :b",
+                    ExpressionAttributeValues={":b": S(json.dumps({"from": start_day, "to": end.isoformat(), "students": done, "tasks": tasks_written, "finishedAt": datetime.datetime.now(UTC).isoformat(timespec="seconds")}))})
+    return {"status": "done", "studentsDone": done, "tasksWritten": tasks_written, "daysTouched": len(days_touched), "calls": c.calls}

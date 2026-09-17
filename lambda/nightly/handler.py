@@ -59,4 +59,15 @@ def handler(event, context):
         if done_days:
             ddb.update_item(TableName=TABLE, Key={"pk": {"S": "meta"}, "sk": {"S": "snapshot"}}, UpdateExpression="SET activityLastDate = :d", ExpressionAttributeValues={":d": {"S": max(done_days)}})
         return {"mode": mode, "window": days, "runs": results, "calls": c.calls}
+    if mode == "backfill":
+        # one-off: event {"mode":"backfill","start":"2025-07-01","matchFirst":true}; resumes itself via cursor until done
+        out = {}
+        if event.get("matchFirst") and not event.get("cursor"):
+            out["match"] = lib.backfill_students_without_rows(c, ddb, TABLE, time_left=time_left)
+        r = lib.run_backfill(c, ddb, TABLE, event.get("start", "2025-07-01"), time_left=time_left, cursor=event.get("cursor"))
+        out.update(r)
+        if r.get("status") == "partial" and os.environ.get("SELF_FUNCTION") and int(event.get("hop", 0)) < 40:
+            lam.invoke(FunctionName=os.environ["SELF_FUNCTION"], InvocationType="Event", Payload=json.dumps({"mode": "backfill", "start": event.get("start", "2025-07-01"), "cursor": r["cursor"], "hop": int(event.get("hop", 0)) + 1, "source": "manual"}).encode())
+            out["reinvoked"] = True
+        return out
     return {"error": f"unknown mode {mode}"}
