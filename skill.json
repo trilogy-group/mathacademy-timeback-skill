@@ -44,14 +44,14 @@
     "DICTIONARY.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/DICTIONARY.md",
       "purpose": "DICTIONARY.md carries what the OpenAPI cannot: how each Math Academy field inside Timeback is born, what its values mean, the containers and their range, the invariants and their standing, and the numbered traps. Open it before trusting any field.",
-      "sha256": "db89fa6301474795eb0ddfb7ce73b8e7a02905460d3da543910e0da3a33f9569",
-      "gitVersion": "51d1203"
+      "sha256": "19dd871fcbad9d14ca898e87a6a1e383715f44514db45245f2df92a1153ca2aa",
+      "gitVersion": "ebdaa79"
     },
     "ENABLEMENT.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/ENABLEMENT.md",
       "purpose": "ENABLEMENT.md puts the source to work: eight capabilities, a question-to-call catalog, and eight worked examples with exact routes, output shapes and failure modes. Open it when you need to act.",
-      "sha256": "1525800eb5071ec27095eeb30fd34667f2eaa58664598b51a85229b2ba3a1020",
-      "gitVersion": "51d1203"
+      "sha256": "1811ffdf5d7c54aba66ab509531f31d4717fbdf7656fb055b26ac80f2fc28a66",
+      "gitVersion": "ebdaa79"
     },
     "note": "sha256 + gitVersion pin the exact bytes served at each url on this deploy; the .md routes echo them as X-Doc-SHA256 / X-Doc-Version headers."
   },
