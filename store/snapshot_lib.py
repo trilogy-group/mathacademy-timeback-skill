@@ -104,9 +104,13 @@ def in_window(e, today):
 
 def pull_roster(c, today):
     """Every student with a current in-window active enrollment in a class titled 'Math Academy…'."""
-    classes = [x for x in c.tb_all("/ims/oneroster/rostering/v1p2/classes/", "classes", {"filter": "title~'Math Academy'"})
+    courses = [x for x in c.tb_all("/ims/oneroster/rostering/v1p2/courses/", "courses", {"filter": "title~'Math Academy'"})
                if (x.get("title") or "").lower().startswith("math academy")]
-    c.log(f"Timeback classes titled Math Academy*: {len(classes)}")
+    classes, seen = [], set()
+    for co in courses:  # every section of every Math Academy course, whatever the section is titled (DICTIONARY trap 1)
+        for x in c.tb_all("/ims/oneroster/rostering/v1p2/classes/", "classes", {"filter": f"course.sourcedId='{co['sourcedId']}'"}):
+            if x["sourcedId"] not in seen: seen.add(x["sourcedId"]); classes.append(x)
+    c.log(f"Timeback Math Academy courses: {len(courses)}; sections: {len(classes)}")
     roster = {}
     for cl in classes:
         cid = cl["sourcedId"]
@@ -219,7 +223,7 @@ def hist_row(st, date):
             "deactivated": {"BOOL": bool(st["mathAcademy"].get("deactivated"))}, "state": S(ma_state(cc)),
             "agreement": S(st["courseAgreementAtSnapshot"]), "tbCourseIds": S(json.dumps([x["courseSourcedId"] for x in st["seats"]]))}
 
-def write_snapshot(ddb, table, snap, nightly=True):
+def write_snapshot(ddb, table, snap, nightly=True, source="manual"):
     """Replace the student / tb_unmatched / ma_unmatched rows, append hist rows for the day, rewrite meta. Returns counts."""
     at = snap["snapshotAt"]; day = at[:10]
     old = []
@@ -240,17 +244,18 @@ def write_snapshot(ddb, table, snap, nightly=True):
     _batch(ddb, table, items)
     prev = ddb.get_item(TableName=table, Key={"pk": S("meta"), "sk": S("snapshot")}).get("Item")
     history = json.loads(prev["history"]["S"]) if prev and "history" in prev else []
-    if prev and prev.get("snapshotAt", {}).get("S") and prev["snapshotAt"]["S"] not in history: history.append(prev["snapshotAt"]["S"])
-    if at not in history: history.append(at)
+    history = [h if isinstance(h, dict) else {"at": h, "source": "manual"} for h in history]
+    if not any(h["at"] == at for h in history): history.append({"at": at, "source": source, "matched": len(snap["students"]), "roster": snap["counts"]["timebackRoster"]})
     meta = {"pk": S("meta"), "sk": S("snapshot"), "snapshotAt": S(at), "rosterReadAt": S(snap.get("rosterReadAt") or at), "apiVersion": S(snap["apiVersion"]),
             "calls": S(json.dumps(snap["calls"])), "counts": S(json.dumps(snap["counts"])), "byCourse": S(json.dumps(snap.get("byCourse") or {})),
             "history": S(json.dumps(history[-400:])), "staleAfterDays": {"N": "7" if not nightly else "2"}, "nightly": {"BOOL": bool(nightly)}}
-    if prev and "activityLastDate" in prev: meta["activityLastDate"] = prev["activityLastDate"]
+    for k in ("activityLastDate", "lastActivityRun", "readMaLookup", "readMaKnowledge"):
+        if prev and k in prev: meta[k] = prev[k]
     ddb.put_item(TableName=table, Item=meta)
     return {"removed": len(old), "written": len(items)}
 
 
-def run_snapshot(c, ddb, table, today=None, time_left=lambda: 10 ** 9, lookup=True, nightly=True):
+def run_snapshot(c, ddb, table, today=None, time_left=lambda: 10 ** 9, lookup=True, nightly=True, source="manual"):
     """The whole nightly: bulk -> roster -> match (known ids first) -> write. Returns the counts."""
     now = datetime.datetime.now(UTC); today = today or now.date()
     bulk = pull_bulk(c)
@@ -260,7 +265,7 @@ def run_snapshot(c, ddb, table, today=None, time_left=lambda: 10 ** 9, lookup=Tr
     counts, by_course = counts_for(bulk, roster, students, tb_un, ma_un)
     snap = {"snapshotAt": now.isoformat(timespec="seconds"), "rosterReadAt": now.isoformat(timespec="seconds"), "apiVersion": "beta10",
             "calls": c.calls, "counts": counts, "byCourse": by_course, "students": students, "tb_unmatched": tb_un, "ma_unmatched": ma_un}
-    w = write_snapshot(ddb, table, snap, nightly=nightly)
+    w = write_snapshot(ddb, table, snap, nightly=nightly, source=source)
     c.log(f"snapshot written: {w} counts: {json.dumps(counts)}")
     return snap
 
@@ -279,43 +284,63 @@ def task_item(sid, day, t):
     return {"pk": S(f"act#{sid}"), "sk": S(f"{day}#{t.get('id')}"), "taskId": S(t.get("id")), "type": S(t.get("type")),
             "xp": {"N": str(t.get("xp") or 0)}, "xpAwarded": {"N": str(t.get("xpAwarded") or 0)},
             "questions": {"N": str(t.get("questions") or 0)}, "questionsCorrect": {"N": str(t.get("questionsCorrect") or 0)},
-            "started": {"N": str(t.get("started") or 0)}, "completed": {"N": str(t.get("completed") or 0)},
+            "startedEpochMs": {"N": str(t.get("started") or 0)}, "completedEpochMs": {"N": str(t.get("completed") or 0)},
             "courseId": S((t.get("course") or {}).get("id")), "courseName": S((t.get("course") or {}).get("name")),
             "topicId": S((t.get("topic") or {}).get("id")), "topicName": S((t.get("topic") or {}).get("name")),
-            "timeElapsed": {"N": str(an.get("timeElapsed") or 0)}, "timeEngaged": {"N": str(an.get("timeEngaged") or 0)}, "timeProductive": {"N": str(an.get("timeProductive") or 0)}}
+            "timeElapsedMs": {"N": str(an.get("timeElapsed") or 0)}, "timeEngagedMs": {"N": str(an.get("timeEngaged") or 0)}, "timeProductiveMs": {"N": str(an.get("timeProductive") or 0)}}
 
-def run_activity(c, ddb, table, day, tz_offset_hours=-5, time_left=lambda: 10 ** 9):
-    """Pull Math Academy's per-task analysis for every student active on `day`. Resumable: progress in actrun/<day>."""
+def _delete_day(ddb, table, sid, day):
+    rows = _query_all(ddb, table, f"act#{sid}", "pk, sk", **{"KeyConditionExpression": "pk = :p AND begins_with(sk, :d)", "ExpressionAttributeValues": {":p": S(f"act#{sid}"), ":d": S(day + "#")}})
+    reqs = [{"DeleteRequest": {"Key": {"pk": r["pk"], "sk": r["sk"]}}} for r in rows]
+    reqs.append({"DeleteRequest": {"Key": {"pk": S(f"actday#{sid}"), "sk": S(day)}}})
+    _batch(ddb, table, reqs)
+
+def run_activity(c, ddb, table, day, tz_offset_hours=-5, time_left=lambda: 10 ** 9, force=False):
+    """Pull Math Academy's per-task analysis for every student active on the local `day` (America/Chicago by offset).
+    Math Academy's startDate/endDate are read on its own clock, so two Math Academy days are requested and tasks are kept by
+    their completion time inside the local day window. Resumable: progress in actrun/<day>. force=True re-pulls a finished day."""
     run = ddb.get_item(TableName=table, Key={"pk": S("actrun"), "sk": S(day)}).get("Item")
-    if run and run.get("status", {}).get("S") == "done": return {"day": day, "status": "done", "skipped": True}
-    if run: pending = json.loads(run["pending"]["S"]); total = int(run["total"]["N"]); done = int(run["done"]["N"]); no_id = int(run["noMaId"]["N"])
+    if run and run.get("status", {}).get("S") == "done" and not force: return {"day": day, "status": "done", "skipped": True}
+    day_start = datetime.datetime.fromisoformat(day + "T00:00:00").replace(tzinfo=UTC) - datetime.timedelta(hours=tz_offset_hours)
+    day_end = day_start + datetime.timedelta(days=1)
+    lo_ms, hi_ms = int(day_start.timestamp() * 1000), int(day_end.timestamp() * 1000)
+    next_day = (datetime.date.fromisoformat(day) + datetime.timedelta(days=1)).isoformat()
+    if run and not force and run.get("status", {}).get("S") in ("partial", "running"):
+        pending = json.loads(run["pending"]["S"]); total = int(run["total"]["N"]); done = int(run["done"]["N"]); no_id = int(run["noMaId"]["N"]); errors = int(run.get("errors", {}).get("N", 0))
     else:
         sids = active_sids_for_day(c, day, tz_offset_hours)
         ids = {it["sk"]["S"]: it["maId"]["S"] for it in _query_all(ddb, table, "student", "sk, maId") if "maId" in it}
-        pending = [[s_, ids[s_]] for s_ in sids if s_ in ids]; no_id = len(sids) - len(pending); total = len(pending); done = 0
-        c.log(f"activity {day}: {len(sids)} active students, {total} with a Math Academy id")
+        pending = [[s_, ids[s_]] for s_ in sids if s_ in ids]; no_id = len(sids) - len(pending); total = len(pending); done = 0; errors = 0
+        c.log(f"activity {day}: {len(sids)} active students, {total} with a Math Academy id, window {day_start.isoformat()}..{day_end.isoformat()}")
     def save(status):
-        ddb.put_item(TableName=table, Item={"pk": S("actrun"), "sk": S(day), "status": S(status), "total": {"N": str(total)}, "done": {"N": str(done)},
-                                            "noMaId": {"N": str(no_id)}, "pending": S(json.dumps(pending)), "updatedAt": S(datetime.datetime.now(UTC).isoformat(timespec="seconds"))})
+        ddb.put_item(TableName=table, Item={"pk": S("actrun"), "sk": S(day), "status": S(status), "total": {"N": str(total)}, "done": {"N": str(done)}, "errors": {"N": str(errors)},
+                                            "noMaId": {"N": str(no_id)}, "pending": S(json.dumps(pending)), "windowUtc": S(f"{day_start.isoformat()}/{day_end.isoformat()}"),
+                                            "updatedAt": S(datetime.datetime.now(UTC).isoformat(timespec="seconds"))})
     items = []
     while pending:
-        if time_left() < 90: save("partial"); _batch(ddb, table, items); return {"day": day, "status": "partial", "done": done, "total": total}
+        if time_left() < 90: _batch(ddb, table, items); save("partial"); return {"day": day, "status": "partial", "done": done, "total": total}
         sid, ma_id = pending[0]
-        d, err = c.ma(f"/students/{ma_id}/activity?startDate={day}&endDate={day}", "ma_activity")
+        if force: _delete_day(ddb, table, sid, day)
+        d, err = c.ma(f"/students/{ma_id}/activity?startDate={day}&endDate={next_day}", "ma_activity")
+        now = datetime.datetime.now(UTC).isoformat(timespec="seconds")
         if d is not None:
-            act = d.get("activity") or {}; tasks = act.get("tasks") or []; tot = act.get("totals") or {}
+            tasks = [t for t in ((d.get("activity") or {}).get("tasks") or []) if lo_ms <= int(t.get("completed") or 0) < hi_ms]
             for t in tasks: items.append({"PutRequest": {"Item": task_item(sid, day, t)}})
-            items.append({"PutRequest": {"Item": {"pk": S(f"actday#{sid}"), "sk": S(day), "numTasks": {"N": str(tot.get("numTasks") or len(tasks))},
-                                                  "timeElapsed": {"N": str(tot.get("timeElapsed") or 0)}, "timeEngaged": {"N": str(tot.get("timeEngaged") or 0)},
-                                                  "timeProductive": {"N": str(tot.get("timeProductive") or 0)}, "xpAwarded": {"N": str(tot.get("xpAwarded") or 0)},
-                                                  "questions": {"N": str(tot.get("questions") or 0)}, "questionsCorrect": {"N": str(tot.get("questionsCorrect") or 0)},
-                                                  "fetchedAt": S(datetime.datetime.now(UTC).isoformat(timespec="seconds"))}}})
+            an = lambda k: sum(int((t.get("analysis") or {}).get(k) or 0) for t in tasks)
+            items.append({"PutRequest": {"Item": {"pk": S(f"actday#{sid}"), "sk": S(day), "numTasks": {"N": str(len(tasks))},
+                                                  "timeElapsedMs": {"N": str(an("timeElapsed"))}, "timeEngagedMs": {"N": str(an("timeEngaged"))}, "timeProductiveMs": {"N": str(an("timeProductive"))},
+                                                  "xpAwarded": {"N": str(sum(int(t.get("xpAwarded") or 0) for t in tasks))},
+                                                  "questions": {"N": str(sum(int(t.get("questions") or 0) for t in tasks))}, "questionsCorrect": {"N": str(sum(int(t.get("questionsCorrect") or 0) for t in tasks))},
+                                                  "windowUtc": S(f"{day_start.isoformat()}/{day_end.isoformat()}"), "fetchedAt": S(now)}}})
         else:
-            items.append({"PutRequest": {"Item": {"pk": S(f"actday#{sid}"), "sk": S(day), "error": S(err), "fetchedAt": S(datetime.datetime.now(UTC).isoformat(timespec="seconds"))}}})
+            errors += 1
+            items.append({"PutRequest": {"Item": {"pk": S(f"actday#{sid}"), "sk": S(day), "error": S(err), "fetchedAt": S(now)}}})
         pending.pop(0); done += 1
         if len(items) >= 200: _batch(ddb, table, items); items = []; save("running")
         time.sleep(0.15)
     _batch(ddb, table, items); save("done")
-    ddb.update_item(TableName=table, Key={"pk": S("meta"), "sk": S("snapshot")}, UpdateExpression="SET activityLastDate = :d", ExpressionAttributeValues={":d": S(day)})
-    c.log(f"activity {day}: done {done}/{total}, calls {c.calls}")
-    return {"day": day, "status": "done", "done": done, "total": total, "noMaId": no_id}
+    finished = datetime.datetime.now(UTC).isoformat(timespec="seconds")
+    ddb.update_item(TableName=table, Key={"pk": S("meta"), "sk": S("snapshot")}, UpdateExpression="SET activityLastDate = :d, lastActivityRun = :r",
+                    ExpressionAttributeValues={":d": S(day), ":r": S(json.dumps({"day": day, "students": total, "done": done, "errors": errors, "noMaId": no_id, "finishedAt": finished, "maCalls": c.calls["ma_activity"], "windowUtc": f"{day_start.isoformat()}/{day_end.isoformat()}"}))})
+    c.log(f"activity {day}: done {done}/{total}, errors {errors}, calls {c.calls}")
+    return {"day": day, "status": "done", "done": done, "total": total, "errors": errors, "noMaId": no_id}

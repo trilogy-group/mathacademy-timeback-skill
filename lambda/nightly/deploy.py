@@ -16,8 +16,8 @@ HERE = pathlib.Path(__file__).resolve().parent; ROOT = HERE.parent.parent
 FN = "mathacademy-timeback-nightly"; TABLE = "mathacademy-timeback-skill-store"; SECRET = "sat-cohort-tracker/ci"
 LAMBDA_ROLE = "team-dev-mathacademy-skill-nightly"; SCHED_ROLE = "team-dev-mathacademy-skill-scheduler"
 REGION = "us-east-1"; BOUNDARY = "arn:aws:iam::aws:policy/PowerUserAccess"
-SCHEDULES = {"mathacademy-timeback-snapshot-nightly": ("cron(0 3 * * ? *)", {"mode": "snapshot"}),
-             "mathacademy-timeback-activity-nightly": ("cron(45 3 * * ? *)", {"mode": "activity"})}
+SCHEDULES = {"mathacademy-timeback-snapshot-nightly": ("cron(0 3 * * ? *)", {"mode": "snapshot", "source": "schedule"}),
+             "mathacademy-timeback-activity-nightly": ("cron(45 3 * * ? *)", {"mode": "activity", "source": "schedule"})}
 TZ = "America/Chicago"
 TAGS = {"project": "mathacademy-timeback-skill", "owner": "ruchi.baid", "purpose": "nightly math academy store refresh"}
 
@@ -104,8 +104,9 @@ if a.cmd == "deploy":
     sys.exit(0)
 
 if a.cmd == "invoke":
-    mode = a.arg[0] if a.arg else "snapshot"; payload = {"mode": mode}
+    mode = a.arg[0] if a.arg else "snapshot"; payload = {"mode": mode, "source": "manual"}
     if len(a.arg) > 1: payload["day"] = a.arg[1]
+    if len(a.arg) > 2 and a.arg[2] == "force": payload["force"] = True
     lam_long = s.client("lambda", config=botocore.config.Config(read_timeout=920, connect_timeout=10, retries={"max_attempts": 0}))
     r = lam_long.invoke(FunctionName=FN, InvocationType="RequestResponse", Payload=json.dumps(payload).encode(), LogType="Tail")
     print(r["Payload"].read().decode("utf-8")[:4000])

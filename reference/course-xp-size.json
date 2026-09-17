@@ -10,8 +10,14 @@
   "7. The course figure is expected to equal Math Academy's XP-with-reviews for that course (checked and matching for every course carrying a figure on 2026-09-17); if it lags a re-size the estimate reads low, and DICTIONARY trap 11 carries the measuring query.",
   "8. Where this skill's snapshot store holds the student (ENABLEMENT example 10), its mathAcademy.currentCourse.xpRemaining is the exact figure as of the store's snapshotAt; report it beside the estimate with its date, and prefer it while the snapshot is within its staleAfterDays."
  ],
- "bases": ["timeback course XP", "none: newest percent belongs to <course.sourcedId>", "none: course has no totalXp", "none: SAT Math Prep reports a score", "none: no percent yet"],
- "accuracy_note": "Spot-checked 2026-09-17 on ten recently active students against Math Academy's exact xpRemaining: the estimate ran low on seven of ten, typically by 20 to 45 percent, because Math Academy awards extra XP on failed reviews and retries; a cold run the same day measured 26 percent low on one Algebra I student. Treat it as 'a lot left / a little left / nearly done', never as the exact figure; the exact figure is in the snapshot store (dated) or the Math Academy API.",
+ "bases": [
+  "timeback course XP",
+  "none: newest percent belongs to <course.sourcedId>",
+  "none: course has no totalXp",
+  "none: SAT Math Prep reports a score",
+  "none: no percent yet"
+ ],
+ "accuracy_note": "Checked against Math Academy's exact xpRemaining on 2026-09-17: ten recently active students (low on seven, typically 20 to 45 percent) and two cold-run students (26 and 64 percent low). The estimate runs low by a quarter to two thirds and can be under half the true figure, because Math Academy awards extra XP on failed reviews and retries. Treat it as 'a lot left / a little left / nearly done', never as the exact figure; the exact figure is in this skill's store (dated) and in the Math Academy API.",
  "courses_note": "Course ids and titles are in reference/timeback-math-academy-courses.json; regenerate with GET .../courses/?filter=title~'Math Academy'.",
  "retired": "Until 2026-09-17 this file carried a per-course size calibrated against the Math Academy API. The owner ruled that Timeback's course totalXp is the figure to use and corrected the eight courses whose figure was low the same day; the calibration was removed so there is one basis, read live. Until 2026-09-17 evening rule 1 read the enrollment's percent with 'primary preferred'; a cold run showed that contradicts example 3 and mis-attributes a percent filed under another course, so rules 1 and 2 were rewritten.",
  "never": [
