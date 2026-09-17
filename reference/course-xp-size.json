@@ -3,13 +3,13 @@
  "rules": [
   "Take the student's current Math Academy enrollment (active, in its date window, primary preferred) and read enrollment.metadata.pctCompleteApp and course.sourcedId.",
   "GET the course by sourcedId and read metadata.metrics.totalXp. remaining = totalXp × (1 − pctCompleteApp/100), basis 'timeback course XP'.",
-  "totalXp absent on the course (the bare 'Math Academy' course and the Beyond AI courses as of 2026-09-17) → no estimate; say the course carries no XP figure.",
+  "totalXp absent on the course (the bare 'Math Academy' course and the Beyond AI courses) → no estimate, and the enrollment is the finding: no real student belongs in those courses (owner rule 2026-09-17; every active enrollment there that day was a flagged test user). Report a non-test student found there as a roster defect.",
   "SAT Math Prep (use = never) → no estimate at all: Math Academy reports an estimated SAT score there instead of progress, so pctCompleteApp on that course is stale or absent. SAT Math Fundamentals still reports progress and is estimated like any other course.",
   "pctCompleteApp absent on the enrollment → no estimate yet (no event has arrived; DICTIONARY trap 3).",
-  "The course figure is expected to equal Math Academy's XP-with-reviews for that course. Where the school has not yet set it, the estimate reads low; the measuring query is DICTIONARY trap 11's."
+  "The course figure is expected to equal Math Academy's XP-with-reviews for that course (checked and matching for every course carrying a figure on 2026-09-17); if it lags a re-size the estimate reads low, and DICTIONARY trap 11 carries the measuring query."
  ],
  "courses_note": "Course ids and titles are in reference/timeback-math-academy-courses.json; regenerate with GET .../courses/?filter=title~'Math Academy'.",
- "retired": "Until 2026-09-17 this file carried a per-course size calibrated against the Math Academy API. The owner ruled that Timeback's course totalXp is the figure to use and is correcting the courses whose figure was low; the calibration was removed so there is one basis, read live.",
+ "retired": "Until 2026-09-17 this file carried a per-course size calibrated against the Math Academy API. The owner ruled that Timeback's course totalXp is the figure to use and corrected the eight courses whose figure was low the same day; the calibration was removed so there is one basis, read live.",
  "never": [
   "Math Academy - SAT Math Prep"
  ]
