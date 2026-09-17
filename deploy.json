@@ -1,0 +1,5 @@
+{
+  "_about": "Deployment settings read by scripts/build_front.py. base = the public origin the worker serves on; repo = the GitHub repo that takes feedback issues. Both are placeholders until the owner picks them.",
+  "base": "https://REPLACE-ME.workers.dev",
+  "repo": "REPLACE_OWNER/REPLACE_REPO"
+}

@@ -1,0 +1,68 @@
+{
+  "name": "mathacademy_timeback",
+  "source": "mathacademy_timeback",
+  "version": "2026-09-16",
+  "what": "mathacademy_timeback is the meaning layer for Math Academy data as it lives inside Timeback: every Math Academy task a student completes arrives as a Caliper event and is stored in Timeback's OneRoster (assessment results, line items, enrollments, classes, courses, users) and EduBridge analytics (event facts, daily rollups). Readers use a Timeback credential only; this skill never calls Math Academy. It answers, numbered to match ENABLEMENT § Capabilities: (1) a student's Math Academy task history with type, topic, XP, accuracy; (2) daily and weekly totals per student; (3) the student's current Math Academy course, completion percent and its age, and an estimated XP remaining with its basis named; (4) who has gone quiet in a class or course; (5) who has finished a course and whether they were moved on; (6) where a student is struggling, by topic; (7) whether a student's Timeback course looks wrong, as a heuristic suspect-course flag paired with the quiet check; (8) estate-wide Math Academy activity for a day or week without a student list.",
+  "when": "Reach for mathacademy_timeback when the question is about Math Academy students and can be answered from what Timeback received: activity, progress percent, quiet students, finished students, failed reviews, and whether the Timeback course record is coherent. Route away to the Math Academy API for what Timeback never receives: the estimated SAT score, exact XP remaining, course grade and letter grade, engaged versus productive time, daily goals, the course catalogue, and accounts with no events. Route to timeback_production or timeback_analytics for the whole learning record across apps, MAP and mastery, screen-capture minutes and waste. The headline trap: the Timeback course an event is filed under is the ENROLLMENT's course, not the course Math Academy is actually running the student in; if the enrollment is wrong every event is filed under the wrong course and no field says so (DICTIONARY trap 10, ENABLEMENT example 7).",
+  "why": {
+    "relevance": "Math Academy is the core mathematics app for Alpha students in grades 4 to 12, and its events are the largest single external activity stream Timeback holds for math. The raw rows do not explain themselves: the task type hides in a URL, waste is always zero, reviews revisit earlier courses, titles are not canonical, and completion percent lives in two places. This skill supplies the genesis of every field, the named traps, and worked recipes, so a cold agent can answer without being silently wrong and without spamming the Math Academy API.",
+    "contract": "https://data-source-skills.vercel.app/contract",
+    "version": "c5ee63b",
+    "sha256": "a3c77832675f31f92bed0c3b728e76ac276deb716c86f1ca70c9e054fb21c76d",
+    "note": "sha256 pins the exact bytes served at GET https://data-source-skills.vercel.app/contract on the day this front was built; version echoes that fetch's X-Doc-Version header. Re-pinned on every deploy."
+  },
+  "how": {
+    "native": {
+      "base": "https://api.alpha-1edtech.ai",
+      "authHeader": "Authorization",
+      "auth": "Bearer <token>; the reader brings its own Timeback credential. Mint the token with an OAuth 2.0 client-credentials POST (grant_type=client_credentials, client id + secret) to https://prod-beyond-timeback-api-2-idp.auth.us-east-1.amazoncognito.com/oauth2/token; tokens expire after expires_in seconds (one hour as served). This front holds no key and proxies no data.",
+      "selfDescribe": [
+        "https://api.alpha-1edtech.ai/openapi.yaml",
+        "https://api.alpha-1edtech.ai/edubridge/openapi.yaml"
+      ],
+      "routes": {
+        "results": "GET /ims/oneroster/gradebook/v1p2/assessmentResults?filter=metadata.appName='Math Academy' AND scoreDate>='<date>'",
+        "lineItem": "GET /ims/oneroster/gradebook/v1p2/assessmentLineItems/{sourcedId}",
+        "enrollments": "GET /ims/oneroster/rostering/v1p2/enrollments/?filter=user.sourcedId='<sid>' AND status='active'",
+        "classes": "GET /ims/oneroster/rostering/v1p2/classes/?filter=title~'Math Academy'",
+        "dailyActivity": "GET /edubridge/analytics/activity?studentId=<sid>&startDate=<iso>&endDate=<iso>&timezone=<IANA>",
+        "weeklyFacts": "GET /edubridge/analytics/facts/weekly?studentId=<sid>&weekDate=<date>&timezone=<IANA>"
+      }
+    },
+    "dictionary": "https://REPLACE-ME.workers.dev/DICTIONARY.md",
+    "enablement": "https://REPLACE-ME.workers.dev/ENABLEMENT.md",
+    "reference": {
+      "courses": "https://REPLACE-ME.workers.dev/reference/timeback-math-academy-courses.json",
+      "courseXpSize": "https://REPLACE-ME.workers.dev/reference/course-xp-size.json",
+      "topicCourseMap": "https://REPLACE-ME.workers.dev/reference/topic-course-map.json"
+    }
+  },
+  "documents": {
+    "DICTIONARY.md": {
+      "url": "https://REPLACE-ME.workers.dev/DICTIONARY.md",
+      "purpose": "DICTIONARY.md carries what the OpenAPI cannot: how each Math Academy field inside Timeback is born, what its values mean, the containers and their range, the invariants and their standing, and the numbered traps. Open it before trusting any field.",
+      "sha256": "e52227843f2ba5b3e46c4e5abedc82f29ab617c82e6d916dafb3146e0a5188a2",
+      "gitVersion": "fd72bab"
+    },
+    "ENABLEMENT.md": {
+      "url": "https://REPLACE-ME.workers.dev/ENABLEMENT.md",
+      "purpose": "ENABLEMENT.md puts the source to work: eight capabilities, a question-to-call catalog, and eight worked examples with exact routes, output shapes and failure modes. Open it when you need to act.",
+      "sha256": "4d686246bfb1c9f60d2da8aaedde3da59121f3ef5a07513cbaa5202babc9826e",
+      "gitVersion": "fd72bab"
+    },
+    "note": "sha256 + gitVersion pin the exact bytes served at each url on this deploy; the .md routes echo them as X-Doc-SHA256 / X-Doc-Version headers."
+  },
+  "feedback": {
+    "covers": "This lane covers this skill's two documents, its front, and its reference files. A defect in Timeback's APIs or data belongs to the Timeback platform (trilogy-group/timeback-platform); a defect in Math Academy's own product belongs to Math Academy. This wire does not relay third-party claims to either.",
+    "report": "POST https://REPLACE-ME.workers.dev/feedback with JSON {title, body, reporter, kind?} -> 201 {number, url}; no credential required",
+    "open": "GET https://REPLACE-ME.workers.dev/feedback  (open items; ?state=open|closed|all)",
+    "resolved": "GET https://REPLACE-ME.workers.dev/feedback?state=closed  (or https://REPLACE-ME.workers.dev/feedback/{number} for one ticket with its thread)",
+    "caps": { "title": 200, "body": 10000 },
+    "repo": "REPLACE_OWNER/REPLACE_REPO",
+    "note": "Files an attributed GitHub issue labelled skill-feedback + mathacademy_timeback to the repo above and returns its number and URL. reporter is a free-text attribution and is required. kind is optional ('ask' | 'report'). Evidence in a ticket is a class, a field, a rule or a query; never a student's name, contact or identifying row."
+  },
+  "provider": {
+    "genesis": "Written by an agent against the live Timeback wire on 2026-09-16, cross-checked once against the Math Academy API during the build, kept true by reader feedback.",
+    "owner": "REPLACE_OWNER/REPLACE_REPO"
+  }
+}

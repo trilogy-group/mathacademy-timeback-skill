@@ -1,0 +1,34 @@
+{
+ "_about": "Estimated size in XP of each Math Academy course, for the XP-remaining estimate  remaining = size * (1 - pctCompleteApp/100). JUDGED: a one-time calibration against the Math Academy API on 2026-09-16 over active non-test students with 5-95% progress: median of (Math Academy xpRemaining / (1 - progress)) per course. Math Academy does not publish course sizes and Timeback does not hold them. These retire when Math Academy re-sizes a course; only a Math Academy key can re-derive them.",
+ "calibrated": "2026-09-16",
+ "instrument": "mathacademy api beta9, GET /students/{email}: currentCourse.progress, currentCourse.xpRemaining",
+ "not_valid_for": ["SAT Math Prep", "SAT Math Fundamentals when progress is absent (Math Academy reports an estimated SAT score instead of progress on SAT courses)"],
+ "size_xp": {
+  "4th Grade Math": 3134,
+  "5th Grade Math": 2532,
+  "6th Grade Math": 2798,
+  "7th Grade Math": 4048,
+  "8th Grade Math": 2991,
+  "Prealgebra": 4088,
+  "Algebra I": 5140,
+  "Geometry": 4506,
+  "Algebra II": 4233,
+  "Precalculus": 7202,
+  "SAT Math Fundamentals": 12715
+ },
+ "timeback_course_title_to_math_academy_course": {
+  "Math Academy - 4th grade": "4th Grade Math",
+  "Math Academy - 4th Grade": "4th Grade Math",
+  "Math Academy - 5th grade": "5th Grade Math",
+  "Math Academy - 6th grade": "6th Grade Math",
+  "Math Academy - 7th grade": "7th Grade Math",
+  "Math Academy - 8th grade": "8th Grade Math",
+  "Math Academy - Prealgebra": "Prealgebra",
+  "Math Academy - Algebra I": "Algebra I",
+  "Math Academy - Geometry": "Geometry",
+  "Math Academy - Algebra II": "Algebra II",
+  "Math Academy - Precalculus": "Precalculus",
+  "Math Academy - SAT Math Fundamentals": "SAT Math Fundamentals"
+ },
+ "accuracy_note": "On the calibration day, applied to Timeback's pctCompleteApp, the estimate was within 25% of Math Academy's own xpRemaining for roughly two thirds of students and within 40% for about three quarters. Treat it as an order-of-magnitude planning figure, never as the exact number Math Academy would show."
+}

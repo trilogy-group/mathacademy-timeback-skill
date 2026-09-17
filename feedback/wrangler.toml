@@ -1,0 +1,15 @@
+# Cloudflare Worker config for the mathacademy_timeback front.
+# Deploy from the repo root:  npx wrangler deploy --config feedback/wrangler.toml
+# Secrets (set once):         npx wrangler secret put GITHUB_TOKEN --config feedback/wrangler.toml
+name = "mathacademy-timeback-skill"
+main = "worker.js"
+compatibility_date = "2025-09-01"
+
+[assets]
+directory = "../public"      # built by scripts/build_public.py: skill.json, DICTIONARY.md, ENABLEMENT.md, reference/
+binding = "ASSETS"
+
+[vars]
+REPO = "REPLACE_OWNER/REPLACE_REPO"
+SOURCE = "mathacademy_timeback"
+GIT_VERSION = "unversioned"

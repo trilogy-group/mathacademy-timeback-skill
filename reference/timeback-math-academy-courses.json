@@ -1,0 +1,331 @@
+{
+ "_about": "OneRoster courses whose title contains 'Math Academy', read live 2026-09-16 via GET /ims/oneroster/rostering/v1p2/courses/?filter=title~'Math Academy'. This is the DOMAIN of the course field for Math Academy data in Timeback (structure), re-derive with the same call; metrics_totalXp is Timeback's own course XP figure, NOT Math Academy's (see DICTIONARY trap 11).",
+ "regenerate": "GET https://api.alpha-1edtech.ai/ims/oneroster/rostering/v1p2/courses/?filter=title~'Math Academy'&limit=100",
+ "courses": [
+  {
+   "sourcedId": "1c3157f0-12d2-40be-af7e-63e9624c0022",
+   "title": "Math Academy",
+   "status": "active",
+   "grades": [
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": null,
+   "metrics_totalXp": null,
+   "metrics_totalLessons": null
+  },
+  {
+   "sourcedId": "03ca4e3c-eac4-4fdc-9d48-28bbc8e1dd82",
+   "title": "Math Academy - 4th grade",
+   "status": "active",
+   "grades": [
+    "4"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 2214,
+   "metrics_totalLessons": 316
+  },
+  {
+   "sourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "title": "Math Academy - 5th grade",
+   "status": "active",
+   "grades": [
+    "5"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 1724,
+   "metrics_totalLessons": 246
+  },
+  {
+   "sourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "title": "Math Academy - 6th grade",
+   "status": "active",
+   "grades": [
+    "6"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 2155,
+   "metrics_totalLessons": 246
+  },
+  {
+   "sourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "title": "Math Academy - 7th grade",
+   "status": "active",
+   "grades": [
+    "7"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 2740,
+   "metrics_totalLessons": 246
+  },
+  {
+   "sourcedId": "pcb-course-3bf2f190c22f4e4693aeca92fcd307bb",
+   "title": "Math Academy - 8th grade",
+   "status": "active",
+   "grades": [
+    "8"
+   ],
+   "orgSourcedId": "f9f7318b-f23c-402d-ab49-43b9ee30e915",
+   "primaryApp": null,
+   "courseType": "base",
+   "metrics_totalXp": 1638,
+   "metrics_totalLessons": 128
+  },
+  {
+   "sourcedId": "a9eb6e14-c85f-477e-9013-d5381793d920",
+   "title": "Math Academy - AP Calculus AB",
+   "status": "active",
+   "grades": [
+    "12"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 6187,
+   "metrics_totalLessons": 884
+  },
+  {
+   "sourcedId": "f5326381-e358-4ffb-a1b3-d63a45382241",
+   "title": "Math Academy - AP Calculus BC",
+   "status": "active",
+   "grades": [
+    "12"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 8050,
+   "metrics_totalLessons": 1150
+  },
+  {
+   "sourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "title": "Math Academy - Algebra I",
+   "status": "active",
+   "grades": [
+    "9"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 3019,
+   "metrics_totalLessons": 431
+  },
+  {
+   "sourcedId": "7c30ceec-ab6e-4757-b9cc-97428ca7955f",
+   "title": "Math Academy - Algebra II",
+   "status": "active",
+   "grades": [
+    "11"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 2282,
+   "metrics_totalLessons": 326
+  },
+  {
+   "sourcedId": "3d0b63c6-65b3-4953-a4f7-ee24d79a1552",
+   "title": "Math Academy - Beyond AI",
+   "status": "tobedeleted",
+   "grades": [
+    "4"
+   ],
+   "orgSourcedId": "c58d025b-9357-4cd0-9413-eaac3ccb087c",
+   "primaryApp": null,
+   "courseType": null,
+   "metrics_totalXp": null,
+   "metrics_totalLessons": null
+  },
+  {
+   "sourcedId": "5ffe461b-08b9-475f-8551-e4c2f0fe5f09",
+   "title": "Math Academy - Beyond AI",
+   "status": "active",
+   "grades": [
+    "4"
+   ],
+   "orgSourcedId": "c58d025b-9357-4cd0-9413-eaac3ccb087c",
+   "primaryApp": "math_academy",
+   "courseType": null,
+   "metrics_totalXp": null,
+   "metrics_totalLessons": null
+  },
+  {
+   "sourcedId": "6e9caba5-4d14-436d-b61f-e0f761a5d5a8",
+   "title": "Math Academy - Geometry",
+   "status": "active",
+   "grades": [
+    "10"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 2226,
+   "metrics_totalLessons": 318
+  },
+  {
+   "sourcedId": "dc606e0a-2c30-4a3a-9452-d8905026b0b6",
+   "title": "Math Academy - Integrated Math I",
+   "status": "active",
+   "grades": [
+    "9",
+    "10",
+    "11",
+    "12"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 2485,
+   "metrics_totalLessons": 355
+  },
+  {
+   "sourcedId": "e9b73795-21bf-43ad-a30f-3b621a9415bb",
+   "title": "Math Academy - Integrated Math I (Honors)",
+   "status": "active",
+   "grades": [
+    "9",
+    "10",
+    "11",
+    "12"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 3053,
+   "metrics_totalLessons": 436
+  },
+  {
+   "sourcedId": "9f3d78c1-e939-4d84-a012-9d4e44e59e69",
+   "title": "Math Academy - Integrated Math II (Honors)",
+   "status": "active",
+   "grades": [
+    "9",
+    "10",
+    "11",
+    "12"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 4580,
+   "metrics_totalLessons": 654
+  },
+  {
+   "sourcedId": "b02a6b31-1f82-4f17-88f6-036e517a2b21",
+   "title": "Math Academy - Integrated Math III (Honors)",
+   "status": "active",
+   "grades": [
+    "9",
+    "10",
+    "11",
+    "12"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 4570,
+   "metrics_totalLessons": 653
+  },
+  {
+   "sourcedId": "d57d8dde-bb19-4659-aa75-0dab737a39e5",
+   "title": "Math Academy - Linear Algebra",
+   "status": "active",
+   "grades": [
+    "12"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 3116,
+   "metrics_totalLessons": 445
+  },
+  {
+   "sourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "title": "Math Academy - Prealgebra",
+   "status": "active",
+   "grades": [
+    "6",
+    "7",
+    "8"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 1215,
+   "metrics_totalLessons": 174
+  },
+  {
+   "sourcedId": "fd5dcce2-5cf7-48f5-b8d2-319fb98a1f8e",
+   "title": "Math Academy - Precalculus",
+   "status": "active",
+   "grades": [
+    "12"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 4642,
+   "metrics_totalLessons": 663
+  },
+  {
+   "sourcedId": "702b2bb3-1337-410a-9c78-c6fb6cea782b",
+   "title": "Math Academy - SAT Math Fundamentals",
+   "status": "active",
+   "grades": [
+    "9",
+    "10",
+    "11",
+    "12"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 10208,
+   "metrics_totalLessons": 1458
+  },
+  {
+   "sourcedId": "db87bd31-d05e-48e1-beeb-047e30d4aeec",
+   "title": "Math Academy - SAT Math Prep",
+   "status": "active",
+   "grades": [
+    "9",
+    "10",
+    "11",
+    "12"
+   ],
+   "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
+   "primaryApp": "math_academy",
+   "courseType": "base",
+   "metrics_totalXp": 1000,
+   "metrics_totalLessons": 100
+  },
+  {
+   "sourcedId": "nice_x424b439c9356cd2f",
+   "title": "Nice Academy - Math Academy 6th Grade CCSS Coverage",
+   "status": "tobedeleted",
+   "grades": [],
+   "orgSourcedId": "f251f08b-61de-4ffa-8ff3-3e56e1d75a60",
+   "primaryApp": "nice_academy",
+   "courseType": null,
+   "metrics_totalXp": 203,
+   "metrics_totalLessons": 32
+  }
+ ]
+}

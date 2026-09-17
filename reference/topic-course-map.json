@@ -1,0 +1,1001 @@
+{
+"_about": "Math Academy topic id -> the Timeback course under which lesson/quiz/multistep events for that topic were filed by >=5 distinct non-test students with >=80% agreement, over assessmentResults with scoreDate >= 2026-09-03 (14 days), read 2026-09-16. HEURISTIC: adjacent grade courses share topics, so a topic's 'course' here is the course most students who met it were enrolled in, not Math Academy's catalog assignment. Regenerate with ENABLEMENT example 7, step A.",
+"method": "For each topic id parsed from metadata.originalObjectId (/topics/{id}/lesson|quiz|multistep) count distinct students per enrolled Math Academy course (active enrollment, isTestUser false); keep topics with >=5 students and top share >=0.8.",
+"topics": {
+"679": {
+"course": "algebra i",
+"students": 5,
+"share": 1.0
+},
+"667": {
+"course": "algebra i",
+"students": 5,
+"share": 1.0
+},
+"668": {
+"course": "algebra i",
+"students": 5,
+"share": 1.0
+},
+"3971": {
+"course": "5th grade",
+"students": 20,
+"share": 1.0
+},
+"533": {
+"course": "5th grade",
+"students": 22,
+"share": 0.95
+},
+"535": {
+"course": "5th grade",
+"students": 5,
+"share": 1.0
+},
+"536": {
+"course": "5th grade",
+"students": 10,
+"share": 1.0
+},
+"2459": {
+"course": "5th grade",
+"students": 19,
+"share": 1.0
+},
+"541": {
+"course": "5th grade",
+"students": 15,
+"share": 1.0
+},
+"2339": {
+"course": "5th grade",
+"students": 22,
+"share": 0.86
+},
+"2340": {
+"course": "5th grade",
+"students": 27,
+"share": 0.81
+},
+"2348": {
+"course": "5th grade",
+"students": 26,
+"share": 0.85
+},
+"71": {
+"course": "5th grade",
+"students": 27,
+"share": 0.96
+},
+"2403": {
+"course": "5th grade",
+"students": 13,
+"share": 1.0
+},
+"4198": {
+"course": "5th grade",
+"students": 7,
+"share": 1.0
+},
+"2413": {
+"course": "5th grade",
+"students": 7,
+"share": 1.0
+},
+"2425": {
+"course": "5th grade",
+"students": 8,
+"share": 1.0
+},
+"2431": {
+"course": "5th grade",
+"students": 15,
+"share": 1.0
+},
+"172": {
+"course": "algebra i",
+"students": 8,
+"share": 1.0
+},
+"61": {
+"course": "algebra i",
+"students": 5,
+"share": 1.0
+},
+"837": {
+"course": "algebra i",
+"students": 5,
+"share": 0.8
+},
+"214": {
+"course": "algebra i",
+"students": 6,
+"share": 0.83
+},
+"729": {
+"course": "algebra i",
+"students": 5,
+"share": 0.8
+},
+"2455": {
+"course": "6th grade",
+"students": 11,
+"share": 0.82
+},
+"2499": {
+"course": "6th grade",
+"students": 22,
+"share": 0.82
+},
+"2509": {
+"course": "6th grade",
+"students": 26,
+"share": 0.85
+},
+"3579": {
+"course": "6th grade",
+"students": 22,
+"share": 0.86
+},
+"2205": {
+"course": "8th grade",
+"students": 7,
+"share": 1.0
+},
+"6177": {
+"course": "7th grade",
+"students": 9,
+"share": 0.89
+},
+"2468": {
+"course": "6th grade",
+"students": 30,
+"share": 0.83
+},
+"2387": {
+"course": "6th grade",
+"students": 8,
+"share": 0.88
+},
+"3578": {
+"course": "7th grade",
+"students": 5,
+"share": 0.8
+},
+"2442": {
+"course": "5th grade",
+"students": 11,
+"share": 1.0
+},
+"2444": {
+"course": "5th grade",
+"students": 17,
+"share": 0.88
+},
+"2317": {
+"course": "5th grade",
+"students": 9,
+"share": 1.0
+},
+"2325": {
+"course": "5th grade",
+"students": 6,
+"share": 1.0
+},
+"539": {
+"course": "5th grade",
+"students": 9,
+"share": 1.0
+},
+"2470": {
+"course": "5th grade",
+"students": 12,
+"share": 1.0
+},
+"3751": {
+"course": "5th grade",
+"students": 18,
+"share": 0.89
+},
+"2355": {
+"course": "5th grade",
+"students": 24,
+"share": 0.83
+},
+"567": {
+"course": "5th grade",
+"students": 23,
+"share": 0.83
+},
+"569": {
+"course": "5th grade",
+"students": 12,
+"share": 1.0
+},
+"570": {
+"course": "5th grade",
+"students": 11,
+"share": 0.91
+},
+"7743": {
+"course": "5th grade",
+"students": 8,
+"share": 0.88
+},
+"3537": {
+"course": "5th grade",
+"students": 15,
+"share": 1.0
+},
+"2388": {
+"course": "5th grade",
+"students": 23,
+"share": 0.96
+},
+"3937": {
+"course": "5th grade",
+"students": 9,
+"share": 1.0
+},
+"2407": {
+"course": "5th grade",
+"students": 16,
+"share": 0.94
+},
+"2281": {
+"course": "5th grade",
+"students": 15,
+"share": 1.0
+},
+"2412": {
+"course": "5th grade",
+"students": 18,
+"share": 0.94
+},
+"3960": {
+"course": "5th grade",
+"students": 8,
+"share": 1.0
+},
+"2467": {
+"course": "6th grade",
+"students": 29,
+"share": 0.86
+},
+"6759": {
+"course": "6th grade",
+"students": 7,
+"share": 1.0
+},
+"3755": {
+"course": "6th grade",
+"students": 15,
+"share": 0.87
+},
+"2484": {
+"course": "6th grade",
+"students": 34,
+"share": 0.97
+},
+"2432": {
+"course": "5th grade",
+"students": 21,
+"share": 0.86
+},
+"2433": {
+"course": "5th grade",
+"students": 15,
+"share": 0.87
+},
+"3750": {
+"course": "5th grade",
+"students": 20,
+"share": 0.95
+},
+"571": {
+"course": "5th grade",
+"students": 12,
+"share": 0.92
+},
+"2373": {
+"course": "5th grade",
+"students": 13,
+"share": 1.0
+},
+"2375": {
+"course": "5th grade",
+"students": 15,
+"share": 1.0
+},
+"77": {
+"course": "5th grade",
+"students": 13,
+"share": 1.0
+},
+"2389": {
+"course": "5th grade",
+"students": 13,
+"share": 0.85
+},
+"2395": {
+"course": "5th grade",
+"students": 13,
+"share": 1.0
+},
+"1297": {
+"course": "7th grade",
+"students": 13,
+"share": 0.85
+},
+"6187": {
+"course": "7th grade",
+"students": 9,
+"share": 1.0
+},
+"2480": {
+"course": "6th grade",
+"students": 21,
+"share": 0.9
+},
+"2482": {
+"course": "6th grade",
+"students": 32,
+"share": 0.84
+},
+"644": {
+"course": "6th grade",
+"students": 12,
+"share": 1.0
+},
+"6802": {
+"course": "6th grade",
+"students": 12,
+"share": 0.92
+},
+"6803": {
+"course": "6th grade",
+"students": 12,
+"share": 1.0
+},
+"2330": {
+"course": "6th grade",
+"students": 8,
+"share": 1.0
+},
+"2333": {
+"course": "6th grade",
+"students": 8,
+"share": 1.0
+},
+"2463": {
+"course": "6th grade",
+"students": 14,
+"share": 1.0
+},
+"3749": {
+"course": "6th grade",
+"students": 25,
+"share": 0.88
+},
+"3754": {
+"course": "6th grade",
+"students": 11,
+"share": 0.82
+},
+"556": {
+"course": "6th grade",
+"students": 13,
+"share": 1.0
+},
+"965": {
+"course": "6th grade",
+"students": 5,
+"share": 1.0
+},
+"2518": {
+"course": "6th grade",
+"students": 16,
+"share": 0.94
+},
+"6757": {
+"course": "6th grade",
+"students": 6,
+"share": 1.0
+},
+"2380": {
+"course": "5th grade",
+"students": 23,
+"share": 0.91
+},
+"2381": {
+"course": "5th grade",
+"students": 21,
+"share": 0.95
+},
+"2354": {
+"course": "5th grade",
+"students": 12,
+"share": 0.92
+},
+"843": {
+"course": "geometry",
+"students": 5,
+"share": 0.8
+},
+"232": {
+"course": "geometry",
+"students": 8,
+"share": 0.88
+},
+"502": {
+"course": "geometry",
+"students": 5,
+"share": 1.0
+},
+"2369": {
+"course": "5th grade",
+"students": 14,
+"share": 0.93
+},
+"2436": {
+"course": "5th grade",
+"students": 22,
+"share": 0.86
+},
+"2437": {
+"course": "5th grade",
+"students": 26,
+"share": 0.92
+},
+"326": {
+"course": "5th grade",
+"students": 20,
+"share": 0.85
+},
+"525": {
+"course": "5th grade",
+"students": 15,
+"share": 0.93
+},
+"528": {
+"course": "5th grade",
+"students": 19,
+"share": 1.0
+},
+"529": {
+"course": "5th grade",
+"students": 16,
+"share": 1.0
+},
+"530": {
+"course": "5th grade",
+"students": 21,
+"share": 1.0
+},
+"2329": {
+"course": "5th grade",
+"students": 16,
+"share": 0.81
+},
+"2335": {
+"course": "5th grade",
+"students": 14,
+"share": 1.0
+},
+"545": {
+"course": "5th grade",
+"students": 13,
+"share": 1.0
+},
+"2353": {
+"course": "5th grade",
+"students": 12,
+"share": 1.0
+},
+"2372": {
+"course": "5th grade",
+"students": 13,
+"share": 0.92
+},
+"2379": {
+"course": "5th grade",
+"students": 18,
+"share": 1.0
+},
+"2399": {
+"course": "5th grade",
+"students": 19,
+"share": 0.95
+},
+"6762": {
+"course": "6th grade",
+"students": 8,
+"share": 1.0
+},
+"2445": {
+"course": "6th grade",
+"students": 25,
+"share": 1.0
+},
+"6751": {
+"course": "6th grade",
+"students": 8,
+"share": 1.0
+},
+"2448": {
+"course": "6th grade",
+"students": 18,
+"share": 1.0
+},
+"2483": {
+"course": "6th grade",
+"students": 5,
+"share": 0.8
+},
+"2516": {
+"course": "6th grade",
+"students": 12,
+"share": 0.83
+},
+"491": {
+"course": "geometry",
+"students": 5,
+"share": 1.0
+},
+"34": {
+"course": "algebra i",
+"students": 6,
+"share": 0.83
+},
+"170": {
+"course": "algebra i",
+"students": 6,
+"share": 1.0
+},
+"704": {
+"course": "algebra i",
+"students": 5,
+"share": 0.8
+},
+"2438": {
+"course": "5th grade",
+"students": 11,
+"share": 0.82
+},
+"3762": {
+"course": "5th grade",
+"students": 12,
+"share": 0.92
+},
+"568": {
+"course": "5th grade",
+"students": 7,
+"share": 1.0
+},
+"572": {
+"course": "5th grade",
+"students": 13,
+"share": 1.0
+},
+"74": {
+"course": "5th grade",
+"students": 23,
+"share": 0.91
+},
+"80": {
+"course": "5th grade",
+"students": 9,
+"share": 1.0
+},
+"4698": {
+"course": "5th grade",
+"students": 17,
+"share": 0.94
+},
+"3746": {
+"course": "6th grade",
+"students": 12,
+"share": 1.0
+},
+"555": {
+"course": "6th grade",
+"students": 12,
+"share": 1.0
+},
+"559": {
+"course": "6th grade",
+"students": 12,
+"share": 1.0
+},
+"560": {
+"course": "6th grade",
+"students": 10,
+"share": 1.0
+},
+"3872": {
+"course": "5th grade",
+"students": 18,
+"share": 0.94
+},
+"2408": {
+"course": "5th grade",
+"students": 8,
+"share": 1.0
+},
+"2290": {
+"course": "5th grade",
+"students": 5,
+"share": 1.0
+},
+"2427": {
+"course": "5th grade",
+"students": 8,
+"share": 1.0
+},
+"3585": {
+"course": "5th grade",
+"students": 7,
+"share": 1.0
+},
+"548": {
+"course": "5th grade",
+"students": 20,
+"share": 0.85
+},
+"182": {
+"course": "5th grade",
+"students": 16,
+"share": 0.94
+},
+"2401": {
+"course": "5th grade",
+"students": 13,
+"share": 1.0
+},
+"6744": {
+"course": "6th grade",
+"students": 9,
+"share": 0.89
+},
+"2505": {
+"course": "6th grade",
+"students": 15,
+"share": 1.0
+},
+"6760": {
+"course": "6th grade",
+"students": 5,
+"share": 1.0
+},
+"2462": {
+"course": "6th grade",
+"students": 12,
+"share": 1.0
+},
+"6188": {
+"course": "6th grade",
+"students": 5,
+"share": 0.8
+},
+"2289": {
+"course": "5th grade",
+"students": 7,
+"share": 0.86
+},
+"2314": {
+"course": "5th grade",
+"students": 6,
+"share": 1.0
+},
+"2321": {
+"course": "5th grade",
+"students": 9,
+"share": 1.0
+},
+"2458": {
+"course": "5th grade",
+"students": 8,
+"share": 1.0
+},
+"2344": {
+"course": "5th grade",
+"students": 6,
+"share": 1.0
+},
+"2357": {
+"course": "5th grade",
+"students": 14,
+"share": 0.93
+},
+"3729": {
+"course": "algebra i",
+"students": 5,
+"share": 0.8
+},
+"3747": {
+"course": "algebra i",
+"students": 5,
+"share": 1.0
+},
+"3752": {
+"course": "algebra i",
+"students": 5,
+"share": 0.8
+},
+"2356": {
+"course": "5th grade",
+"students": 7,
+"share": 0.86
+},
+"2394": {
+"course": "5th grade",
+"students": 5,
+"share": 1.0
+},
+"2288": {
+"course": "5th grade",
+"students": 5,
+"share": 1.0
+},
+"2291": {
+"course": "5th grade",
+"students": 5,
+"share": 1.0
+},
+"383": {
+"course": "5th grade",
+"students": 7,
+"share": 1.0
+},
+"1352": {
+"course": "7th grade",
+"students": 7,
+"share": 0.86
+},
+"111": {
+"course": "5th grade",
+"students": 23,
+"share": 0.83
+},
+"2485": {
+"course": "5th grade",
+"students": 10,
+"share": 0.9
+},
+"2443": {
+"course": "6th grade",
+"students": 5,
+"share": 1.0
+},
+"2347": {
+"course": "5th grade",
+"students": 12,
+"share": 0.83
+},
+"520": {
+"course": "7th grade",
+"students": 7,
+"share": 1.0
+},
+"522": {
+"course": "7th grade",
+"students": 5,
+"share": 1.0
+},
+"356": {
+"course": "7th grade",
+"students": 5,
+"share": 0.8
+},
+"3079": {
+"course": "5th grade",
+"students": 5,
+"share": 1.0
+},
+"2318": {
+"course": "5th grade",
+"students": 8,
+"share": 1.0
+},
+"2326": {
+"course": "5th grade",
+"students": 7,
+"share": 1.0
+},
+"2316": {
+"course": "5th grade",
+"students": 6,
+"share": 1.0
+},
+"674": {
+"course": "sat math fundamentals",
+"students": 5,
+"share": 0.8
+},
+"336": {
+"course": "sat math fundamentals",
+"students": 5,
+"share": 0.8
+},
+"2323": {
+"course": "5th grade",
+"students": 8,
+"share": 1.0
+},
+"2398": {
+"course": "5th grade",
+"students": 6,
+"share": 1.0
+},
+"2447": {
+"course": "6th grade",
+"students": 13,
+"share": 1.0
+},
+"2450": {
+"course": "6th grade",
+"students": 12,
+"share": 1.0
+},
+"2479": {
+"course": "6th grade",
+"students": 25,
+"share": 0.96
+},
+"6739": {
+"course": "6th grade",
+"students": 9,
+"share": 1.0
+},
+"6740": {
+"course": "6th grade",
+"students": 14,
+"share": 1.0
+},
+"6758": {
+"course": "6th grade",
+"students": 6,
+"share": 1.0
+},
+"2478": {
+"course": "6th grade",
+"students": 16,
+"share": 0.88
+},
+"1603": {
+"course": "algebra i",
+"students": 5,
+"share": 0.8
+},
+"2378": {
+"course": "5th grade",
+"students": 5,
+"share": 1.0
+},
+"2383": {
+"course": "6th grade",
+"students": 13,
+"share": 0.92
+},
+"2384": {
+"course": "6th grade",
+"students": 13,
+"share": 0.92
+},
+"2385": {
+"course": "6th grade",
+"students": 12,
+"share": 0.92
+},
+"544": {
+"course": "5th grade",
+"students": 5,
+"share": 1.0
+},
+"565": {
+"course": "5th grade",
+"students": 5,
+"share": 1.0
+},
+"2286": {
+"course": "5th grade",
+"students": 5,
+"share": 1.0
+},
+"235": {
+"course": "5th grade",
+"students": 5,
+"share": 1.0
+},
+"3935": {
+"course": "5th grade",
+"students": 5,
+"share": 1.0
+},
+"3593": {
+"course": "6th grade",
+"students": 17,
+"share": 0.88
+},
+"2461": {
+"course": "6th grade",
+"students": 10,
+"share": 1.0
+},
+"709": {
+"course": "7th grade",
+"students": 6,
+"share": 0.83
+},
+"2434": {
+"course": "5th grade",
+"students": 5,
+"share": 1.0
+},
+"2406": {
+"course": "5th grade",
+"students": 6,
+"share": 1.0
+},
+"2284": {
+"course": "5th grade",
+"students": 5,
+"share": 1.0
+},
+"2285": {
+"course": "5th grade",
+"students": 6,
+"share": 1.0
+},
+"130": {
+"course": "7th grade",
+"students": 12,
+"share": 0.83
+},
+"558": {
+"course": "6th grade",
+"students": 12,
+"share": 0.83
+},
+"2386": {
+"course": "6th grade",
+"students": 8,
+"share": 1.0
+},
+"6755": {
+"course": "6th grade",
+"students": 5,
+"share": 1.0
+},
+"6756": {
+"course": "6th grade",
+"students": 5,
+"share": 1.0
+},
+"6742": {
+"course": "6th grade",
+"students": 7,
+"share": 1.0
+},
+"3979": {
+"course": "7th grade",
+"students": 7,
+"share": 0.86
+},
+"6216": {
+"course": "7th grade",
+"students": 7,
+"share": 1.0
+},
+"2374": {
+"course": "5th grade",
+"students": 5,
+"share": 1.0
+},
+"540": {
+"course": "5th grade",
+"students": 8,
+"share": 0.88
+}
+}
+}
