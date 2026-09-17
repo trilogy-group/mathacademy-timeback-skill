@@ -16,6 +16,9 @@
       "base": "https://api.alpha-1edtech.ai",
       "authHeader": "Authorization",
       "auth": "Bearer <token>; the reader brings its own Timeback credential. Mint the token with an OAuth 2.0 client-credentials POST (grant_type=client_credentials, client id + secret) to https://prod-beyond-timeback-api-2-idp.auth.us-east-1.amazoncognito.com/oauth2/token; tokens expire after expires_in seconds (one hour as served). This front holds no key and proxies no data.",
+      "keyKind": "a Timeback API client (OAuth 2.0 client id + secret on the Cognito pool above) with READ-ONLY scopes covering OneRoster rostering + gradebook reads and EduBridge analytics reads (the scopes named powerpath.readonly and analytics/v1p0/readOnly were sufficient for every call in ENABLEMENT.md). No write scope is needed and none should be granted.",
+      "keyContact": "one client per person or agent, never shared: request it from the Timeback platform team (owner of api.alpha-1edtech.ai; tracker trilogy-group/timeback-platform). This skill issues no keys.",
+      "denied": "a 401 on the token endpoint is a bad or expired client; a 403 or an empty result on a route that works for others is a scope or org limit of YOUR key, never an absence of data.",
       "selfDescribe": [
         "https://api.alpha-1edtech.ai/openapi.yaml",
         "https://api.alpha-1edtech.ai/edubridge/openapi.yaml"
@@ -41,14 +44,14 @@
     "DICTIONARY.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/DICTIONARY.md",
       "purpose": "DICTIONARY.md carries what the OpenAPI cannot: how each Math Academy field inside Timeback is born, what its values mean, the containers and their range, the invariants and their standing, and the numbered traps. Open it before trusting any field.",
-      "sha256": "7c05f85f8a795c8813278cf20f1f7ac5bcf615deaa52da188376dc0c6e809d18",
-      "gitVersion": "2f80e26"
+      "sha256": "28ab22ea7c63a766283dbd3942e1e167d7d9691e9e3e2e94f9ac2660fc26b4e6",
+      "gitVersion": "d22eb22"
     },
     "ENABLEMENT.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/ENABLEMENT.md",
       "purpose": "ENABLEMENT.md puts the source to work: eight capabilities, a question-to-call catalog, and eight worked examples with exact routes, output shapes and failure modes. Open it when you need to act.",
       "sha256": "74f214dde4a9f774dd1927a0520b41fffd5983af7d6e3d95e681d177ec796dbe",
-      "gitVersion": "2f80e26"
+      "gitVersion": "d22eb22"
     },
     "note": "sha256 + gitVersion pin the exact bytes served at each url on this deploy; the .md routes echo them as X-Doc-SHA256 / X-Doc-Version headers."
   },
