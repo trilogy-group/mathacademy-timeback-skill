@@ -49,7 +49,7 @@ async function storeMeta() {
     snapshotCalls: JSON.parse(r.Item.calls?.S || "{}"), readCalls: { maLookupOnMiss: num(r.Item.readMaLookup) || 0, maKnowledge: num(r.Item.readMaKnowledge) || 0 },
     counts: JSON.parse(r.Item.counts?.S || "{}"), byCourse: JSON.parse(r.Item.byCourse?.S || "{}") };
 }
-async function bumpRead(field) { try { await ddb.send(new UpdateItemCommand({ TableName: ST, Key: { pk: S("meta"), sk: S("snapshot") }, UpdateExpression: "ADD #f :one", ExpressionAttributeNames: { "#f": field }, ExpressionAttributeValues: { ":one": N(1) } })); } catch {} }
+async function bumpRead(field) { try { await ddb.send(new UpdateItemCommand({ TableName: ST, Key: { pk: S("meta"), sk: S("snapshot") }, UpdateExpression: "ADD #f :one", ExpressionAttributeNames: { "#f": field }, ExpressionAttributeValues: { ":one": N(1) } })); } catch (e) { console.log("bumpRead failed", field, e?.name, e?.message); } }
 const sm = new SecretsManagerClient({});
 let MA_KEY_CACHE = null;
 async function maKey() {
