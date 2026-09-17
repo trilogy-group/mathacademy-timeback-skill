@@ -1,7 +1,7 @@
 {
   "name": "mathacademy_timeback",
   "source": "mathacademy_timeback",
-  "version": "2026-09-16",
+  "version": "2026-09-17",
   "what": "mathacademy_timeback is the meaning layer for Math Academy data as it lives inside Timeback: every Math Academy task a student completes arrives as a Caliper event and is stored in Timeback's OneRoster (assessment results, line items, enrollments, classes, courses, users) and EduBridge analytics (event facts, daily rollups). Readers use a Timeback credential only; this skill never calls Math Academy. It answers, numbered to match ENABLEMENT § Capabilities: (1) a student's Math Academy task history with type, topic, XP, accuracy; (2) daily and weekly totals per student; (3) the student's current Math Academy course, completion percent and its age, and an estimated XP remaining with its basis named; (4) who has gone quiet in a class or course; (5) who has finished a course and whether they were moved on; (6) where a student is struggling, by topic; (7) whether a student's Timeback course looks wrong, as a heuristic suspect-course flag paired with the quiet check; (8) estate-wide Math Academy activity for a day or week without a student list.",
   "when": "Reach for mathacademy_timeback when the question is about Math Academy students and can be answered from what Timeback received: activity, progress percent, quiet students, finished students, failed reviews, and whether the Timeback course record is coherent. Route away to the Math Academy API for what Timeback never receives: the estimated SAT score, exact XP remaining, course grade and letter grade, engaged versus productive time, daily goals, the course catalogue, and accounts with no events. Route to timeback_production or timeback_analytics for the whole learning record across apps, MAP and mastery, screen-capture minutes and waste. The headline trap: the Timeback course an event is filed under is the ENROLLMENT's course, not the course Math Academy is actually running the student in; if the enrollment is wrong every event is filed under the wrong course and no field says so (DICTIONARY trap 10, ENABLEMENT example 7).",
   "why": {
@@ -41,16 +41,24 @@
     "DICTIONARY.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/DICTIONARY.md",
       "purpose": "DICTIONARY.md carries what the OpenAPI cannot: how each Math Academy field inside Timeback is born, what its values mean, the containers and their range, the invariants and their standing, and the numbered traps. Open it before trusting any field.",
-      "sha256": "91d19370f0d447eca8f637ff1991f06723b133ef0d2c2d5fc0ae761376fbdade",
-      "gitVersion": "d86c1d6"
+      "sha256": "7c05f85f8a795c8813278cf20f1f7ac5bcf615deaa52da188376dc0c6e809d18",
+      "gitVersion": "2f80e26"
     },
     "ENABLEMENT.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/ENABLEMENT.md",
       "purpose": "ENABLEMENT.md puts the source to work: eight capabilities, a question-to-call catalog, and eight worked examples with exact routes, output shapes and failure modes. Open it when you need to act.",
-      "sha256": "ffd455746d4da03d319d6a8dbf78ba7c0269a71c0b5cb378249da96081159642",
-      "gitVersion": "d86c1d6"
+      "sha256": "74f214dde4a9f774dd1927a0520b41fffd5983af7d6e3d95e681d177ec796dbe",
+      "gitVersion": "2f80e26"
     },
     "note": "sha256 + gitVersion pin the exact bytes served at each url on this deploy; the .md routes echo them as X-Doc-SHA256 / X-Doc-Version headers."
+  },
+  "pii": {
+    "subjects": "students, who are children",
+    "personBearingFields": ["user.email", "user.givenName", "user.familyName", "user.userProfiles[vendorId=math_academy].credentials[].username", "enrollment.user.name", "class students[].email"],
+    "readRule": "a reader may read and join on these inside its own session to answer the question it was asked",
+    "publishRule": "nothing that leaves the reader's session (report, dashboard, ticket, message) carries a child's name, email or login, or a row that identifies one child on its face; publish counts, classes, course ids, aggregates, or opaque user.sourcedId values the recipient is already entitled to resolve",
+    "documents": "every worked example in ENABLEMENT.md keys its output on user.sourcedId; DICTIONARY.md § Students are children states the rule and marks the fields",
+    "servedValues": "no served document or reference file of this skill contains any student value"
   },
   "feedback": {
     "covers": "This lane covers this skill's two documents, its front, and its reference files. A defect in Timeback's APIs or data belongs to the Timeback platform (trilogy-group/timeback-platform); a defect in Math Academy's own product belongs to Math Academy. This wire does not relay third-party claims to either.",
