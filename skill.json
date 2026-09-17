@@ -56,21 +56,21 @@
     "reference": {
       "courses": { "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/reference/timeback-math-academy-courses.json", "sha256": "392c3a1d60e4c93b4b982c52974f9596cb976332f230164541b0f63991ea6855", "purpose": "the domain of the course field: every OneRoster course titled Math Academy, with ids; a dated snapshot (readAt inside), regenerate with the call it names" },
       "courseXpSize": { "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/reference/course-xp-size.json", "sha256": "4c6325c86c71704c6b745591465b235e5a6dd803d45db6f29283eb4fa5032a14", "purpose": "the XP-remaining rule list; reads the course's totalXp live, carries no figure" },
-      "topicCourseMap": { "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/reference/topic-course-map.json", "sha256": "146a7dd36db63164b07c05240a20ca0b8b586a85bcb2b4198a2a4a27c6832a80", "purpose": "topic id -> majority filed course id, a dated heuristic snapshot for ENABLEMENT example 7; regenerate rather than trust" }
+      "topicCourseMap": { "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/reference/topic-course-map.json", "sha256": "ceee97fb31a0c105da28c97d751c81ee342fec7c11b75d5c21007080d3de6d46", "purpose": "topic id -> majority filed course id, a dated heuristic snapshot for ENABLEMENT example 7; regenerate rather than trust" }
     }
   },
   "documents": {
     "DICTIONARY.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/DICTIONARY.md",
       "purpose": "DICTIONARY.md carries what the OpenAPI cannot: how each Math Academy field inside Timeback is born, what its values mean, the containers and their range, the invariants and their standing, and the numbered traps. Open it before trusting any field.",
-      "sha256": "940e7b792742079de01176d5a4c89dc366fb969822ea6f112211d5a17ebea478",
-      "gitVersion": "b838158"
+      "sha256": "aa008eeed40324a81646cb66faa3ccd553f487013101506ca5718d1cf9016f8b",
+      "gitVersion": "2226370"
     },
     "ENABLEMENT.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/ENABLEMENT.md",
       "purpose": "ENABLEMENT.md puts the source to work: twelve capabilities, a question-to-call catalog, and twelve worked examples with exact routes, output shapes and failure modes. Open it when you need to act.",
-      "sha256": "8640c8a8fa14a8e3a6198a02be6a94634b52e4ff58fdf7ff3c5e5921e9db8668",
-      "gitVersion": "b838158"
+      "sha256": "01951c4648c7735820a8fa8612526f3f4fc285f8857f738c02cb0ce97cf2d92d",
+      "gitVersion": "2226370"
     },
     "note": "sha256 + gitVersion pin the exact bytes served at each url on this deploy; the .md routes echo them as X-Doc-SHA256 / X-Doc-Version headers."
   },
