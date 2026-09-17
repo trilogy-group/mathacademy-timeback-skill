@@ -34,7 +34,7 @@
       }
     },
     "store": {
-      "what": "this skill's own store of Math Academy's student records (Math Academy public API beta10), matched to Timeback students. Refreshed nightly at 03:00 America/Chicago (bulk list, four pages, plus one lookup per new student); at 03:45 the previous local day's per-task activity analysis (engaged / productive time) is pulled for every student who had a Math Academy result that day; every night's course figures are appended to a per-student history; the knowledge map is fetched live once on request and cached for seven days; a student missing from the store is looked up live once when first asked for. Every response carries snapshotAt and stale.",
+      "what": "this skill's own store of Math Academy's student records (Math Academy public API beta10), matched to Timeback students. Refreshed nightly at 03:00 America/Chicago (bulk list, four pages, plus one lookup per new student); at 03:45 the per-task activity analysis (engaged / productive time) is pulled for every student who had a Math Academy result on each local day from the day before the last pulled day through yesterday (a missed night is caught up; the overlap day is re-pulled and overwrites by task id, never duplicates); every night's course figures are appended to a per-student history; the knowledge map is fetched live once on request and cached for seven days; a student missing from the store is looked up live once when first asked for. Every response carries snapshotAt and stale.",
       "history": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/student/{user.sourcedId}/history  (one row per DATE since the store began on 2026-09-17; course changes and, where Math Academy set it before the move, the old course's completion date; carries snapshotAt, stale, storeBegan)",
       "activity": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/student/{user.sourcedId}/activity?from=YYYY-MM-DD&to=YYYY-MM-DD  (America/Chicago days; Math Academy's per-task timeElapsedMs / timeEngagedMs / timeProductiveMs, type, xp (nominal) and xpAwarded (= Timeback metadata.xp), course, topic, taskId; day totals in milliseconds with windowUtc; carries snapshotAt, stale, storeBegan, activityLastDate, reasonIfEmpty; Timeback's own activeSeconds is the ENGAGED clock)",
       "knowledge": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/student/{user.sourcedId}/knowledge[?courseId=&refresh=1]  (one live Math Academy call on first ask, cached 7 days per courseId; response knowledge.courses[] has prerequisites FIRST and the requested course last, use knowledge.requestedCourse; stability 0 = no current evidence, untaught OR just failed; never loop it over a roster)",
@@ -63,14 +63,14 @@
     "DICTIONARY.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/DICTIONARY.md",
       "purpose": "DICTIONARY.md carries what the OpenAPI cannot: how each Math Academy field inside Timeback is born, what its values mean, the containers and their range, the invariants and their standing, and the numbered traps. Open it before trusting any field.",
-      "sha256": "aa008eeed40324a81646cb66faa3ccd553f487013101506ca5718d1cf9016f8b",
-      "gitVersion": "2226370"
+      "sha256": "f98d854e9cb9a12fb2fdb262a76f5864a9156618975eed3311f3e54a18396a0a",
+      "gitVersion": "203a49f"
     },
     "ENABLEMENT.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/ENABLEMENT.md",
       "purpose": "ENABLEMENT.md puts the source to work: twelve capabilities, a question-to-call catalog, and twelve worked examples with exact routes, output shapes and failure modes. Open it when you need to act.",
-      "sha256": "01951c4648c7735820a8fa8612526f3f4fc285f8857f738c02cb0ce97cf2d92d",
-      "gitVersion": "2226370"
+      "sha256": "6b29179a056ddcbf55112bb004f031e1d0b5c114442471459585d729a906fa44",
+      "gitVersion": "203a49f"
     },
     "note": "sha256 + gitVersion pin the exact bytes served at each url on this deploy; the .md routes echo them as X-Doc-SHA256 / X-Doc-Version headers."
   },
