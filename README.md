@@ -21,15 +21,26 @@ credential against Timeback's own APIs; nothing here calls Math Academy.
 | `BUILD-LOG.md` | dated probes behind every claim |
 | `deploy.json` | base origin and feedback repo (placeholders until chosen) |
 
-## Publish
+## Where it is live (since 2026-09-16)
 
-1. Pick the origin and the feedback repo; put them in `deploy.json` and `feedback/wrangler.toml` (`REPO`).
-2. Create the two labels `skill-feedback` and `mathacademy_timeback` on that repo; mint a fine-grained token with issues read/write on it.
-3. `py -3 scripts/build_public.py` (renders `skill.json`, assembles `public/`).
-4. `npx wrangler secret put GITHUB_TOKEN --config feedback/wrangler.toml`, then `npx wrangler deploy --config feedback/wrangler.toml`.
-5. `py -3 scripts/verify_predicates.py https://<base>` — all four must pass.
-6. `POST https://data-source-skills.vercel.app/dss/register` with `{name: "mathacademy_timeback", front: "<base>", owner: "<repo>", reporter: "<who>"}`; read the intake ticket at `GET https://data-source-skills.vercel.app/feedback/{number}`.
-7. Re-run step 3 and redeploy whenever a document changes or the contract moves (the estate notifies the feedback wire).
+| | |
+|---|---|
+| Front | `https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/skill` |
+| Documents | `…/DICTIONARY.md`, `…/ENABLEMENT.md`, `…/reference/*.json` on the same origin |
+| Feedback wire | `POST …/feedback` (open, caps 200/10000) → 201; `GET …/feedback[?state=]`, `GET …/feedback/{n}` |
+| Tracker | DynamoDB table `mathacademy-timeback-skill-feedback` (us-east-1), the skill's own; mirrored daily into this repo's issues by `.github/workflows/mirror-feedback.yml` using the repo's built-in token; closures on GitHub copied back |
+| Hosting | AWS account 182821611732, Lambda `mathacademy-timeback-skill` (nodejs20.x, 256 MB), role `team-dev-mathacademy-skill-lambda` (PowerUserAccess boundary; logs + the one table, no secrets) |
+| Registration | `POST /dss/register` filed 2026-09-16 → estate intake ticket 1713, readable at `https://data-source-skills.vercel.app/feedback/1713` |
+
+## Publish / redeploy (AWS path, the one in use)
+
+1. Edit documents or template. `deploy.json` holds the base URL and repo.
+2. `py -3 lambda/deploy.py deploy` — renders `skill.json` (fresh contract sha, doc shas, git version), assembles `public/`, zips handler + public, updates the function. The admin key the mirror job uses is read from `_scratch/_admin_key.txt` (random, generated at first deploy; the same value is the repo's `ADMIN_KEY` Actions secret).
+3. `py -3 scripts/verify_predicates.py https://<base>` — all four must pass.
+4. Commit and push so the served `gitVersion` matches a commit.
+5. First-time only: `py -3 lambda/deploy.py --create-roles` before step 2, and `POST https://data-source-skills.vercel.app/dss/register` after step 3.
+
+The Cloudflare Worker variant (`feedback/worker.js`, `feedback/wrangler.toml`) is kept as an alternative host and is not deployed.
 
 ## Rules this build follows
 

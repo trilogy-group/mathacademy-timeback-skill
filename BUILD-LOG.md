@@ -18,8 +18,17 @@ Dated probes behind the dictionary and enablement. Shapes and structure only; no
 - **Not in Timeback (confirmed absent from every container listed):** Math Academy student id, Math Academy course id, estimated SAT score, xpRemaining, letterGrade, engaged/productive split, schedule/goals from Math Academy, league.
 - **Platform engineering note read** (internal): Math Academy events processed by the shared core-course handler; progression fires only at `pctCompleteApp === 100` on an allow-list of course ids; TimeSpentEvents skipped; onboarding call returns `maStudentId` and stores login credentials on `userProfiles`; grade 6/7 courses cut over 2026-08-12/13 with the old Prealgebra id kept as an alias.
 
-## Open at end of build day
+## 2026-09-16 evening — deploy and register (owner: "keep going", no questions)
 
-- Hosting origin and feedback repo not yet chosen (deploy.json placeholders).
-- Not yet registered; `scripts/verify_predicates.py` to be run against the deployed base first.
+- **Repo:** `trilogy-group/mathacademy-timeback-skill` created (public; documents carry no PII, code carries no secrets), labels `skill-feedback` + `mathacademy_timeback`.
+- **AWS (profile ruchibaid, us-east-1):** role `team-dev-mathacademy-skill-lambda` with the PowerUserAccess boundary; Lambda `mathacademy-timeback-skill` (nodejs20.x, 256 MB, 30 s) with a public function URL; DynamoDB table `mathacademy-timeback-skill-feedback` (on-demand). The role reads no secret: the existing fine-grained GitHub token in `sat-cohort-tracker/ci` answered 403 on the new repo, so the skill keeps its own tracker (the table) and a daily Actions job mirrors tickets to GitHub issues with the repository's built-in token. The role's temporary `GetSecretValue` grant was removed the same evening.
+- **Front URL:** `https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws` (a friendly name would need CloudFront + a hosted zone we do not hold; deferred).
+- **Predicates:** all four pass via `scripts/verify_predicates.py` (front shape; both documents at their pointers with matching pinned shas and `X-Doc-SHA256` headers; `why.sha256` = live contract `a3c77832…`, version `c5ee63b`; `GET /feedback` plain array; report route open; caps 200/10000).
+- **Wire test:** `POST /feedback` → 201 ticket 1 (self-test, to be closed after the mirror runs); `GET /feedback/1` shows it; admin route refuses without the key and accepts with it; `?state=nope` → 400.
+- **Registered:** `POST /dss/register` → 201, estate intake ticket 1713 (`GET https://data-source-skills.vercel.app/feedback/1713`).
+
+## Open
+
 - Eval file (`evals/mathacademy_timeback.md`) not written; the eight VERIFIED RUN blocks are the seed.
+- Tier (b) keyed eval not requested (would need a read-only Timeback credential sealed to the registry key; owner decision).
+- Friendly hostname (CloudFront + Route 53) deferred.
