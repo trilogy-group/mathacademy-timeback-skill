@@ -59,6 +59,11 @@ for u in snap["tb_unmatched"]:
 for m in snap["ma_unmatched"]:
     items.append({"PutRequest": {"Item": {"pk": S("ma_unmatched"), "sk": S(m.get("id")), "ma": S(json.dumps(m, ensure_ascii=False)), "snapshotAt": S(at)}}})
 batch(items)
-ddb.put_item(TableName=TABLE, Item={"pk": S("meta"), "sk": S("snapshot"), "snapshotAt": S(at), "apiVersion": S(snap["apiVersion"]),
-                                    "calls": S(json.dumps(snap["calls"])), "counts": S(json.dumps(snap["counts"]))})
+prev = ddb.get_item(TableName=TABLE, Key={"pk": S("meta"), "sk": S("snapshot")}).get("Item")
+history = json.loads(prev["history"]["S"]) if prev and "history" in prev else []
+if prev and prev.get("snapshotAt", {}).get("S") and prev["snapshotAt"]["S"] not in history: history.append(prev["snapshotAt"]["S"])
+if at not in history: history.append(at)
+ddb.put_item(TableName=TABLE, Item={"pk": S("meta"), "sk": S("snapshot"), "snapshotAt": S(at), "rosterReadAt": S(snap.get("rosterReadAt") or at), "apiVersion": S(snap["apiVersion"]),
+                                    "calls": S(json.dumps(snap["calls"])), "counts": S(json.dumps(snap["counts"])), "byCourse": S(json.dumps(snap.get("byCourse") or {})),
+                                    "history": S(json.dumps(history)), "staleAfterDays": {"N": "7"}})
 print(f"loaded: {len(snap['students'])} students, {len(snap['tb_unmatched'])} tb_unmatched, {len(snap['ma_unmatched'])} ma_unmatched; snapshotAt {at}")

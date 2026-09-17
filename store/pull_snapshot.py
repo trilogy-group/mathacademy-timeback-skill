@@ -190,18 +190,13 @@ counts = {"maBulk": len(bulk), "timebackRoster": len(roster), "timebackTestUsers
           "courseAgreement": {}}
 for u in tb_unmatched: counts["tbUnmatchedByReason"][u["reason"]] = counts["tbUnmatchedByReason"].get(u["reason"], 0) + 1
 
-def norm(s):
-    n = (s or "").lower().strip(); n = re.sub(r"^math academy\s*-\s*", "", n); n = re.sub(r"\s+class$", "", n); n = re.sub(r"\s+math$", "", n)
-    return re.sub(r"^(\d+)(st|nd|rd|th)\s+grade$", r"\1th grade", n)
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from agreement import agreement, summarise
 for s_ in students:
-    ma_course = (s_["mathAcademy"].get("currentCourse") or {}).get("name")
-    if not ma_course: k = "ma has no current course"
-    elif any(norm(seat["courseName"]) == norm(ma_course) for seat in s_["seats"]): k = "agree"
-    else: k = "disagree"
-    s_["courseAgreementAtSnapshot"] = k
-    counts["courseAgreement"][k] = counts["courseAgreement"].get(k, 0) + 1
+    s_["courseAgreementAtSnapshot"] = agreement(s_["mathAcademy"], [seat["courseName"] for seat in s_["seats"]])
+counts["courseAgreement"], by_course = summarise(students, tb_unmatched)
 
-snap = {"snapshotAt": NOW.isoformat(timespec="seconds"), "apiVersion": "beta10", "calls": calls, "counts": counts,
+snap = {"snapshotAt": NOW.isoformat(timespec="seconds"), "rosterReadAt": NOW.isoformat(timespec="seconds"), "apiVersion": "beta10", "calls": calls, "counts": counts, "byCourse": by_course,
         "students": students, "tb_unmatched": tb_unmatched, "ma_unmatched": ma_unmatched}
 OUT.write_text(json.dumps(snap, indent=0, ensure_ascii=False), encoding="utf-8")
 log(f"calls: {json.dumps(calls)}")

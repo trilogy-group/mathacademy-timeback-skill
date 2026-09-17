@@ -34,8 +34,18 @@ async function tbGet(path, token) {
 async function storeMeta() {
   let r; try { r = await ddb.send(new GetItemCommand({ TableName: ST, Key: { pk: S("meta"), sk: S("snapshot") } })); } catch { return null; }
   if (!r.Item) return null;
-  return { snapshotAt: r.Item.snapshotAt?.S, apiVersion: r.Item.apiVersion?.S, calls: JSON.parse(r.Item.calls?.S || "{}"), counts: JSON.parse(r.Item.counts?.S || "{}") };
+  const snapshotAt = r.Item.snapshotAt?.S; const staleAfterDays = Number(r.Item.staleAfterDays?.N || 7);
+  const ageHours = snapshotAt ? Math.round((Date.now() - Date.parse(snapshotAt)) / 36e5) : null;
+  return { snapshotAt, rosterReadAt: r.Item.rosterReadAt?.S || snapshotAt, snapshotAgeHours: ageHours, staleAfterDays, stale: ageHours !== null && ageHours > staleAfterDays * 24,
+    apiVersion: r.Item.apiVersion?.S, history: JSON.parse(r.Item.history?.S || "[]"), calls: JSON.parse(r.Item.calls?.S || "{}"), counts: JSON.parse(r.Item.counts?.S || "{}"), byCourse: JSON.parse(r.Item.byCourse?.S || "{}") };
 }
+const maState = cc => !cc ? null : cc.completed ? "completed" : ((cc.progress || 0) === 0 && (cc.xpRemaining || 0) === 0) ? "not started" : "in progress";
+const STATUS_NOTES = {
+  refresh: "none scheduled; one-off snapshot. Ask for a refresh on the feedback wire (POST /feedback). history lists every snapshotAt ever loaded.",
+  staleness: "stale is true once snapshotAgeHours exceeds staleAfterDays*24; past that, quote mathAcademy figures only with their date and prefer Timeback's live containers (ENABLEMENT ex. 3) for progress.",
+  calls: "what the snapshot cost: timeback GETs, Math Academy bulk pages, Math Academy per-student lookups.",
+  counts: "counts.courseAgreement uses the same vocabulary as the rows (agree | disagree | disagree, math academy course completed | no math academy record); byCourse breaks the roster down by Timeback course sourcedId with test users counted separately; no student values anywhere here.",
+};
 async function storeStudent(event, q, sidFromPath) {
   const token = event.headers?.authorization || event.headers?.Authorization || "";
   if (!/^Bearer\s+\S+/i.test(token)) return resp(401, { error: "send the reader's Timeback token as Authorization: Bearer <token>; this route serves a student only after Timeback answers 200 for that student under that token" });
@@ -57,17 +67,21 @@ async function storeStudent(event, q, sidFromPath) {
   const today = new Date().toISOString().slice(0, 10);
   const seats = (enr.body?.enrollments || []).filter(e => /^math academy/i.test(e.course?.name || "") && (!e.beginDate || e.beginDate.slice(0, 10) <= today) && (!e.endDate || e.endDate.slice(0, 10) >= today))
     .map(e => ({ enrollmentSourcedId: e.sourcedId, courseSourcedId: e.course?.sourcedId, courseName: e.course?.name, classSourcedId: e.class?.sourcedId, beginDate: e.beginDate, endDate: e.endDate, pctCompleteApp: e.metadata?.pctCompleteApp ?? null }));
-  const base = { sourcedId: sid, snapshotAt: meta?.snapshotAt || null, apiVersion: meta?.apiVersion || null, timeback: { currentMathAcademySeats: seats, readAt: new Date().toISOString(), enrollmentsStatus: enr.status } };
+  const base = { sourcedId: sid, snapshotAt: meta.snapshotAt, rosterReadAt: meta.rosterReadAt, snapshotAgeHours: meta.snapshotAgeHours, staleAfterDays: meta.staleAfterDays, stale: meta.stale, apiVersion: meta.apiVersion, timeback: { currentMathAcademySeats: seats, readAt: new Date().toISOString(), enrollmentsStatus: enr.status } };
   if (!row.Item) {
     const un = await ddb.send(new GetItemCommand({ TableName: ST, Key: { pk: S("tb_unmatched"), sk: S(sid) } }));
-    if (un.Item) return resp(200, { ...base, inSnapshot: false, matchedBy: null, unmatchedReason: un.Item.reason?.S, mathAcademy: null, courseAgreement: "no math academy record", note: "on the Timeback roster at snapshot time but no Math Academy record matched (HTTP 404 = no account under this organisation's key; HTTP 401 = account under another organisation's key; 'no email' = nothing to look up by)" });
+    if (un.Item) return resp(200, { ...base, inSnapshot: false, matchedBy: null, isTestUser: un.Item.isTestUser?.BOOL ?? null, seatsAtSnapshot: JSON.parse(un.Item.seats?.S || "[]"), unmatchedReason: un.Item.reason?.S, mathAcademy: null, mathAcademyState: null, courseAgreement: "no math academy record", note: "on the Timeback roster at snapshot time but no Math Academy record matched (HTTP 404 = no account under this organisation's key; HTTP 401 = account under another organisation's key; 'no email' = nothing to look up by)" });
     return resp(200, { ...base, inSnapshot: false, matchedBy: null, mathAcademy: null, courseAgreement: "not in snapshot", note: "not on the Timeback Math Academy roster at snapshot time and not looked up since; the snapshot is one-off (no refresh scheduled) and this route makes no Math Academy call" });
   }
   const ma = JSON.parse(row.Item.ma.S);
   const maCourse = ma.currentCourse?.name || null;
   const agreement = !maCourse ? "math academy has no current course" : seats.length === 0 ? "no current timeback seat" : seats.some(s => normCourse(s.courseName) === normCourse(maCourse)) ? "agree" : (ma.currentCourse?.completed ? "disagree, math academy course completed" : "disagree");
-  return resp(200, { ...base, inSnapshot: true, matchedBy: row.Item.matchedBy?.S, isTestUser: row.Item.isTestUser?.BOOL ?? null, mathAcademy: ma, courseAgreement: agreement, courseAgreementAtSnapshot: row.Item.courseAgreementAtSnapshot?.S || null,
-    seatsAtSnapshot: JSON.parse(row.Item.seats?.S || "[]"), note: "mathAcademy is Math Academy's own record as of snapshotAt (copied); timeback.currentMathAcademySeats is read live now with your token; courseAgreement compares the two by normalised course title" });
+  const matchedBy = row.Item.matchedBy?.S;
+  return resp(200, { ...base, inSnapshot: true, matchedBy, matchConfidence: matchedBy === "name" ? "low" : "high",
+    figuresAsOf: matchedBy === "lookup" ? meta.snapshotAt : `bulk list: up to one day before ${meta.snapshotAt}`,
+    isTestUser: row.Item.isTestUser?.BOOL ?? null, mathAcademy: ma, mathAcademyState: maState(ma.currentCourse), courseAgreement: agreement, courseAgreementAtSnapshot: row.Item.courseAgreementAtSnapshot?.S || null,
+    seatsAtSnapshot: JSON.parse(row.Item.seats?.S || "[]"),
+    note: "mathAcademy is Math Academy's own record (copied) as of figuresAsOf; timeback.currentMathAcademySeats is read live now with your token; courseAgreement compares Math Academy's course name with EVERY current seat by normalised title and says agree if any seat matches; courseAgreementAtSnapshot is the same rule against seatsAtSnapshot. mathAcademyState 'not started' = progress 0 and xpRemaining 0 with no completion: the course is assigned and no task has been done, so neither figure is a measurement." });
 }
 
 const resp = (status, body, headers = {}) => ({
@@ -119,7 +133,15 @@ export const handler = async (event) => {
   }
   if (p === "/store" && method === "GET") {
     const meta = await storeMeta();
-    return meta ? resp(200, { ...meta, routes: ["GET /store/student/{sourcedId}", "GET /store/student?email="], gate: "Authorization: Bearer <reader's Timeback token>", refresh: "none scheduled; one-off snapshot" }) : resp(404, { error: "no snapshot loaded" });
+    return meta ? resp(200, { ...meta, routes: ["GET /store/student/{sourcedId}", "GET /store/student?email=", "GET /store/course/{courseSourcedId}"], gate: "student routes: Authorization: Bearer <reader's Timeback token>; status and course routes: none (counts only)", notes: STATUS_NOTES }) : resp(404, { error: "no snapshot loaded" });
+  }
+  const crs = p.match(/^\/store\/course\/([^/]+)$/);
+  if (crs && method === "GET") {
+    const meta = await storeMeta(); if (!meta) return resp(404, { error: "no snapshot loaded" });
+    const c = meta.byCourse[decodeURIComponent(crs[1])];
+    if (!c) return resp(404, { error: "no roster student sat in that Timeback course at snapshot time (or unknown course id)", snapshotAt: meta.snapshotAt, knownCourses: Object.keys(meta.byCourse).length });
+    return resp(200, { courseSourcedId: decodeURIComponent(crs[1]), ...c, snapshotAt: meta.snapshotAt, rosterReadAt: meta.rosterReadAt, snapshotAgeHours: meta.snapshotAgeHours, stale: meta.stale,
+      note: "counts of roster students (current in-window seats in this course at rosterReadAt) by courseAgreementAtSnapshot; testUsers counted inside students; maNotStarted = Math Academy shows progress 0 and xpRemaining 0 (course assigned, no task done yet). No student values; for rows use /store/student/{sourcedId} with your token, about one second each." });
   }
   const stu = p.match(/^\/store\/student(?:\/([^/]+))?$/);
   if (stu && method === "GET") return storeStudent(event, q, stu[1] ? decodeURIComponent(stu[1]) : null);
