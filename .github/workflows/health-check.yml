@@ -1,0 +1,55 @@
+name: store health check
+# Reads the store's public status route after the nightly window and opens (or updates) a GitHub issue when it is unhealthy:
+# a missed snapshot, a stale store, activity not caught up, or errors in the last activity run. GitHub emails the repo's
+# watchers about issues, so this is the owner's alert channel. No secrets, no student data: /store serves counts only.
+on:
+  schedule:
+    - cron: "40 10 * * *"      # daily 10:40 UTC = 05:40 CDT / 04:40 CST, after the 03:00 and 03:45 Central runs
+  workflow_dispatch:
+    inputs:
+      force_issue:
+        description: "open a test issue even when healthy"
+        default: "false"
+permissions:
+  issues: write
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: check
+        env:
+          BASE: https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          FORCE: ${{ github.event.inputs.force_issue }}
+        run: |
+          set -e
+          curl -sS "$BASE/store" > store.json
+          python3 - <<'PY'
+          import json, os, subprocess
+          d = json.load(open("store.json")); h = d.get("health") or {}
+          problems = list(h.get("problems") or [])
+          if not h: problems.append("the status route carries no health block (old front?)")
+          force = os.environ.get("FORCE") == "true"
+          title = f"Store health: {'TEST' if force and not problems else 'unhealthy'} {d.get('snapshotAt','')[:10]}"
+          body = "\n".join([
+              f"Status route: {os.environ['BASE']}/store", "",
+              f"- snapshotAt: {d.get('snapshotAt')}  (age {d.get('snapshotAgeHours')} h, stale={d.get('stale')})",
+              f"- activityLastDate: {d.get('activityLastDate')}",
+              f"- lastActivityRun: {json.dumps(d.get('lastActivityRun'))}",
+              f"- schedule: {json.dumps(d.get('schedule'))}",
+              f"- last loads: {json.dumps((d.get('history') or [])[-3:])}", "",
+              "Problems:", *[f"- {p}" for p in (problems or ['none (test issue)'])], "",
+              "What to do: `py -3 lambda/nightly/deploy.py check`, then CloudWatch logs /aws/lambda/mathacademy-timeback-nightly; a manual catch-up is `py -3 lambda/nightly/deploy.py invoke snapshot` and `... invoke activity`.",
+          ])
+          if not problems and not force:
+              print("healthy:", json.dumps(h)); raise SystemExit(0)
+          repo = os.environ["REPO"]
+          existing = subprocess.run(["gh", "issue", "list", "--repo", repo, "--label", "store-health", "--state", "open", "--json", "number", "--jq", ".[0].number"], capture_output=True, text=True).stdout.strip()
+          subprocess.run(["gh", "label", "create", "store-health", "--repo", repo, "--color", "B60205", "--description", "nightly store health check", "--force"], check=False)
+          if existing:
+              subprocess.run(["gh", "issue", "comment", existing, "--repo", repo, "--body", body], check=True); print("commented on issue", existing)
+          else:
+              subprocess.run(["gh", "issue", "create", "--repo", repo, "--title", title, "--label", "store-health", "--body", body], check=True); print("opened issue")
+          PY

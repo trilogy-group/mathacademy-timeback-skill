@@ -244,6 +244,19 @@ export const handler = async (event) => {
   }
   if (p === "/store" && method === "GET") {
     const meta = await storeMeta();
+    if (meta) {
+      const problems = [];
+      const nowChi = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Chicago" }));
+      const yday = new Date(nowChi); yday.setDate(yday.getDate() - 1); const ydayStr = yday.toISOString().slice(0, 10);
+      const afterWindow = nowChi.getHours() >= 5;   // the 03:00 / 03:45 Central runs are done by 05:00
+      if (meta.stale) problems.push(`stale: snapshot is ${meta.snapshotAgeHours} h old (limit ${meta.staleAfterDays * 24} h)`);
+      if (afterWindow && meta.snapshotAgeHours > 30) problems.push("no snapshot since the last 03:00 Central window");
+      if (afterWindow && meta.activityLastDate && meta.activityLastDate < ydayStr) problems.push(`activity not caught up: newest pulled day ${meta.activityLastDate}, expected ${ydayStr}`);
+      if (meta.lastActivityRun && (meta.lastActivityRun.errors || 0) > 0) problems.push(`last activity run had ${meta.lastActivityRun.errors} student errors`);
+      if (meta.lastActivityRun && meta.lastActivityRun.noMaId > 0) problems.push(`${meta.lastActivityRun.noMaId} active students still without a Math Academy id after lookup`);
+      if (!meta.schedule.firstScheduledRunHasHappened && nowChi >= new Date("2026-09-18T06:00:00")) problems.push("the scheduled 03:00 run has never fired");
+      meta.health = { ok: problems.length === 0, checkedAt: new Date().toISOString(), problems, note: "computed from the fields on this response; the repo's daily health-check workflow opens a GitHub issue when ok is false" };
+    }
     return meta ? resp(200, { ...meta, routes: ["GET /store/student/{sourcedId}[?minimal=1]", "GET /store/student?email=", "GET /store/student/{sourcedId}/history", "GET /store/student/{sourcedId}/activity?from=&to=", "GET /store/student/{sourcedId}/knowledge[?courseId=&refresh=1]", "GET /store/course/{courseSourcedId}", "GET /store/course/{courseSourcedId}/students[?agreement=]  (token; ids + Math Academy course figures, no names)", "GET /store/course/{courseSourcedId}/activity?date=YYYY-MM-DD  (token; per-student day totals)", "GET /store/courses  (Math Academy course id -> name)"], gate: "student routes and the course student list: Authorization: Bearer <reader's Timeback token>; status and course-count routes: none (counts only)", mathAcademyCallsAtReadTime: "a per-student read makes NO Math Academy call unless the student is missing (then one live lookup, once per 24 h); the knowledge route makes one live call per courseId per 7 days; nothing else reaches Math Academy at read time", notes: STATUS_NOTES }) : resp(404, { error: "no snapshot loaded" });
   }
   const crsList = p.match(/^\/store\/course\/([^/]+)\/students$/);
