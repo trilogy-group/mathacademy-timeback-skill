@@ -3,15 +3,18 @@
 The meaning layer for Math Academy data inside Timeback, built to the dss estate's contract
 (https://data-source-skills.vercel.app/contract). Timeback-only: readers use their Timeback
 credential against Timeback's own APIs; readers never call Math Academy. Since 2026-09-17 the skill also
-holds a one-off, dated snapshot of Math Academy's own student records (store/), served behind the reader's
-Timeback token; nothing refreshes it yet.
+holds a store of Math Academy's own student records (store/), refreshed nightly by a scheduled Lambda
+(snapshot 03:00, activity 03:45 America/Chicago), served behind the reader's Timeback token; the knowledge
+map is fetched live on first request and cached.
 
 ## What is in this folder
 
 | Path | What |
 |---|---|
 | `DICTIONARY.md` | the product lens: containers, field genesis, invariants, 26 numbered traps, open questions |
-| `ENABLEMENT.md` | 10 capabilities, question→call catalog, 10 worked examples with output shapes |
+| `ENABLEMENT.md` | 12 capabilities, question→call catalog, 12 worked examples with output shapes |
+| `store/snapshot_lib.py`, `store/agreement.py` | the store library: bulk pull, roster, match chain (known id → username → email → lookup → name), agreement rule, DynamoDB layout, activity pull |
+| `lambda/nightly/handler.py`, `lambda/nightly/deploy.py` | the nightly Lambda (python3.12, 900 s; modes `snapshot` and `activity`, resumable) and its roles + EventBridge schedules |
 | `store/pull_snapshot.py` | one snapshot: Math Academy bulk list (4 pages) + per-student lookups, matched to the Timeback roster (username → email → lookup → name); writes `_scratch/_snapshot_<date>.json` (PII, never committed) |
 | `store/load_snapshot.py` | loads a snapshot into DynamoDB `mathacademy-timeback-skill-store` (replacing the previous one) and grants the Lambda role read access |
 | `skill.template.json` → `skill.json` | the five-clause front (`what / when / why / how / feedback`), rendered by `scripts/build_front.py` |
@@ -31,10 +34,11 @@ Timeback token; nothing refreshes it yet.
 |---|---|
 | Front | `https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/skill` |
 | Documents | `…/DICTIONARY.md`, `…/ENABLEMENT.md`, `…/reference/*.json` on the same origin |
-| Store | `GET …/store` (status, counts); `GET …/store/student/{sourcedId}` or `?email=` with `Authorization: Bearer <reader's Timeback token>`; the Lambda replays the token against Timeback and serves only students it answers 200 for; no Math Academy call at read time |
+| Store | `GET …/store` (status, counts, byCourse, history); `GET …/store/course/{id}`; `GET …/store/student/{sourcedId}` (or `?email=`) + `/history`, `/activity?from&to`, `/knowledge` with `Authorization: Bearer <reader's Timeback token>`; the Lambda replays the token against Timeback and serves only students it answers 200 for; Math Academy is called only for the knowledge map (cached 7 d) and a live lookup on a store miss |
+| Nightly | Lambda `mathacademy-timeback-nightly` (role `team-dev-mathacademy-skill-nightly`: logs, `sat-cohort-tracker/ci` secret read, store table, self re-invoke), schedules `mathacademy-timeback-snapshot-nightly` 03:00 and `mathacademy-timeback-activity-nightly` 03:45 America/Chicago via role `team-dev-mathacademy-skill-scheduler`; `py -3 lambda/nightly/deploy.py check|invoke snapshot|invoke activity <day>|disable|enable` |
 | Feedback wire | `POST …/feedback` (open, caps 200/10000) → 201; `GET …/feedback[?state=]`, `GET …/feedback/{n}` |
 | Tracker | DynamoDB table `mathacademy-timeback-skill-feedback` (us-east-1), the skill's own; mirrored daily into this repo's issues by `.github/workflows/mirror-feedback.yml` using the repo's built-in token; closures on GitHub copied back |
-| Hosting | AWS account 182821611732, Lambda `mathacademy-timeback-skill` (nodejs20.x, 256 MB), role `team-dev-mathacademy-skill-lambda` (PowerUserAccess boundary; logs + the two tables, no secrets) |
+| Hosting | AWS account 182821611732, Lambda `mathacademy-timeback-skill` (nodejs20.x, 256 MB), role `team-dev-mathacademy-skill-lambda` (PowerUserAccess boundary; logs + the two tables + GetSecretValue on `sat-cohort-tracker/ci` for the MA key) |
 | Registration | `POST /dss/register` filed 2026-09-16 → estate intake ticket 1713, readable at `https://data-source-skills.vercel.app/feedback/1713` |
 
 ## Publish / redeploy (AWS path, the one in use)

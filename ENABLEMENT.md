@@ -2,7 +2,7 @@
 
 What Math Academy data inside Timeback is good for, and how to put it to work. Worked examples are direct instruction: guidance, not truth. The dictionary governs meaning; the live OpenAPI files govern shape. Read both fresh.
 
-This source answers *what a Math Academy student did, how far through their course they are, who has gone quiet, who has finished, where a student is struggling, how a student's Math Academy history unfolded, whether Timeback's record of their course looks coherent, and, as of a dated snapshot, what Math Academy itself says about the student (true course, exact XP remaining, grade, SAT estimate)*, all with a Timeback credential and no Math Academy call by the reader. Siblings answer the other halves: **timeback_production** (front `https://timeback-loops-k8.vercel.app/dss/timeback_production/skill`) and **timeback_analytics** (front `https://platform.timeback.com/mcps/analytics/skill`) hold the whole learning record across every app, MAP testing and mastery, screen-capture minutes and waste; **the Math Academy API itself** holds what is fresher than the snapshot or never in it (the per-topic knowledge map, the engaged versus productive split, the course catalogue), reached as a one-off per § One-off exact figures. Route to them when the question crosses over.
+This source answers *what a Math Academy student did, how far through their course they are, who has gone quiet, who has finished, where a student is struggling, how a student's Math Academy history unfolded, whether Timeback's record of their course looks coherent, and, from a store refreshed nightly, what Math Academy itself says about the student (true course, exact XP remaining, grade, SAT estimate, engaged versus productive time per task, course history, and the knowledge map on demand)*, all with a Timeback credential and no Math Academy call by the reader. Siblings answer the other halves: **timeback_production** (front `https://timeback-loops-k8.vercel.app/dss/timeback_production/skill`) and **timeback_analytics** (front `https://platform.timeback.com/mcps/analytics/skill`) hold the whole learning record across every app, MAP testing and mastery, screen-capture minutes and waste; **the Math Academy API itself** holds only what is fresher than last night or never pulled (the course catalogue, a day the store did not pull), reached as a one-off per § One-off exact figures. Route to them when the question crosses over.
 
 **Base:** `https://api.alpha-1edtech.ai`. Every call: `Authorization: Bearer <token>`, minted once per hour from the Cognito client-credentials endpoint with the one POST a read-only reader makes (dictionary § native surface); cache the token, mint again on 401, retry a connection reset or 5xx once. The two OpenAPI files are keyless. Discovery is those files plus this dictionary/enablement pair. Never tell the user a capability is missing without checking the OpenAPI first.
 
@@ -36,7 +36,9 @@ Each is buildable by a cold agent with `GET /skill`, this pair, and a Timeback c
 7. **Whether a student's Timeback course looks wrong** — a suspect-course flag from lesson topic ids, with its uncheckable and quiet buckets named and its false-alarm profile stated.
 8. **Estate-wide Math Academy activity for a day or a week** — every event across all students, attributed to the course it was filed under.
 9. **A student's Math Academy timeline** — every seat they have held, the events filed under each (including under deleted seats), the percent reached, and the gaps.
-10. **Math Academy's own figures for a student, as of the snapshot** — the course Math Academy is really running them in, exact XP remaining, progress, grade and letter grade, estimated SAT score, account state, and whether the Timeback seat agrees; from this skill's store, dated, behind the reader's Timeback token, with no Math Academy call.
+10. **Math Academy's own figures for a student, as of last night** — the course Math Academy is really running them in, exact XP remaining, progress, grade and letter grade, estimated SAT score, account state, and whether the Timeback seat agrees; from this skill's nightly store, dated, behind the reader's Timeback token, with no Math Academy call by the reader.
+11. **Engaged versus productive time per task** — Math Academy's three clocks (elapsed, engaged, productive) for every task on the days the store pulled, plus a student's nightly course history (course changes, completion dates) since the store began.
+12. **The knowledge map** — per-topic retention (stability 0–1) for the student's course and its prerequisite courses, fetched live once on request and cached for seven days.
 
 ## Question → composition catalog
 
@@ -53,7 +55,10 @@ Each is buildable by a cold agent with `GET /skill`, this pair, and a Timeback c
 | "Tell me this student's whole Math Academy story." | all-time results + all Math Academy enrollments + line items → timeline (ex. 9) |
 | "What is her EXACT XP remaining / true course / SAT score / grade?" | the store: `GET <front base>/store/student?email=` with your Timeback token (ex. 10); dated as of `snapshotAt` |
 | "Is Timeback's course for this student the one Math Academy runs?" | the store's `courseAgreement` (ex. 10): definitive as of the snapshot, unlike the topic heuristic of ex. 7 |
-| "I need it fresher than the snapshot / the knowledge map" | one direct Math Academy call with the organisation's Math Academy key (§ One-off exact figures), never a loop |
+| "Was he actually paying attention? How much of the time was productive?" | the store's `…/activity?from=&to=` (ex. 11): Math Academy's elapsed / engaged / productive per task, joined to Timeback's rows by task id |
+| "When did she change course on Math Academy, and when did she finish the old one?" | the store's `…/history` (ex. 11) for nights since the store began; ex. 9 (Timeback results) for anything earlier |
+| "What does this student actually know? Where is she weak?" | the store's `…/knowledge` (ex. 12): one live call on first ask, cached 7 days; never loop it over a roster |
+| "I need it fresher than last night" | one direct Math Academy call with the organisation's Math Academy key (§ One-off exact figures), never a loop |
 
 ## Worked examples
 
@@ -249,7 +254,8 @@ GET <front base>/store/student?email=<student email>          # Authorization: B
 GET <front base>/store/student/<user.sourcedId>               # same, when you already hold the id (preferred; the email does not travel)
 ```
 
-- **Freshness rule.** Read `snapshotAt`, `snapshotAgeHours` and `stale` first. The store is a one-off snapshot with no refresh scheduled; `history` lists every snapshot ever loaded. While `stale` is false (within `staleAfterDays`, seven days as served), quote `xpRemaining`, `progress`, `grade` and `currentCourse` as "as of <snapshotAt>". Once `stale` is true, still quote them only with their date, take progress from the newest result instead (ex. 3), and treat `courseAgreement` as indicative: the Timeback half is live, the Math Academy half is old. `figuresAsOf` on a row is `snapshotAt` for `lookup`-matched rows and "up to one day before" for rows taken from Math Academy's bulk list. To ask for a refresh, file a ticket on the feedback wire.
+- **Freshness rule.** Read `snapshotAt`, `snapshotAgeHours` and `stale` first. The store refreshes nightly (03:00 America/Chicago); `history` on `/store` lists every snapshot ever loaded, so a gap is visible. While `stale` is false (within `staleAfterDays`, two days as served), quote `xpRemaining`, `progress`, `grade` and `currentCourse` as "as of <snapshotAt>". Once `stale` is true (a night was missed), still quote them only with their date, take progress from the newest result instead (ex. 3), and treat `courseAgreement` as indicative: the Timeback half is live, the Math Academy half is old. `figuresAsOf` on a row is `snapshotAt` for rows Math Academy answered directly (`lookup`, `live-lookup`) and "up to one day before" for rows taken from Math Academy's bulk list. A stuck refresh is a ticket on the feedback wire.
+- **A student missing from the store** is looked up live once when first asked for (the response says so under `matchedBy: "live-lookup"`), then carried by every later night. A student Math Academy does not know under this organisation's key stays `inSnapshot: false` with the HTTP reason and is retried after 24 hours.
 - **Cohort questions** go to `/store/course/{courseSourcedId}` (counts by `courseAgreement`, `testUsers`, `maNotStarted`, one call, no token). Per-student rows cost about one second each (two Timeback calls replayed), so a course of a few hundred students is minutes, not seconds; say so before looping.
 - `mathAcademy.currentCourse.name` is the course Math Academy actually runs the student in; `courseAgreement` compares it with the student's live Timeback seats: `agree`, `disagree` (a roster defect: the student's events are being filed under the wrong Timeback course, trap 10; report the Timeback course id and the Math Academy course name), `disagree, math academy course completed` (Timeback moved the student on, Math Academy has not: ask for the Math Academy course change, not a Timeback fix), `no current timeback seat`, `math academy has no current course`, `no math academy record` (see `unmatchedReason`), `not in snapshot`.
 - `xpRemaining` is exact and replaces the estimate of ex. 3 for the snapshot date; where you show both, label the estimate's bias. `estimatedScore` appears on SAT Math Prep instead of progress.
@@ -264,6 +270,44 @@ GET <front base>/store/student/<user.sourcedId>               # same, when you a
 Output shape: `user.sourcedId`, `snapshotAt`, `figuresAsOf`, `stale`, `matchedBy`, `matchConfidence`, `mathAcademyState`, `maCourse (name)`, `maCourseStart`, `progress (0–1)`, `xpRemaining`, `grade`, `letterGrade`, `estimatedScore (SAT Math Prep only)`, `completed`, `deactivated`, `timebackCourseSourcedId(s)`, `courseAgreement`.
 
 VERIFIED RUN (build 2026-09-17; cold run 2026-09-17 evening): the calls executed against the live store under a read-only Timeback client; a cold agent read every non-test student of one course through the route in about a second each and reconciled the counts with `/store/course`; a token-less call, a forged token, an unknown id and a bad email returned the statuses above; an Algebra I student's exact figure sat about a quarter above the estimate.
+
+### 11 · Engaged versus productive time, and the course history — "Was he really working? When did she change course?"
+
+```
+GET <front base>/store/student/<sid>/activity?from=<YYYY-MM-DD>&to=<YYYY-MM-DD>     # Authorization: Bearer <your Timeback token>
+      # tasks[]: Math Academy's own record per task with timeElapsedMs / timeEngagedMs / timeProductiveMs, type, xpAwarded, course, topic, taskId
+      # days[]: Math Academy's day totals in seconds; activityLastDate = newest day the store has pulled
+GET <front base>/store/student/<sid>/history                                          # one row per nightly snapshot: courseId, progress, xpRemaining, completed, grade, state, agreement
+GET /ims/oneroster/gradebook/v1p2/assessmentResults?filter=student.sourcedId='<sid>' AND metadata.appName='Math Academy' AND scoreDate>='<from>'&limit=3000
+      # optional: Timeback's row for the same tasks; join on taskId == /tasks/<taskId>/ in metadata.originalObjectId
+```
+
+- **Days are pulled, not computed.** The store pulls a day for a student only if they had a Math Academy result in Timeback on that America/Chicago day, the night after. A day absent from `days[]` was not pulled: before the store began, or no Timeback result that day, or last night's run has not reached it yet (`activityLastDate`). Never read absence as zero minutes.
+- **The three clocks.** `timeElapsed` is wall time on the task (the only clock Timeback receives, as `activeSeconds`); `timeEngaged` is the part Math Academy judged attentive; `timeProductive` is the part that advanced the task. Report the ratios per day, not per task: a single review is seconds long. Aggregate labels: numerator and denominator in seconds, basis = tasks Math Academy recorded on the pulled days.
+- **Course history.** `history[]` starts the night the store began; a change of `courseId` between two nights is a course change and the last row of the old course carries `completed`. For anything older, use Timeback's results (ex. 9), which hold the Caliper half of the story back to the oldest reachable result.
+- PII: none in these two responses beyond `user.sourcedId`; the join to Timeback rows is by task id.
+- Failure mode: treating a day with no `days[]` row as a day of zero work; comparing `timeElapsedMs` (milliseconds) with `days[].timeElapsedSec` (seconds) without converting; reading `history` as Math Academy's full past when it starts at the store's first night.
+
+Output shape: per day — `date`, `tasks`, `elapsedMin`, `engagedMin`, `productiveMin`, `engagedShare`, `productiveShare`, `xpAwarded`; per course change — `fromCourseId`, `toCourseId`, `firstNightSeen`, `oldCourseCompleted (date or null)`.
+
+VERIFIED RUN (build 2026-09-17 evening): the activity pull ran for the previous local day and the route returned tasks with the three clocks for an active student; history returned one row per night loaded so far.
+
+### 12 · The knowledge map — "What does this student actually know?"
+
+```
+GET <front base>/store/student/<sid>/knowledge                 # Authorization: Bearer <your Timeback token>; current course; cached 7 days
+GET <front base>/store/student/<sid>/knowledge?courseId=<mathAcademyCourseId>&refresh=1   # another course of theirs, or force one live call
+```
+
+- The first ask makes **one live Math Academy call** and caches the map for seven days (`fetchedAt`, `fromCache`); later asks are free. This is the one place a reader's request reaches Math Academy through the skill, so ask per student when a person needs it and **never loop it over a roster** (Math Academy's fair-use limit answers 429; the store passes the failure through as 502 with `mathAcademyStatus`).
+- `knowledge.courses[]` is the course asked for plus up to two prerequisite courses. Walk `units[] → modules[] → topics[]`; `stability` (0–1) is Math Academy's estimate of long-term retention, averaged upward to module and unit; `completion` (0–1) per course. Read low stability on a completed topic as "fading", a topic absent from every course as "never taught here".
+- Pair it with ex. 6 (failed tasks by topic from Timeback): the map says what is held, the results say what was struggled with; the topic ids are the same numbers.
+- PII: none beyond `user.sourcedId`; topic names are curriculum, not the child.
+- Failure mode: looping the call; reading `stability` as a score on a test; quoting the map without `fetchedAt`.
+
+Output shape: per course — `courseId`, `name`, `completion`; per unit — `name`, `stability`, `weakestTopics[] {topicId, name, stability}` (lowest first); a headline `topicsBelow(0.5)` count with its denominator.
+
+VERIFIED RUN (build 2026-09-17 evening): one live call returned the requested course plus prerequisite courses with unit, module and topic stability; the second call for the same student came from cache.
 
 ## Cross-system notes
 

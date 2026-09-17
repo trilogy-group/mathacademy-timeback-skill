@@ -18,7 +18,7 @@ FN = "mathacademy-timeback-skill"
 ROLE = "team-dev-mathacademy-skill-lambda"
 STORE_TABLE = "mathacademy-timeback-skill-store"   # one-off Math Academy snapshot, loaded by store/load_snapshot.py (which also grants the role read access)
 TABLE = "mathacademy-timeback-skill-feedback"   # the skill's own tracker (DynamoDB); mirrored to GitHub issues by .github/workflows/mirror-feedback.yml
-SECRET = "sat-cohort-tracker/ci"                 # no longer used by the function (kept for --check history); the role's read on it is removed at deploy
+SECRET = "sat-cohort-tracker/ci"                 # MA_API_KEY read at runtime for on-demand knowledge maps and live lookups on a store miss (since 2026-09-17 evening)
 REPO = "trilogy-group/mathacademy-timeback-skill"
 TAGS = {"project": "mathacademy-timeback-skill", "owner": "ruchi.baid", "purpose": "dss data source skill front"}
 BOUNDARY = "arn:aws:iam::aws:policy/PowerUserAccess"
@@ -60,9 +60,12 @@ if a.cmd == "--create-roles":
     table_arn = s.client("dynamodb").describe_table(TableName=TABLE)["Table"]["TableArn"]
     iam.put_role_policy(RoleName=ROLE, PolicyName="feedback-table", PolicyDocument=json.dumps({
         "Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": ["dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:UpdateItem", "dynamodb:Query"], "Resource": table_arn}]}))
-    try: iam.delete_role_policy(RoleName=ROLE, PolicyName="read-one-secret")   # least privilege: the function reads no secret
-    except botocore.exceptions.ClientError: pass
-    print("policies attached (basic execution + DynamoDB on", TABLE, "); secret read removed"); sys.exit(0)
+    store_arn = s.client("dynamodb").describe_table(TableName=STORE_TABLE)["Table"]["TableArn"]
+    iam.put_role_policy(RoleName=ROLE, PolicyName="store-table", PolicyDocument=json.dumps({
+        "Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": ["dynamodb:GetItem", "dynamodb:Query", "dynamodb:PutItem"], "Resource": store_arn}]}))
+    iam.put_role_policy(RoleName=ROLE, PolicyName="read-one-secret", PolicyDocument=json.dumps({   # since 2026-09-17 evening: the MA key for on-demand knowledge maps + live lookups on a store miss
+        "Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": "secretsmanager:GetSecretValue", "Resource": f"arn:aws:secretsmanager:us-east-1:{acct}:secret:{SECRET}-*"}]}))
+    print("policies attached (basic execution + DynamoDB on", TABLE, "and", STORE_TABLE, "+ GetSecretValue on", SECRET, ")"); sys.exit(0)
 
 if a.cmd == "deploy":
     subprocess.check_call([sys.executable, str(ROOT / "scripts" / "build_public.py")])
@@ -76,7 +79,7 @@ if a.cmd == "deploy":
     code = buf.getvalue(); print(f"zip: {len(code):,} bytes")
     base = json.loads((ROOT / "deploy.json").read_text(encoding="utf-8"))["base"].rstrip("/")
     admin_key = (ROOT / "_scratch" / "_admin_key.txt").read_text(encoding="utf-8").strip()   # random, generated at build; same value is the repo's ADMIN_KEY Actions secret
-    env = {"Variables": {"TABLE": TABLE, "STORE_TABLE": STORE_TABLE, "TB_BASE": "https://api.alpha-1edtech.ai", "SOURCE": "mathacademy_timeback", "GIT_VERSION": git, "BASE": base, "ADMIN_KEY": admin_key, "MIRROR_REPO": REPO}}
+    env = {"Variables": {"TABLE": TABLE, "STORE_TABLE": STORE_TABLE, "TB_BASE": "https://api.alpha-1edtech.ai", "SECRET_NAME": SECRET, "SOURCE": "mathacademy_timeback", "GIT_VERSION": git, "BASE": base, "ADMIN_KEY": admin_key, "MIRROR_REPO": REPO}}
     arn = role_arn() or sys.exit("role missing: run --create-roles first")
     if fn_exists():
         lam.update_function_configuration(FunctionName=FN, Environment=env, Timeout=30, MemorySize=256, Runtime="nodejs20.x", Handler="index.handler", Role=arn)
