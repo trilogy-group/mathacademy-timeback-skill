@@ -18,8 +18,9 @@ ddb = boto3.client("dynamodb"); sm = boto3.client("secretsmanager"); lam = boto3
 def creds():
     return json.loads(sm.get_secret_value(SecretId=SECRET)["SecretString"])
 
+from zoneinfo import ZoneInfo
 def yesterday_local():
-    now_local = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=TZ_OFF)
+    now_local = datetime.datetime.now(ZoneInfo("America/Chicago"))
     return (now_local.date() - datetime.timedelta(days=1)).isoformat()
 
 def handler(event, context):

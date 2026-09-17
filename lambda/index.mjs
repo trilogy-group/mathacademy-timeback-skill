@@ -40,8 +40,9 @@ async function storeMeta() {
   const history = JSON.parse(r.Item.history?.S || "[]").map(h => typeof h === "string" ? { at: h, source: "manual" } : h);
   const scheduled = history.filter(h => h.source === "schedule").length;
   // next 03:00 America/Chicago as UTC (CDT = UTC-5; CST = UTC-6). Approximate DST by month.
-  const now = new Date(); const cdt = now.getUTCMonth() >= 2 && now.getUTCMonth() <= 10; const off = cdt ? 5 : 6;
-  let next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 3 + off, 0, 0)); if (next <= now) next = new Date(next.getTime() + 864e5);
+  const now = new Date();
+  const chicagoOffsetHours = d => { const p = new Intl.DateTimeFormat("en-US", { timeZone: "America/Chicago", timeZoneName: "shortOffset" }).formatToParts(d).find(x => x.type === "timeZoneName").value; const m = /GMT([+-]\d+)/.exec(p); return m ? -Number(m[1]) : 6; };
+  let next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 3 + chicagoOffsetHours(now), 0, 0)); if (next <= now) next = new Date(next.getTime() + 864e5);
   return { snapshotAt, rosterReadAt: r.Item.rosterReadAt?.S || snapshotAt, snapshotAgeHours: ageHours, staleAfterDays, stale: ageHours !== null && ageHours > staleAfterDays * 24,
     schedule: { snapshot: "03:00 America/Chicago daily", activity: "03:45 America/Chicago daily, for the previous America/Chicago day", nextSnapshotDueUtc: next.toISOString(), scheduledRunsSoFar: scheduled, manualRunsSoFar: history.length - scheduled, firstScheduledRunHasHappened: scheduled > 0 },
     activityLastDate: r.Item.activityLastDate?.S || null, lastActivityRun: r.Item.lastActivityRun?.S ? JSON.parse(r.Item.lastActivityRun.S) : null,

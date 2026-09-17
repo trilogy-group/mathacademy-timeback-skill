@@ -14,6 +14,8 @@ Table mathacademy-timeback-skill-store (pk S / sk S):
   know#<sid>   / latest          the cached knowledge map (fetched on demand by the front)
 """
 import base64, datetime, json, re, time, urllib.error, urllib.parse, urllib.request
+from zoneinfo import ZoneInfo
+CHICAGO = ZoneInfo("America/Chicago")
 
 try:
     from .agreement import agreement, summarise, ma_state, ma_courses
@@ -277,10 +279,16 @@ def run_snapshot(c, ddb, table, today=None, time_left=lambda: 10 ** 9, lookup=Tr
 
 
 # ---- activity (engaged / productive time) -----------------------------------------------------------------------------
-def active_sids_for_day(c, day, tz_offset_hours):
+def local_day_window(day):
+    """The America/Chicago calendar day as two UTC instants (DST-aware)."""
+    d = datetime.date.fromisoformat(day)
+    start = datetime.datetime(d.year, d.month, d.day, tzinfo=CHICAGO).astimezone(UTC)
+    end = (datetime.datetime(d.year, d.month, d.day, tzinfo=CHICAGO) + datetime.timedelta(days=1)).astimezone(UTC)
+    return start, end
+
+def active_sids_for_day(c, day, tz_offset_hours=None):
     """Students with a Math Academy result on that local day (one paged estate-wide read)."""
-    start = datetime.datetime.fromisoformat(day + "T00:00:00") - datetime.timedelta(hours=tz_offset_hours)
-    end = start + datetime.timedelta(days=1) - datetime.timedelta(seconds=1)
+    start, end = local_day_window(day); end = end - datetime.timedelta(seconds=1)
     f = f"metadata.appName='Math Academy' AND scoreDate>='{start.strftime('%Y-%m-%dT%H:%M:%SZ')}' AND scoreDate<='{end.strftime('%Y-%m-%dT%H:%M:%SZ')}'"
     rows = c.tb_all("/ims/oneroster/gradebook/v1p2/assessmentResults", "assessmentResults", {"filter": f})
     return sorted({(r.get("student") or {}).get("sourcedId") for r in rows if (r.get("student") or {}).get("sourcedId")})
@@ -301,14 +309,13 @@ def _delete_day(ddb, table, sid, day):
     reqs.append({"DeleteRequest": {"Key": {"pk": S(f"actday#{sid}"), "sk": S(day)}}})
     _batch(ddb, table, reqs)
 
-def run_activity(c, ddb, table, day, tz_offset_hours=-5, time_left=lambda: 10 ** 9, force=False):
+def run_activity(c, ddb, table, day, tz_offset_hours=None, time_left=lambda: 10 ** 9, force=False):
     """Pull Math Academy's per-task analysis for every student active on the local `day` (America/Chicago by offset).
     Math Academy's startDate/endDate are read on its own clock, so two Math Academy days are requested and tasks are kept by
     their completion time inside the local day window. Resumable: progress in actrun/<day>. force=True re-pulls a finished day."""
     run = ddb.get_item(TableName=table, Key={"pk": S("actrun"), "sk": S(day)}).get("Item")
     if run and run.get("status", {}).get("S") == "done" and not force: return {"day": day, "status": "done", "skipped": True}
-    day_start = datetime.datetime.fromisoformat(day + "T00:00:00").replace(tzinfo=UTC) - datetime.timedelta(hours=tz_offset_hours)
-    day_end = day_start + datetime.timedelta(days=1)
+    day_start, day_end = local_day_window(day)   # America/Chicago, DST-aware
     lo_ms, hi_ms = int(day_start.timestamp() * 1000), int(day_end.timestamp() * 1000)
     next_day = (datetime.date.fromisoformat(day) + datetime.timedelta(days=1)).isoformat()
     if run and not force and run.get("status", {}).get("S") in ("partial", "running"):
