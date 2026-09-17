@@ -1,1547 +1,1547 @@
 {
-"_about": "Math Academy topic id -> the Timeback COURSE ID (sourcedId) under which lesson events for that topic were filed by >= 5 distinct non-test students with >= 80% agreement, over the 14 days before `readAt`. Filed course comes from each event's LINE ITEM (the truthful path, DICTIONARY trap 21). Reviews are excluded because they revisit earlier courses; quizzes and multisteps are excluded because their URL carries a quiz-instance / problem id in the topic slot, not a topic id (traps 25). Its range is Timeback's own course list: a Math Academy course with no Timeback course in your org (8th Grade Math in the main org) can never be pointed at. HEURISTIC: adjacent grade courses share topics, so this is the course most students who met the topic were filed under, not Math Academy's catalogue. Coverage is dense for grade-level courses and thin for high-school courses. Rebuild it yourself with ENABLEMENT example 7 step A; the measure of its bar is topics_dropped_by_share against topics_mapped, both in this file.",
-"readAt": "2026-09-17",
-"window_days": 14,
-"min_students": 5,
-"min_share": 0.8,
-"topics_mapped": 256,
-"topics_with_enough_students_but_below_share": 210,
-"topics": {
-"2340": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 36,
-"share": 0.89
-},
-"837": {
-"courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
-"courseTitle": "Math Academy - Algebra I",
-"students": 5,
-"share": 0.8
-},
-"1460": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 12,
-"share": 0.83
-},
-"267": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 6,
-"share": 1.0
-},
-"7208": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 16,
-"share": 0.94
-},
-"539": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 9,
-"share": 1.0
-},
-"2467": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 33,
-"share": 0.94
-},
-"3750": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 22,
-"share": 0.95
-},
-"569": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 15,
-"share": 1.0
-},
-"6762": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 19,
-"share": 1.0
-},
-"568": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 15,
-"share": 1.0
-},
-"2335": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 18,
-"share": 1.0
-},
-"512": {
-"courseSourcedId": "6e9caba5-4d14-436d-b61f-e0f761a5d5a8",
-"courseTitle": "Math Academy - Geometry",
-"students": 5,
-"share": 1.0
-},
-"755": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 8,
-"share": 1.0
-},
-"235": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 6,
-"share": 0.83
-},
-"2477": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 21,
-"share": 0.86
-},
-"6803": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 14,
-"share": 1.0
-},
-"572": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 16,
-"share": 1.0
-},
-"3971": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 23,
-"share": 1.0
-},
-"1451": {
-"courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
-"courseTitle": "Math Academy - Algebra I",
-"students": 5,
-"share": 0.8
-},
-"2407": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 19,
-"share": 0.95
-},
-"2240": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 10,
-"share": 1.0
-},
-"2355": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 27,
-"share": 0.85
-},
-"729": {
-"courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
-"courseTitle": "Math Academy - Algebra I",
-"students": 5,
-"share": 0.8
-},
-"2369": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 16,
-"share": 0.94
-},
-"2448": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 21,
-"share": 0.95
-},
-"5572": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 9,
-"share": 1.0
-},
-"3079": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 6,
-"share": 1.0
-},
-"111": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 24,
-"share": 0.83
-},
-"2444": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 18,
-"share": 0.89
-},
-"567": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 25,
-"share": 0.84
-},
-"2348": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 29,
-"share": 0.86
-},
-"1927": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 13,
-"share": 0.92
-},
-"2388": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 24,
-"share": 0.96
-},
-"6751": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 10,
-"share": 1.0
-},
-"6663": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 7,
-"share": 0.86
-},
-"2394": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 5,
-"share": 1.0
-},
-"2384": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 14,
-"share": 0.93
-},
-"7206": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 5,
-"share": 1.0
-},
-"2425": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 8,
-"share": 1.0
-},
-"570": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 16,
-"share": 1.0
-},
-"2484": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 43,
-"share": 0.98
-},
-"2375": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 16,
-"share": 1.0
-},
-"709": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 7,
-"share": 1.0
-},
-"1319": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 8,
-"share": 0.88
-},
-"2401": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 16,
-"share": 1.0
-},
-"2362": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 6,
-"share": 0.83
-},
-"3762": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 23,
-"share": 0.96
-},
-"2410": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 6,
-"share": 1.0
-},
-"2380": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 24,
-"share": 0.92
-},
-"2347": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 12,
-"share": 0.83
-},
-"2474": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 24,
-"share": 0.83
-},
-"3561": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 10,
-"share": 0.9
-},
-"4250": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 8,
-"share": 1.0
-},
-"2333": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 13,
-"share": 1.0
-},
-"4033": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 5,
-"share": 1.0
-},
-"6757": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 6,
-"share": 1.0
-},
-"2520": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 10,
-"share": 1.0
-},
-"2509": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 30,
-"share": 0.8
-},
-"571": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 22,
-"share": 0.91
-},
-"2290": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 6,
-"share": 1.0
-},
-"2288": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 6,
-"share": 1.0
-},
-"2518": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 18,
-"share": 1.0
-},
-"1648": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 5,
-"share": 1.0
-},
-"6187": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 9,
-"share": 1.0
-},
-"2354": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 14,
-"share": 0.93
-},
-"6740": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 22,
-"share": 1.0
-},
-"7743": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 15,
-"share": 1.0
-},
-"2383": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 23,
-"share": 0.96
-},
-"2403": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 16,
-"share": 1.0
-},
-"525": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 17,
-"share": 0.94
-},
-"178": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 5,
-"share": 0.8
-},
-"109": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 21,
-"share": 0.86
-},
-"2473": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 5,
-"share": 1.0
-},
-"2436": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 23,
-"share": 0.87
-},
-"6756": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 5,
-"share": 1.0
-},
-"2478": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 22,
-"share": 0.82
-},
-"2437": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 30,
-"share": 0.93
-},
-"326": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 24,
-"share": 0.92
-},
-"3751": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 21,
-"share": 0.9
-},
-"559": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 16,
-"share": 1.0
-},
-"2387": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 11,
-"share": 0.91
-},
-"2480": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 24,
-"share": 0.83
-},
-"2386": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 10,
-"share": 1.0
-},
-"2381": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 22,
-"share": 0.95
-},
-"2395": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 21,
-"share": 1.0
-},
-"6739": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 15,
-"share": 1.0
-},
-"2431": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 17,
-"share": 1.0
-},
-"644": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 14,
-"share": 1.0
-},
-"484": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 12,
-"share": 0.92
-},
-"4025": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 12,
-"share": 0.83
-},
-"3593": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 22,
-"share": 0.82
-},
-"2385": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 14,
-"share": 0.93
-},
-"4698": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 26,
-"share": 0.92
-},
-"2432": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 27,
-"share": 0.89
-},
-"2447": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 19,
-"share": 1.0
-},
-"6177": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 10,
-"share": 1.0
-},
-"130": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 13,
-"share": 0.85
-},
-"4314": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 5,
-"share": 1.0
-},
-"4198": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 7,
-"share": 1.0
-},
-"536": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 10,
-"share": 1.0
-},
-"3916": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 5,
-"share": 1.0
-},
-"2468": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 40,
-"share": 0.93
-},
-"6754": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 8,
-"share": 1.0
-},
-"3753": {
-"courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
-"courseTitle": "Math Academy - Algebra I",
-"students": 5,
-"share": 0.8
-},
-"2406": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 10,
-"share": 1.0
-},
-"4536": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 12,
-"share": 1.0
-},
-"555": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 15,
-"share": 1.0
-},
-"2445": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 27,
-"share": 1.0
-},
-"2433": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 20,
-"share": 0.9
-},
-"2379": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 19,
-"share": 1.0
-},
-"2315": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 6,
-"share": 1.0
-},
-"556": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 14,
-"share": 1.0
-},
-"6802": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 16,
-"share": 1.0
-},
-"2329": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 22,
-"share": 0.86
-},
-"3578": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 5,
-"share": 1.0
-},
-"6744": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 10,
-"share": 0.9
-},
-"2483": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 8,
-"share": 1.0
-},
-"2463": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 22,
-"share": 1.0
-},
-"533": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 25,
-"share": 0.96
-},
-"2408": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 9,
-"share": 0.89
-},
-"3989": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 6,
-"share": 1.0
-},
-"2458": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 8,
-"share": 1.0
-},
-"6759": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 8,
-"share": 1.0
-},
-"2412": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 20,
-"share": 0.95
-},
-"541": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 15,
-"share": 1.0
-},
-"1240": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 8,
-"share": 1.0
-},
-"2470": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 12,
-"share": 1.0
-},
-"2357": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 15,
-"share": 0.93
-},
-"2413": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 8,
-"share": 1.0
-},
-"668": {
-"courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
-"courseTitle": "Math Academy - Algebra I",
-"students": 5,
-"share": 1.0
-},
-"2356": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 9,
-"share": 0.89
-},
-"544": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 5,
-"share": 1.0
-},
-"2450": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 15,
-"share": 1.0
-},
-"2284": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 6,
-"share": 1.0
-},
-"520": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 9,
-"share": 0.89
-},
-"2399": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 23,
-"share": 0.96
-},
-"6337": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 7,
-"share": 0.86
-},
-"1135": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 17,
-"share": 1.0
-},
-"2389": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 21,
-"share": 1.0
-},
-"6742": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 9,
-"share": 1.0
-},
-"589": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 9,
-"share": 0.89
-},
-"1224": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 8,
-"share": 0.88
-},
-"530": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 23,
-"share": 1.0
-},
-"560": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 13,
-"share": 1.0
-},
-"110": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 10,
-"share": 1.0
-},
-"535": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 5,
-"share": 1.0
-},
-"6729": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 9,
-"share": 1.0
-},
-"2459": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 21,
-"share": 0.95
-},
-"3537": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 16,
-"share": 1.0
-},
-"2317": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 12,
-"share": 1.0
-},
-"2430": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 5,
-"share": 1.0
-},
-"4196": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 5,
-"share": 0.8
-},
-"2461": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 14,
-"share": 0.93
-},
-"2204": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 11,
-"share": 1.0
-},
-"2516": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 23,
-"share": 0.83
-},
-"2443": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 5,
-"share": 1.0
-},
-"3960": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 10,
-"share": 0.9
-},
-"2427": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 9,
-"share": 0.89
-},
-"356": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 6,
-"share": 0.83
-},
-"3554": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 6,
-"share": 0.83
-},
-"3872": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 19,
-"share": 0.95
-},
-"2353": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 14,
-"share": 1.0
-},
-"2505": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 18,
-"share": 1.0
-},
-"667": {
-"courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
-"courseTitle": "Math Academy - Algebra I",
-"students": 5,
-"share": 1.0
-},
-"529": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 18,
-"share": 1.0
-},
-"2318": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 8,
-"share": 1.0
-},
-"2449": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 6,
-"share": 1.0
-},
-"3747": {
-"courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
-"courseTitle": "Math Academy - Algebra I",
-"students": 5,
-"share": 1.0
-},
-"2373": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 18,
-"share": 1.0
-},
-"1863": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 6,
-"share": 1.0
-},
-"383": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 8,
-"share": 1.0
-},
-"3729": {
-"courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
-"courseTitle": "Math Academy - Algebra I",
-"students": 5,
-"share": 0.8
-},
-"1985": {
-"courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
-"courseTitle": "Math Academy - Algebra I",
-"students": 5,
-"share": 0.8
-},
-"679": {
-"courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
-"courseTitle": "Math Academy - Algebra I",
-"students": 5,
-"share": 1.0
-},
-"2485": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 12,
-"share": 0.92
-},
-"2328": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 32,
-"share": 0.81
-},
-"1603": {
-"courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
-"courseTitle": "Math Academy - Algebra I",
-"students": 5,
-"share": 0.8
-},
-"3843": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 9,
-"share": 1.0
-},
-"2285": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 9,
-"share": 1.0
-},
-"2281": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 16,
-"share": 1.0
-},
-"2396": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 10,
-"share": 0.8
-},
-"2441": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 10,
-"share": 0.8
-},
-"6216": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 11,
-"share": 1.0
-},
-"2325": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 7,
-"share": 1.0
-},
-"6755": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 5,
-"share": 1.0
-},
-"2372": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 14,
-"share": 0.93
-},
-"704": {
-"courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
-"courseTitle": "Math Academy - Algebra I",
-"students": 5,
-"share": 0.8
-},
-"1150": {
-"courseSourcedId": "702b2bb3-1337-410a-9c78-c6fb6cea782b",
-"courseTitle": "Math Academy - SAT Math Fundamentals",
-"students": 5,
-"share": 1.0
-},
-"1819": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 7,
-"share": 1.0
-},
-"3937": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 10,
-"share": 1.0
-},
-"548": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 23,
-"share": 0.83
-},
-"6188": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 8,
-"share": 0.88
-},
-"545": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 15,
-"share": 1.0
-},
-"669": {
-"courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
-"courseTitle": "Math Academy - Algebra I",
-"students": 5,
-"share": 1.0
-},
-"2339": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 25,
-"share": 0.92
-},
-"3934": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 5,
-"share": 1.0
-},
-"3976": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 5,
-"share": 0.8
-},
-"6752": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 6,
-"share": 1.0
-},
-"4315": {
-"courseSourcedId": "6e9caba5-4d14-436d-b61f-e0f761a5d5a8",
-"courseTitle": "Math Academy - Geometry",
-"students": 5,
-"share": 1.0
-},
-"528": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 22,
-"share": 1.0
-},
-"522": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 7,
-"share": 0.86
-},
-"540": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 11,
-"share": 0.91
-},
-"2205": {
-"courseSourcedId": "pcb-course-3bf2f190c22f4e4693aeca92fcd307bb",
-"courseTitle": "Math Academy - 8th grade",
-"students": 9,
-"share": 1.0
-},
-"1223": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 9,
-"share": 0.89
-},
-"2438": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 18,
-"share": 0.89
-},
-"6753": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 5,
-"share": 1.0
-},
-"2561": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 7,
-"share": 0.86
-},
-"6758": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 7,
-"share": 1.0
-},
-"6190": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 8,
-"share": 0.88
-},
-"2343": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 5,
-"share": 1.0
-},
-"1138": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 7,
-"share": 1.0
-},
-"843": {
-"courseSourcedId": "6e9caba5-4d14-436d-b61f-e0f761a5d5a8",
-"courseTitle": "Math Academy - Geometry",
-"students": 5,
-"share": 0.8
-},
-"811": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 6,
-"share": 0.83
-},
-"6760": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 11,
-"share": 1.0
-},
-"491": {
-"courseSourcedId": "6e9caba5-4d14-436d-b61f-e0f761a5d5a8",
-"courseTitle": "Math Academy - Geometry",
-"students": 5,
-"share": 1.0
-},
-"7222": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 5,
-"share": 1.0
-},
-"2278": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 7,
-"share": 0.86
-},
-"6368": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 6,
-"share": 0.83
-},
-"2289": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 7,
-"share": 0.86
-},
-"1144": {
-"courseSourcedId": "6e9caba5-4d14-436d-b61f-e0f761a5d5a8",
-"courseTitle": "Math Academy - Geometry",
-"students": 5,
-"share": 1.0
-},
-"2344": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 6,
-"share": 1.0
-},
-"2330": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 11,
-"share": 1.0
-},
-"2286": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 6,
-"share": 1.0
-},
-"2321": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 10,
-"share": 1.0
-},
-"2378": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 6,
-"share": 1.0
-},
-"2323": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 8,
-"share": 1.0
-},
-"3585": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 8,
-"share": 1.0
-},
-"6749": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 6,
-"share": 1.0
-},
-"6805": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 7,
-"share": 1.0
-},
-"2414": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 6,
-"share": 1.0
-},
-"2326": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 7,
-"share": 1.0
-},
-"336": {
-"courseSourcedId": "702b2bb3-1337-410a-9c78-c6fb6cea782b",
-"courseTitle": "Math Academy - SAT Math Fundamentals",
-"students": 6,
-"share": 0.83
-},
-"565": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 5,
-"share": 1.0
-},
-"2291": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 5,
-"share": 1.0
-},
-"2434": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 6,
-"share": 1.0
-},
-"2374": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 5,
-"share": 1.0
-},
-"502": {
-"courseSourcedId": "6e9caba5-4d14-436d-b61f-e0f761a5d5a8",
-"courseTitle": "Math Academy - Geometry",
-"students": 5,
-"share": 1.0
-},
-"3994": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 5,
-"share": 0.8
-},
-"6761": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 5,
-"share": 1.0
-},
-"2462": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 17,
-"share": 1.0
-},
-"2442": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 11,
-"share": 1.0
-},
-"2557": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 5,
-"share": 1.0
-},
-"6186": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 5,
-"share": 0.8
-},
-"3935": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 5,
-"share": 0.8
-},
-"2316": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 8,
-"share": 1.0
-},
-"4002": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 6,
-"share": 1.0
-},
-"1987": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 8,
-"share": 0.88
-},
-"965": {
-"courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
-"courseTitle": "Math Academy - 6th grade",
-"students": 5,
-"share": 1.0
-},
-"2563": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 5,
-"share": 0.8
-},
-"680": {
-"courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
-"courseTitle": "Math Academy - Algebra I",
-"students": 5,
-"share": 1.0
-},
-"2314": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 6,
-"share": 1.0
-},
-"4026": {
-"courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
-"courseTitle": "Math Academy - Algebra I",
-"students": 5,
-"share": 0.8
-},
-"2398": {
-"courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
-"courseTitle": "Math Academy - 5th grade",
-"students": 6,
-"share": 1.0
-},
-"6363": {
-"courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
-"courseTitle": "Math Academy - Prealgebra",
-"students": 6,
-"share": 1.0
-},
-"7225": {
-"courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
-"courseTitle": "Math Academy - 7th grade",
-"students": 5,
-"share": 1.0
-}
-}
+ "_about": "Math Academy topic id -> the Timeback COURSE ID (sourcedId) under which lesson events for that topic were filed by >= 5 distinct non-test students with >= 80% agreement, over the 14 days before `readAt`. Filed course comes from each event's LINE ITEM (the truthful path, DICTIONARY trap 21). Reviews are excluded because they revisit earlier courses; quizzes and multisteps are excluded because their URL carries a quiz-instance / problem id in the topic slot, not a topic id (traps 25). Its range is the courses with enough lesson events in the window: thinly covered courses (8th grade, high school) are rarely pointed at. HEURISTIC: adjacent grade courses share topics, so this is the course most students who met the topic were filed under, not Math Academy's catalogue. Coverage is dense for grade-level courses and thin for high-school courses. Rebuild it yourself with ENABLEMENT example 7 step A; the measure of its bar is topics_dropped_by_share against topics_mapped, both in this file.",
+ "readAt": "2026-09-17",
+ "window_days": 14,
+ "min_students": 5,
+ "min_share": 0.8,
+ "topics_mapped": 256,
+ "topics_with_enough_students_but_below_share": 210,
+ "topics": {
+  "2340": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 36,
+   "share": 0.89
+  },
+  "837": {
+   "courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "courseTitle": "Math Academy - Algebra I",
+   "students": 5,
+   "share": 0.8
+  },
+  "1460": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 12,
+   "share": 0.83
+  },
+  "267": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 6,
+   "share": 1.0
+  },
+  "7208": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 16,
+   "share": 0.94
+  },
+  "539": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 9,
+   "share": 1.0
+  },
+  "2467": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 33,
+   "share": 0.94
+  },
+  "3750": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 22,
+   "share": 0.95
+  },
+  "569": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 15,
+   "share": 1.0
+  },
+  "6762": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 19,
+   "share": 1.0
+  },
+  "568": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 15,
+   "share": 1.0
+  },
+  "2335": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 18,
+   "share": 1.0
+  },
+  "512": {
+   "courseSourcedId": "6e9caba5-4d14-436d-b61f-e0f761a5d5a8",
+   "courseTitle": "Math Academy - Geometry",
+   "students": 5,
+   "share": 1.0
+  },
+  "755": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 8,
+   "share": 1.0
+  },
+  "235": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 6,
+   "share": 0.83
+  },
+  "2477": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 21,
+   "share": 0.86
+  },
+  "6803": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 14,
+   "share": 1.0
+  },
+  "572": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 16,
+   "share": 1.0
+  },
+  "3971": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 23,
+   "share": 1.0
+  },
+  "1451": {
+   "courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "courseTitle": "Math Academy - Algebra I",
+   "students": 5,
+   "share": 0.8
+  },
+  "2407": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 19,
+   "share": 0.95
+  },
+  "2240": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 10,
+   "share": 1.0
+  },
+  "2355": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 27,
+   "share": 0.85
+  },
+  "729": {
+   "courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "courseTitle": "Math Academy - Algebra I",
+   "students": 5,
+   "share": 0.8
+  },
+  "2369": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 16,
+   "share": 0.94
+  },
+  "2448": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 21,
+   "share": 0.95
+  },
+  "5572": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 9,
+   "share": 1.0
+  },
+  "3079": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "111": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 24,
+   "share": 0.83
+  },
+  "2444": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 18,
+   "share": 0.89
+  },
+  "567": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 25,
+   "share": 0.84
+  },
+  "2348": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 29,
+   "share": 0.86
+  },
+  "1927": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 13,
+   "share": 0.92
+  },
+  "2388": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 24,
+   "share": 0.96
+  },
+  "6751": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 10,
+   "share": 1.0
+  },
+  "6663": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 7,
+   "share": 0.86
+  },
+  "2394": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "2384": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 14,
+   "share": 0.93
+  },
+  "7206": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "2425": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 8,
+   "share": 1.0
+  },
+  "570": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 16,
+   "share": 1.0
+  },
+  "2484": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 43,
+   "share": 0.98
+  },
+  "2375": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 16,
+   "share": 1.0
+  },
+  "709": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 7,
+   "share": 1.0
+  },
+  "1319": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 8,
+   "share": 0.88
+  },
+  "2401": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 16,
+   "share": 1.0
+  },
+  "2362": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 6,
+   "share": 0.83
+  },
+  "3762": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 23,
+   "share": 0.96
+  },
+  "2410": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "2380": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 24,
+   "share": 0.92
+  },
+  "2347": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 12,
+   "share": 0.83
+  },
+  "2474": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 24,
+   "share": 0.83
+  },
+  "3561": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 10,
+   "share": 0.9
+  },
+  "4250": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 8,
+   "share": 1.0
+  },
+  "2333": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 13,
+   "share": 1.0
+  },
+  "4033": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "6757": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "2520": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 10,
+   "share": 1.0
+  },
+  "2509": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 30,
+   "share": 0.8
+  },
+  "571": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 22,
+   "share": 0.91
+  },
+  "2290": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "2288": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "2518": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 18,
+   "share": 1.0
+  },
+  "1648": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "6187": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 9,
+   "share": 1.0
+  },
+  "2354": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 14,
+   "share": 0.93
+  },
+  "6740": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 22,
+   "share": 1.0
+  },
+  "7743": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 15,
+   "share": 1.0
+  },
+  "2383": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 23,
+   "share": 0.96
+  },
+  "2403": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 16,
+   "share": 1.0
+  },
+  "525": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 17,
+   "share": 0.94
+  },
+  "178": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 5,
+   "share": 0.8
+  },
+  "109": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 21,
+   "share": 0.86
+  },
+  "2473": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "2436": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 23,
+   "share": 0.87
+  },
+  "6756": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "2478": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 22,
+   "share": 0.82
+  },
+  "2437": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 30,
+   "share": 0.93
+  },
+  "326": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 24,
+   "share": 0.92
+  },
+  "3751": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 21,
+   "share": 0.9
+  },
+  "559": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 16,
+   "share": 1.0
+  },
+  "2387": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 11,
+   "share": 0.91
+  },
+  "2480": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 24,
+   "share": 0.83
+  },
+  "2386": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 10,
+   "share": 1.0
+  },
+  "2381": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 22,
+   "share": 0.95
+  },
+  "2395": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 21,
+   "share": 1.0
+  },
+  "6739": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 15,
+   "share": 1.0
+  },
+  "2431": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 17,
+   "share": 1.0
+  },
+  "644": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 14,
+   "share": 1.0
+  },
+  "484": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 12,
+   "share": 0.92
+  },
+  "4025": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 12,
+   "share": 0.83
+  },
+  "3593": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 22,
+   "share": 0.82
+  },
+  "2385": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 14,
+   "share": 0.93
+  },
+  "4698": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 26,
+   "share": 0.92
+  },
+  "2432": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 27,
+   "share": 0.89
+  },
+  "2447": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 19,
+   "share": 1.0
+  },
+  "6177": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 10,
+   "share": 1.0
+  },
+  "130": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 13,
+   "share": 0.85
+  },
+  "4314": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "4198": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 7,
+   "share": 1.0
+  },
+  "536": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 10,
+   "share": 1.0
+  },
+  "3916": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "2468": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 40,
+   "share": 0.93
+  },
+  "6754": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 8,
+   "share": 1.0
+  },
+  "3753": {
+   "courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "courseTitle": "Math Academy - Algebra I",
+   "students": 5,
+   "share": 0.8
+  },
+  "2406": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 10,
+   "share": 1.0
+  },
+  "4536": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 12,
+   "share": 1.0
+  },
+  "555": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 15,
+   "share": 1.0
+  },
+  "2445": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 27,
+   "share": 1.0
+  },
+  "2433": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 20,
+   "share": 0.9
+  },
+  "2379": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 19,
+   "share": 1.0
+  },
+  "2315": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "556": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 14,
+   "share": 1.0
+  },
+  "6802": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 16,
+   "share": 1.0
+  },
+  "2329": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 22,
+   "share": 0.86
+  },
+  "3578": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "6744": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 10,
+   "share": 0.9
+  },
+  "2483": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 8,
+   "share": 1.0
+  },
+  "2463": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 22,
+   "share": 1.0
+  },
+  "533": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 25,
+   "share": 0.96
+  },
+  "2408": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 9,
+   "share": 0.89
+  },
+  "3989": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 6,
+   "share": 1.0
+  },
+  "2458": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 8,
+   "share": 1.0
+  },
+  "6759": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 8,
+   "share": 1.0
+  },
+  "2412": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 20,
+   "share": 0.95
+  },
+  "541": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 15,
+   "share": 1.0
+  },
+  "1240": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 8,
+   "share": 1.0
+  },
+  "2470": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 12,
+   "share": 1.0
+  },
+  "2357": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 15,
+   "share": 0.93
+  },
+  "2413": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 8,
+   "share": 1.0
+  },
+  "668": {
+   "courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "courseTitle": "Math Academy - Algebra I",
+   "students": 5,
+   "share": 1.0
+  },
+  "2356": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 9,
+   "share": 0.89
+  },
+  "544": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "2450": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 15,
+   "share": 1.0
+  },
+  "2284": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "520": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 9,
+   "share": 0.89
+  },
+  "2399": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 23,
+   "share": 0.96
+  },
+  "6337": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 7,
+   "share": 0.86
+  },
+  "1135": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 17,
+   "share": 1.0
+  },
+  "2389": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 21,
+   "share": 1.0
+  },
+  "6742": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 9,
+   "share": 1.0
+  },
+  "589": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 9,
+   "share": 0.89
+  },
+  "1224": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 8,
+   "share": 0.88
+  },
+  "530": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 23,
+   "share": 1.0
+  },
+  "560": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 13,
+   "share": 1.0
+  },
+  "110": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 10,
+   "share": 1.0
+  },
+  "535": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "6729": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 9,
+   "share": 1.0
+  },
+  "2459": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 21,
+   "share": 0.95
+  },
+  "3537": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 16,
+   "share": 1.0
+  },
+  "2317": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 12,
+   "share": 1.0
+  },
+  "2430": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "4196": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 5,
+   "share": 0.8
+  },
+  "2461": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 14,
+   "share": 0.93
+  },
+  "2204": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 11,
+   "share": 1.0
+  },
+  "2516": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 23,
+   "share": 0.83
+  },
+  "2443": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "3960": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 10,
+   "share": 0.9
+  },
+  "2427": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 9,
+   "share": 0.89
+  },
+  "356": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 6,
+   "share": 0.83
+  },
+  "3554": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 6,
+   "share": 0.83
+  },
+  "3872": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 19,
+   "share": 0.95
+  },
+  "2353": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 14,
+   "share": 1.0
+  },
+  "2505": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 18,
+   "share": 1.0
+  },
+  "667": {
+   "courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "courseTitle": "Math Academy - Algebra I",
+   "students": 5,
+   "share": 1.0
+  },
+  "529": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 18,
+   "share": 1.0
+  },
+  "2318": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 8,
+   "share": 1.0
+  },
+  "2449": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "3747": {
+   "courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "courseTitle": "Math Academy - Algebra I",
+   "students": 5,
+   "share": 1.0
+  },
+  "2373": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 18,
+   "share": 1.0
+  },
+  "1863": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 6,
+   "share": 1.0
+  },
+  "383": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 8,
+   "share": 1.0
+  },
+  "3729": {
+   "courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "courseTitle": "Math Academy - Algebra I",
+   "students": 5,
+   "share": 0.8
+  },
+  "1985": {
+   "courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "courseTitle": "Math Academy - Algebra I",
+   "students": 5,
+   "share": 0.8
+  },
+  "679": {
+   "courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "courseTitle": "Math Academy - Algebra I",
+   "students": 5,
+   "share": 1.0
+  },
+  "2485": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 12,
+   "share": 0.92
+  },
+  "2328": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 32,
+   "share": 0.81
+  },
+  "1603": {
+   "courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "courseTitle": "Math Academy - Algebra I",
+   "students": 5,
+   "share": 0.8
+  },
+  "3843": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 9,
+   "share": 1.0
+  },
+  "2285": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 9,
+   "share": 1.0
+  },
+  "2281": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 16,
+   "share": 1.0
+  },
+  "2396": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 10,
+   "share": 0.8
+  },
+  "2441": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 10,
+   "share": 0.8
+  },
+  "6216": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 11,
+   "share": 1.0
+  },
+  "2325": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 7,
+   "share": 1.0
+  },
+  "6755": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "2372": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 14,
+   "share": 0.93
+  },
+  "704": {
+   "courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "courseTitle": "Math Academy - Algebra I",
+   "students": 5,
+   "share": 0.8
+  },
+  "1150": {
+   "courseSourcedId": "702b2bb3-1337-410a-9c78-c6fb6cea782b",
+   "courseTitle": "Math Academy - SAT Math Fundamentals",
+   "students": 5,
+   "share": 1.0
+  },
+  "1819": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 7,
+   "share": 1.0
+  },
+  "3937": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 10,
+   "share": 1.0
+  },
+  "548": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 23,
+   "share": 0.83
+  },
+  "6188": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 8,
+   "share": 0.88
+  },
+  "545": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 15,
+   "share": 1.0
+  },
+  "669": {
+   "courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "courseTitle": "Math Academy - Algebra I",
+   "students": 5,
+   "share": 1.0
+  },
+  "2339": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 25,
+   "share": 0.92
+  },
+  "3934": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "3976": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 5,
+   "share": 0.8
+  },
+  "6752": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "4315": {
+   "courseSourcedId": "6e9caba5-4d14-436d-b61f-e0f761a5d5a8",
+   "courseTitle": "Math Academy - Geometry",
+   "students": 5,
+   "share": 1.0
+  },
+  "528": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 22,
+   "share": 1.0
+  },
+  "522": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 7,
+   "share": 0.86
+  },
+  "540": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 11,
+   "share": 0.91
+  },
+  "2205": {
+   "courseSourcedId": "pcb-course-3bf2f190c22f4e4693aeca92fcd307bb",
+   "courseTitle": "Math Academy - 8th grade",
+   "students": 9,
+   "share": 1.0
+  },
+  "1223": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 9,
+   "share": 0.89
+  },
+  "2438": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 18,
+   "share": 0.89
+  },
+  "6753": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "2561": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 7,
+   "share": 0.86
+  },
+  "6758": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 7,
+   "share": 1.0
+  },
+  "6190": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 8,
+   "share": 0.88
+  },
+  "2343": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "1138": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 7,
+   "share": 1.0
+  },
+  "843": {
+   "courseSourcedId": "6e9caba5-4d14-436d-b61f-e0f761a5d5a8",
+   "courseTitle": "Math Academy - Geometry",
+   "students": 5,
+   "share": 0.8
+  },
+  "811": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 6,
+   "share": 0.83
+  },
+  "6760": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 11,
+   "share": 1.0
+  },
+  "491": {
+   "courseSourcedId": "6e9caba5-4d14-436d-b61f-e0f761a5d5a8",
+   "courseTitle": "Math Academy - Geometry",
+   "students": 5,
+   "share": 1.0
+  },
+  "7222": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "2278": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 7,
+   "share": 0.86
+  },
+  "6368": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 6,
+   "share": 0.83
+  },
+  "2289": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 7,
+   "share": 0.86
+  },
+  "1144": {
+   "courseSourcedId": "6e9caba5-4d14-436d-b61f-e0f761a5d5a8",
+   "courseTitle": "Math Academy - Geometry",
+   "students": 5,
+   "share": 1.0
+  },
+  "2344": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "2330": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 11,
+   "share": 1.0
+  },
+  "2286": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "2321": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 10,
+   "share": 1.0
+  },
+  "2378": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "2323": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 8,
+   "share": 1.0
+  },
+  "3585": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 8,
+   "share": 1.0
+  },
+  "6749": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "6805": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 7,
+   "share": 1.0
+  },
+  "2414": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "2326": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 7,
+   "share": 1.0
+  },
+  "336": {
+   "courseSourcedId": "702b2bb3-1337-410a-9c78-c6fb6cea782b",
+   "courseTitle": "Math Academy - SAT Math Fundamentals",
+   "students": 6,
+   "share": 0.83
+  },
+  "565": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "2291": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "2434": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "2374": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "502": {
+   "courseSourcedId": "6e9caba5-4d14-436d-b61f-e0f761a5d5a8",
+   "courseTitle": "Math Academy - Geometry",
+   "students": 5,
+   "share": 1.0
+  },
+  "3994": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 5,
+   "share": 0.8
+  },
+  "6761": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "2462": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 17,
+   "share": 1.0
+  },
+  "2442": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 11,
+   "share": 1.0
+  },
+  "2557": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "6186": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 5,
+   "share": 0.8
+  },
+  "3935": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 5,
+   "share": 0.8
+  },
+  "2316": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 8,
+   "share": 1.0
+  },
+  "4002": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 6,
+   "share": 1.0
+  },
+  "1987": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 8,
+   "share": 0.88
+  },
+  "965": {
+   "courseSourcedId": "6f8c5847-15e7-401a-a1a8-48d218d851f9",
+   "courseTitle": "Math Academy - 6th grade",
+   "students": 5,
+   "share": 1.0
+  },
+  "2563": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 5,
+   "share": 0.8
+  },
+  "680": {
+   "courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "courseTitle": "Math Academy - Algebra I",
+   "students": 5,
+   "share": 1.0
+  },
+  "2314": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "4026": {
+   "courseSourcedId": "2d89cbb0-b1b3-4523-9619-44964404907c",
+   "courseTitle": "Math Academy - Algebra I",
+   "students": 5,
+   "share": 0.8
+  },
+  "2398": {
+   "courseSourcedId": "b65b572a-cc91-409d-9279-1da1b90d40e6",
+   "courseTitle": "Math Academy - 5th grade",
+   "students": 6,
+   "share": 1.0
+  },
+  "6363": {
+   "courseSourcedId": "076760c9-dfe1-4a40-a6a1-5f3d074609b0",
+   "courseTitle": "Math Academy - Prealgebra",
+   "students": 6,
+   "share": 1.0
+  },
+  "7225": {
+   "courseSourcedId": "e399429f-1baf-4bed-9041-21ab50a88256",
+   "courseTitle": "Math Academy - 7th grade",
+   "students": 5,
+   "share": 1.0
+  }
+ }
 }
