@@ -210,7 +210,7 @@ Each carries the query that measures its blast radius today; no figure of this d
 
 ## Open questions — what this document does NOT assert
 
-Filed on this skill's own feedback wire (route published in the `/skill` front under `feedback`). Stated open, never guessed:
+Filed on this skill's own feedback wire (route published in the `/skill` front under `feedback`; each ticket is readable at `GET <feedback.open>/{number}` and mirrored daily to a GitHub issue on the repo named there). Stated open, never guessed:
 
 - **#1 — Which Timeback course ids are on the progression's approved Math Academy list.** The platform note says a fixed list exists; it is not served. This document does not assert which classes count for progression.
 - **#2 — Whether Timeback stores the Math Academy student id anywhere.** The onboarding response returns it; no reader-reachable field carries it. This document asserts only that the login username is on `userProfiles`.

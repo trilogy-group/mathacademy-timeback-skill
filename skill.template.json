@@ -58,8 +58,9 @@
     "open": "GET {{BASE}}/feedback  (open items; ?state=open|closed|all)",
     "resolved": "GET {{BASE}}/feedback?state=closed  (or {{BASE}}/feedback/{number} for one ticket with its thread)",
     "caps": { "title": 200, "body": 10000 },
+    "tracker": "this skill's own tracker, served at GET {{BASE}}/feedback/{number}; every ticket is mirrored daily into a GitHub issue on {{REPO}} (labels skill-feedback + mathacademy_timeback) and closures on GitHub are copied back",
     "repo": "{{REPO}}",
-    "note": "Files an attributed GitHub issue labelled skill-feedback + mathacademy_timeback to the repo above and returns its number and URL. reporter is a free-text attribution and is required. kind is optional ('ask' | 'report'). Evidence in a ticket is a class, a field, a rule or a query; never a student's name, contact or identifying row."
+    "note": "Files an attributed ticket on the skill's own tracker and returns its number and URL at once; the ticket gains a githubUrl once the daily mirror runs. reporter is a free-text attribution and is required. kind is optional ('ask' | 'report'). Evidence in a ticket is a class, a field, a rule or a query; never a student's name, contact or identifying row."
   },
   "provider": {
     "genesis": "Written by an agent against the live Timeback wire on 2026-09-16, cross-checked once against the Math Academy API during the build, kept true by reader feedback.",

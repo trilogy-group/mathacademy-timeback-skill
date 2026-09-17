@@ -1,0 +1,49 @@
+name: mirror feedback tickets to GitHub issues
+# The skill's tracker is its own (a DynamoDB table behind the front). This job mirrors every ticket into an issue
+# here, using the repository's built-in token (no personal token anywhere), and copies closures back.
+on:
+  schedule:
+    - cron: "17 5 * * *"      # daily ~05:17 UTC
+  workflow_dispatch:
+permissions:
+  issues: write
+  contents: read
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: mirror
+        env:
+          BASE: https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws
+          GH_TOKEN: ${{ github.token }}
+          ADMIN_KEY: ${{ secrets.ADMIN_KEY }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          curl -sS "$BASE/feedback?state=all" > tickets.json
+          python3 - <<'PY'
+          import json, os, subprocess, urllib.request
+          base, key, repo = os.environ["BASE"], os.environ["ADMIN_KEY"], os.environ["REPO"]
+          tickets = json.load(open("tickets.json"))
+          def admin(n, payload):
+              req = urllib.request.Request(f"{base}/feedback/{n}/admin", data=json.dumps(payload).encode(), method="POST",
+                                           headers={"content-type": "application/json", "x-admin-key": key})
+              urllib.request.urlopen(req, timeout=60).read()
+          for t in tickets:
+              n = t["number"]
+              if not t.get("githubUrl"):
+                  full = json.load(urllib.request.urlopen(f"{base}/feedback/{n}", timeout=60))
+                  body = f"Mirror of ticket #{n} on the skill's own tracker: {t['url']}\n\nreporter: {full.get('reporter')}\nkind: {full.get('kind')}\ncreated: {full.get('createdAt')}\n\n{full.get('body','')}"
+                  out = subprocess.check_output(["gh", "issue", "create", "--repo", repo, "--title", f"[#{n}] {t['title']}"[:250], "--body", body,
+                                                 "--label", "skill-feedback", "--label", "mathacademy_timeback"], text=True).strip()
+                  admin(n, {"githubUrl": out, "comment": f"mirrored to {out}"})
+                  print("mirrored", n, "->", out)
+              else:
+                  num = t["githubUrl"].rstrip("/").split("/")[-1]
+                  st = subprocess.check_output(["gh", "issue", "view", num, "--repo", repo, "--json", "state", "--jq", ".state"], text=True).strip().lower()
+                  if st == "closed" and t["state"] != "closed":
+                      admin(n, {"state": "closed", "comment": "closed on GitHub"}); print("closed", n)
+                  if st == "open" and t["state"] == "closed":
+                      admin(n, {"state": "open", "comment": "reopened on GitHub"}); print("reopened", n)
+          PY

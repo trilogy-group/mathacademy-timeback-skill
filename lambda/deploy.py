@@ -16,8 +16,8 @@ import boto3, botocore
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 FN = "mathacademy-timeback-skill"
 ROLE = "team-dev-mathacademy-skill-lambda"
-SECRET = "sat-cohort-tracker/ci"          # existing secret; key GITHUB_TOKEN (owner-filled)
-SECRET_KEY = "GITHUB_TOKEN"
+TABLE = "mathacademy-timeback-skill-feedback"   # the skill's own tracker (DynamoDB); mirrored to GitHub issues by .github/workflows/mirror-feedback.yml
+SECRET = "sat-cohort-tracker/ci"                 # no longer used by the function (kept for --check history); the role's read on it is removed at deploy
 REPO = "trilogy-group/mathacademy-timeback-skill"
 TAGS = {"project": "mathacademy-timeback-skill", "owner": "ruchi.baid", "purpose": "dss data source skill front"}
 BOUNDARY = "arn:aws:iam::aws:policy/PowerUserAccess"
@@ -56,10 +56,12 @@ if a.cmd == "--create-roles":
                             Description="mathacademy_timeback dss skill front: serve docs + feedback wire", Tags=[{"Key": k, "Value": v} for k, v in TAGS.items()])
         print("created role", r["Role"]["Arn"])
     iam.attach_role_policy(RoleName=ROLE, PolicyArn="arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole")
-    secret_arn = sm.describe_secret(SecretId=SECRET)["ARN"]
-    iam.put_role_policy(RoleName=ROLE, PolicyName="read-one-secret", PolicyDocument=json.dumps({
-        "Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": "secretsmanager:GetSecretValue", "Resource": secret_arn}]}))
-    print("policies attached (basic execution + GetSecretValue on", SECRET, ")"); sys.exit(0)
+    table_arn = s.client("dynamodb").describe_table(TableName=TABLE)["Table"]["TableArn"]
+    iam.put_role_policy(RoleName=ROLE, PolicyName="feedback-table", PolicyDocument=json.dumps({
+        "Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": ["dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:UpdateItem", "dynamodb:Query"], "Resource": table_arn}]}))
+    try: iam.delete_role_policy(RoleName=ROLE, PolicyName="read-one-secret")   # least privilege: the function reads no secret
+    except botocore.exceptions.ClientError: pass
+    print("policies attached (basic execution + DynamoDB on", TABLE, "); secret read removed"); sys.exit(0)
 
 if a.cmd == "deploy":
     subprocess.check_call([sys.executable, str(ROOT / "scripts" / "build_public.py")])
@@ -71,7 +73,9 @@ if a.cmd == "deploy":
         for p in (ROOT / "public").rglob("*"):
             if p.is_file(): z.write(p, "public/" + p.relative_to(ROOT / "public").as_posix())
     code = buf.getvalue(); print(f"zip: {len(code):,} bytes")
-    env = {"Variables": {"REPO": REPO, "SOURCE": "mathacademy_timeback", "SECRET_NAME": SECRET, "SECRET_KEY": SECRET_KEY, "GIT_VERSION": git}}
+    base = json.loads((ROOT / "deploy.json").read_text(encoding="utf-8"))["base"].rstrip("/")
+    admin_key = (ROOT / "_scratch" / "_admin_key.txt").read_text(encoding="utf-8").strip()   # random, generated at build; same value is the repo's ADMIN_KEY Actions secret
+    env = {"Variables": {"TABLE": TABLE, "SOURCE": "mathacademy_timeback", "GIT_VERSION": git, "BASE": base, "ADMIN_KEY": admin_key, "MIRROR_REPO": REPO}}
     arn = role_arn() or sys.exit("role missing: run --create-roles first")
     if fn_exists():
         lam.update_function_configuration(FunctionName=FN, Environment=env, Timeout=30, MemorySize=256, Runtime="nodejs20.x", Handler="index.handler", Role=arn)

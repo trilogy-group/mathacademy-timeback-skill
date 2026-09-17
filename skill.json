@@ -41,14 +41,14 @@
     "DICTIONARY.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/DICTIONARY.md",
       "purpose": "DICTIONARY.md carries what the OpenAPI cannot: how each Math Academy field inside Timeback is born, what its values mean, the containers and their range, the invariants and their standing, and the numbered traps. Open it before trusting any field.",
-      "sha256": "e52227843f2ba5b3e46c4e5abedc82f29ab617c82e6d916dafb3146e0a5188a2",
-      "gitVersion": "d425287"
+      "sha256": "91d19370f0d447eca8f637ff1991f06723b133ef0d2c2d5fc0ae761376fbdade",
+      "gitVersion": "d86c1d6"
     },
     "ENABLEMENT.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/ENABLEMENT.md",
       "purpose": "ENABLEMENT.md puts the source to work: eight capabilities, a question-to-call catalog, and eight worked examples with exact routes, output shapes and failure modes. Open it when you need to act.",
-      "sha256": "4d686246bfb1c9f60d2da8aaedde3da59121f3ef5a07513cbaa5202babc9826e",
-      "gitVersion": "d425287"
+      "sha256": "ffd455746d4da03d319d6a8dbf78ba7c0269a71c0b5cb378249da96081159642",
+      "gitVersion": "d86c1d6"
     },
     "note": "sha256 + gitVersion pin the exact bytes served at each url on this deploy; the .md routes echo them as X-Doc-SHA256 / X-Doc-Version headers."
   },
@@ -58,8 +58,9 @@
     "open": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/feedback  (open items; ?state=open|closed|all)",
     "resolved": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/feedback?state=closed  (or https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/feedback/{number} for one ticket with its thread)",
     "caps": { "title": 200, "body": 10000 },
+    "tracker": "this skill's own tracker, served at GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/feedback/{number}; every ticket is mirrored daily into a GitHub issue on trilogy-group/mathacademy-timeback-skill (labels skill-feedback + mathacademy_timeback) and closures on GitHub are copied back",
     "repo": "trilogy-group/mathacademy-timeback-skill",
-    "note": "Files an attributed GitHub issue labelled skill-feedback + mathacademy_timeback to the repo above and returns its number and URL. reporter is a free-text attribution and is required. kind is optional ('ask' | 'report'). Evidence in a ticket is a class, a field, a rule or a query; never a student's name, contact or identifying row."
+    "note": "Files an attributed ticket on the skill's own tracker and returns its number and URL at once; the ticket gains a githubUrl once the daily mirror runs. reporter is a free-text attribution and is required. kind is optional ('ask' | 'report'). Evidence in a ticket is a class, a field, a rule or a query; never a student's name, contact or identifying row."
   },
   "provider": {
     "genesis": "Written by an agent against the live Timeback wire on 2026-09-16, cross-checked once against the Math Academy API during the build, kept true by reader feedback.",
