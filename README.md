@@ -11,7 +11,7 @@ map is fetched live on first request and cached.
 
 | Path | What |
 |---|---|
-| `DICTIONARY.md` | the product lens: containers, field genesis, invariants, 26 numbered traps, open questions |
+| `DICTIONARY.md` | the product lens: containers, field genesis, invariants, 26 numbered traps, open questions (tickets 7–11, 19–24) |
 | `ENABLEMENT.md` | 12 capabilities, question→call catalog, 12 worked examples with output shapes |
 | `store/snapshot_lib.py`, `store/agreement.py` | the store library: bulk pull, roster, match chain (known id → username → email → lookup → name), agreement rule, DynamoDB layout, activity pull |
 | `lambda/nightly/handler.py`, `lambda/nightly/deploy.py` | the nightly Lambda (python3.12, 900 s; modes `snapshot` and `activity`, resumable) and its roles + EventBridge schedules |
@@ -34,7 +34,7 @@ map is fetched live on first request and cached.
 |---|---|
 | Front | `https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/skill` |
 | Documents | `…/DICTIONARY.md`, `…/ENABLEMENT.md`, `…/reference/*.json` on the same origin |
-| Store | `GET …/store` (status, counts, byCourse, history); `GET …/store/course/{id}`; `GET …/store/student/{sourcedId}` (or `?email=`) + `/history`, `/activity?from&to`, `/knowledge` with `Authorization: Bearer <reader's Timeback token>`; the Lambda replays the token against Timeback and serves only students it answers 200 for; Math Academy is called only for the knowledge map (cached 7 d) and a live lookup on a store miss |
+| Store | `GET …/store` (status, counts, byCourse, history); `GET …/store/course/{id}` (+ `/students[?agreement=]`, `/activity?date=`), `GET …/store/courses`; `GET …/store/student/{sourcedId}[?minimal=1]` (or `?email=`) + `/history`, `/activity?from&to`, `/knowledge` with `Authorization: Bearer <reader's Timeback token>`; the Lambda replays the token against Timeback and serves only students it answers 200 for; Math Academy is called only for the knowledge map (cached 7 d) and a live lookup on a store miss |
 | Nightly | Lambda `mathacademy-timeback-nightly` (role `team-dev-mathacademy-skill-nightly`: logs, `sat-cohort-tracker/ci` secret read, store table, self re-invoke), schedules `mathacademy-timeback-snapshot-nightly` 03:00 and `mathacademy-timeback-activity-nightly` 03:45 America/Chicago via role `team-dev-mathacademy-skill-scheduler`; `py -3 lambda/nightly/deploy.py check|invoke snapshot|invoke activity <day>|disable|enable` |
 | Feedback wire | `POST …/feedback` (open, caps 200/10000) → 201; `GET …/feedback[?state=]`, `GET …/feedback/{n}` |
 | Tracker | DynamoDB table `mathacademy-timeback-skill-feedback` (us-east-1), the skill's own; mirrored daily into this repo's issues by `.github/workflows/mirror-feedback.yml` using the repo's built-in token; closures on GitHub copied back |

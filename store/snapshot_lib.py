@@ -16,9 +16,9 @@ Table mathacademy-timeback-skill-store (pk S / sk S):
 import base64, datetime, json, re, time, urllib.error, urllib.parse, urllib.request
 
 try:
-    from .agreement import agreement, summarise, ma_state
+    from .agreement import agreement, summarise, ma_state, ma_courses
 except ImportError:  # flat import when zipped into a Lambda
-    from agreement import agreement, summarise, ma_state
+    from agreement import agreement, summarise, ma_state, ma_courses
 
 TB = "https://api.alpha-1edtech.ai"
 MA = "https://mathacademy.com/api/beta10"
@@ -188,6 +188,9 @@ def counts_for(bulk, roster, students, tb_unmatched, ma_unmatched):
             "tbUnmatched": len(tb_unmatched), "tbUnmatchedByReason": {r: sum(1 for u in tb_unmatched if u["reason"] == r) for r in sorted({u["reason"] for u in tb_unmatched})},
             "maUnmatched": len(ma_unmatched), "maUnmatchedDeactivated": sum(1 for s_ in ma_unmatched if s_.get("deactivated")),
             "maNotStarted": sum(1 for s_ in students if ma_state(s_["mathAcademy"].get("currentCourse")) == "not started"),
+            "nonTest": {"students": sum(1 for r in roster.values() if not r["isTestUser"]),
+                        "maNotStarted": sum(1 for s_ in students if not s_["isTestUser"] and ma_state(s_["mathAcademy"].get("currentCourse")) == "not started"),
+                        "byAgreement": {k: sum(1 for s_ in students if not s_["isTestUser"] and s_["courseAgreementAtSnapshot"] == k) for k in sorted({s_["courseAgreementAtSnapshot"] for s_ in students})}},
             "courseAgreement": overall}, by_course
 
 
@@ -216,12 +219,14 @@ def known_ids_from_table(ddb, table):
 
 def hist_row(st, date):
     cc = (st["mathAcademy"].get("currentCourse") or {})
-    return {"pk": S(f"hist#{st['sourcedId']}"), "sk": S(date), "courseId": S(cc.get("id")), "courseName": S(cc.get("name")),
-            "progress": {"N": str(cc.get("progress") or 0)}, "xpRemaining": {"N": str(cc.get("xpRemaining") or 0)},
+    row = {"pk": S(f"hist#{st['sourcedId']}"), "sk": S(date), "courseId": S(cc.get("id")), "courseName": S(cc.get("name")),
+            "xpRemaining": {"N": str(cc.get("xpRemaining") or 0)},
             "completed": S(cc.get("completed") or ""), "startDate": S(cc.get("startDate") or ""), "grade": {"N": str(cc.get("grade") or 0)},
             "letterGrade": S(cc.get("letterGrade") or ""), "estimatedScore": {"N": str(cc.get("estimatedScore") or 0)},
             "deactivated": {"BOOL": bool(st["mathAcademy"].get("deactivated"))}, "state": S(ma_state(cc)),
             "agreement": S(st["courseAgreementAtSnapshot"]), "tbCourseIds": S(json.dumps([x["courseSourcedId"] for x in st["seats"]]))}
+    if cc.get("progress") is not None: row["progress"] = {"N": str(cc["progress"])}
+    return row
 
 def write_snapshot(ddb, table, snap, nightly=True, source="manual"):
     """Replace the student / tb_unmatched / ma_unmatched rows, append hist rows for the day, rewrite meta. Returns counts."""
@@ -248,7 +253,8 @@ def write_snapshot(ddb, table, snap, nightly=True, source="manual"):
     if not any(h["at"] == at for h in history): history.append({"at": at, "source": source, "matched": len(snap["students"]), "roster": snap["counts"]["timebackRoster"]})
     meta = {"pk": S("meta"), "sk": S("snapshot"), "snapshotAt": S(at), "rosterReadAt": S(snap.get("rosterReadAt") or at), "apiVersion": S(snap["apiVersion"]),
             "calls": S(json.dumps(snap["calls"])), "counts": S(json.dumps(snap["counts"])), "byCourse": S(json.dumps(snap.get("byCourse") or {})),
-            "history": S(json.dumps(history[-400:])), "staleAfterDays": {"N": "7" if not nightly else "2"}, "nightly": {"BOOL": bool(nightly)}}
+            "history": S(json.dumps(history[-400:])), "staleAfterDays": {"N": "7" if not nightly else "2"}, "nightly": {"BOOL": bool(nightly)},
+            "maCourses": S(json.dumps(ma_courses(snap["students"], snap["ma_unmatched"])))}
     for k in ("activityLastDate", "lastActivityRun", "readMaLookup", "readMaKnowledge"):
         if prev and k in prev: meta[k] = prev[k]
     ddb.put_item(TableName=table, Item=meta)
@@ -310,8 +316,31 @@ def run_activity(c, ddb, table, day, tz_offset_hours=-5, time_left=lambda: 10 **
     else:
         sids = active_sids_for_day(c, day, tz_offset_hours)
         ids = {it["sk"]["S"]: it["maId"]["S"] for it in _query_all(ddb, table, "student", "sk, maId") if "maId" in it}
+        missing = [s_ for s_ in sids if s_ not in ids]
+        tried = {it["sk"]["S"] for it in _query_all(ddb, table, "tb_unmatched", "sk")}
+        found = 0
+        for s_ in missing:  # active students with no stored id: seatless (trap 21) or new; one Timeback read + one Math Academy lookup each, once
+            if s_ in tried or time_left() < 120: continue
+            try: u = c.tb(f"/ims/oneroster/rostering/v1p2/users/{s_}").get("user") or {}
+            except Exception: continue
+            email = (u.get("email") or u.get("username") or "").lower(); now = datetime.datetime.now(UTC).isoformat(timespec="seconds")
+            d, err = c.ma(f"/students/{urllib.parse.quote(email)}", "ma_lookup") if email else (None, "no email")
+            if d is not None and (d.get("student") or {}):
+                st = d["student"]; st = {**st, "id": st.get("id") or st.get("studentId")}
+                ddb.put_item(TableName=table, Item={"pk": S("student"), "sk": S(s_), "ma": S(json.dumps(st, ensure_ascii=False)), "maId": S(st["id"]), "matchedBy": S("activity-lookup"),
+                                                    "courseAgreementAtSnapshot": S(agreement(st, [])), "seats": S("[]"), "isTestUser": {"BOOL": bool((u.get("metadata") or {}).get("isTestUser"))},
+                                                    "snapshotAt": S(now), "figuresAsOf": S(now)})
+                ids[s_] = str(st["id"]); found += 1
+            else:
+                ddb.put_item(TableName=table, Item={"pk": S("tb_unmatched"), "sk": S(s_), "reason": S(err or "empty"), "seats": S("[]"), "isTestUser": {"BOOL": bool((u.get("metadata") or {}).get("isTestUser"))},
+                                                    "snapshotAt": S(now), "lastTriedAt": S(now), "email": S(email)})
+            time.sleep(0.15)
         pending = [[s_, ids[s_]] for s_ in sids if s_ in ids]; no_id = len(sids) - len(pending); total = len(pending); done = 0; errors = 0
-        c.log(f"activity {day}: {len(sids)} active students, {total} with a Math Academy id, window {day_start.isoformat()}..{day_end.isoformat()}")
+        for s_ in sids:
+            if s_ not in ids:  # leave a per-day reason on the row a reader will hit
+                ddb.put_item(TableName=table, Item={"pk": S(f"actday#{s_}"), "sk": S(day), "error": S("no Math Academy id for this student (not on the roster; the lookup by Timeback email found no account under this organisation's key)"),
+                                                    "fetchedAt": S(datetime.datetime.now(UTC).isoformat(timespec="seconds"))})
+        c.log(f"activity {day}: {len(sids)} active students, {len(missing)} without a stored id ({found} found by lookup), {total} to pull, window {day_start.isoformat()}..{day_end.isoformat()}")
     def save(status):
         ddb.put_item(TableName=table, Item={"pk": S("actrun"), "sk": S(day), "status": S(status), "total": {"N": str(total)}, "done": {"N": str(done)}, "errors": {"N": str(errors)},
                                             "noMaId": {"N": str(no_id)}, "pending": S(json.dumps(pending)), "windowUtc": S(f"{day_start.isoformat()}/{day_end.isoformat()}"),

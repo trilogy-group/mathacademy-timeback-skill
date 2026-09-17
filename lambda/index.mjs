@@ -13,7 +13,7 @@
 // Env: TABLE, STORE_TABLE, TB_BASE, SOURCE, GIT_VERSION, ADMIN_KEY, MIRROR_REPO (owner/name, informational).
 import { readFileSync, existsSync } from "node:fs";
 import { createHash, timingSafeEqual } from "node:crypto";
-import { DynamoDBClient, PutItemCommand, GetItemCommand, UpdateItemCommand, QueryCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, PutItemCommand, GetItemCommand, UpdateItemCommand, QueryCommand, BatchGetItemCommand } from "@aws-sdk/client-dynamodb";
 import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
 
 const CAPS = { title: 200, body: 10000 };
@@ -74,13 +74,17 @@ async function queryAll(pk, extra = {}) {
 }
 const num = v => v?.N !== undefined ? Number(v.N) : null;
 const unmarshalFlat = it => Object.fromEntries(Object.entries(it).map(([k, v]) => [k, v.S !== undefined ? v.S : v.N !== undefined ? Number(v.N) : v.BOOL !== undefined ? v.BOOL : null]));
-const maState = cc => !cc ? null : cc.completed ? "completed" : ((cc.progress || 0) === 0 && (cc.xpRemaining || 0) === 0) ? "not started" : "in progress";
+const maState = cc => !cc ? null : cc.completed ? "completed" : (cc.progress === null || cc.progress === undefined) ? "in progress" : cc.progress >= 0.995 ? "at 100, not marked complete" : cc.progress === 0 ? "not started" : "in progress";
+const AGREEMENT_VALUES = ["agree", "agree, math academy course completed", "disagree", "disagree, math academy course completed", "no current timeback seat", "math academy has no current course", "no math academy record", "not in snapshot"];
+const agreementOf = (ma, seats) => { const name = ma?.currentCourse?.name; if (!name) return "math academy has no current course"; if (!seats.length) return "no current timeback seat"; const done = !!ma.currentCourse?.completed; return seats.some(s => normCourse(s.courseName) === normCourse(name)) ? (done ? "agree, math academy course completed" : "agree") : (done ? "disagree, math academy course completed" : "disagree"); };
+const stripPii = ma => { if (!ma) return ma; const { username, firstName, lastName, league, schedule, ...rest } = ma; return rest; };
 const STATUS_NOTES = {
   refresh: "nightly: snapshot at 03:00 America/Chicago (bulk list + roster + match), activity pull at 03:45 for the previous local day; history lists every snapshotAt ever loaded; a student missing from the snapshot is looked up live once when first asked for.",
   staleness: "stale is true once snapshotAgeHours exceeds staleAfterDays*24 (2 days once nightly runs; a missed night shows here first); past that, quote mathAcademy figures only with their date and prefer Timeback's live containers (ENABLEMENT ex. 3) for progress.",
   snapshotCalls: "what the last snapshot run cost: timeback GETs, Math Academy bulk pages, Math Academy per-student lookups (it does not include the activity pull or read-time calls).",
   lastActivityRun: "the last finished activity pull: its day, students, done, errors, students without a Math Academy id, Math Academy calls, the UTC window used, finishedAt.",
-  readCalls: "Math Academy calls this front has made on readers' behalf since the store began: live lookups on a miss and knowledge-map fetches. Reads are NOT free of Math Academy calls: a miss costs one, a knowledge map costs one per course id per 7 days.",
+  readCalls: "estate-wide (all readers) count of Math Academy calls this front has made on readers' behalf since the store began: live lookups on a miss and knowledge-map fetches. Reads are NOT free of Math Academy calls: a miss costs one, a knowledge map costs one per course id per 7 days. /activity, /history and the course routes never reach Math Academy and may be looped.",
+  range: "the store holds every student with a current in-window Math Academy seat at rosterReadAt, plus students added by a live lookup (asked for by a reader, or active on a day the activity pull ran); a student progression has moved out of Math Academy, or left seatless, is otherwise absent (courseAgreement 'not in snapshot').",
   schedule: "the two EventBridge schedules and the next snapshot due; firstScheduledRunHasHappened is false until the first 03:00 run lands (history[].source says schedule or manual).",
   counts: "counts.courseAgreement uses the same vocabulary as the rows (agree | disagree | disagree, math academy course completed | no math academy record); byCourse breaks the roster down by Timeback course sourcedId with test users counted separately; no student values anywhere here.",
 };
@@ -97,9 +101,10 @@ async function storeStudent(event, q, sidFromPath) {
   }
   if (!sid) return resp(400, { error: "give /store/student/{sourcedId} or /store/student?email=" });
   const gate = await tbGet(`/ims/oneroster/rostering/v1p2/users/${encodeURIComponent(sid)}`, token);
-  if (gate.status !== 200) return resp([401, 403, 404].includes(gate.status) ? gate.status : 502, { error: "Timeback did not answer 200 for this student under the presented token; nothing served", timebackStatus: gate.status });
+  if (gate.status !== 200) return resp(gate.status >= 400 && gate.status < 500 ? gate.status : 502, { error: "Timeback did not answer 200 for this student under the presented token; nothing served", timebackStatus: gate.status });
   const meta = await storeMeta();
   if (!meta) return resp(503, { error: "no snapshot loaded in the store yet" });
+  const minimal = q.minimal === "1" || q.fields === "minimal";
   const row = await ddb.send(new GetItemCommand({ TableName: ST, Key: { pk: S("student"), sk: S(sid) } }));
   const enr = await tbGet(`/ims/oneroster/rostering/v1p2/enrollments/?filter=${encodeURIComponent(`user.sourcedId='${sid}' AND status='active'`)}&limit=3000`, token);
   const today = new Date().toISOString().slice(0, 10);
@@ -111,12 +116,12 @@ async function storeStudent(event, q, sidFromPath) {
     // live Math Academy lookup on a miss: once per 24 h per student, keyed on the Timeback email the reader is already entitled to see
     const lastTried = un.Item?.lastTriedAt?.S ? Date.parse(un.Item.lastTriedAt.S) : 0;
     const email = gate.body?.user?.email;
-    if (email && seats.length && Date.now() - lastTried > 864e5 && (await maKey())) {
+    if (email && Date.now() - lastTried > 864e5 && (await maKey())) {
       const live = await maGet(`/students/${encodeURIComponent(email)}`);
       const now = new Date().toISOString();
       if (live.status === 200 && live.body?.student) {
         const ma = { ...live.body.student, id: live.body.student.id ?? live.body.student.studentId };
-        const agreeNow = !ma.currentCourse?.name ? "math academy has no current course" : seats.some(s => normCourse(s.courseName) === normCourse(ma.currentCourse.name)) ? "agree" : (ma.currentCourse?.completed ? "disagree, math academy course completed" : "disagree");
+        const agreeNow = agreementOf(ma, seats);
         await ddb.send(new PutItemCommand({ TableName: ST, Item: { pk: S("student"), sk: S(sid), ma: S(JSON.stringify(ma)), maId: S(ma.id), matchedBy: S("live-lookup"), courseAgreementAtSnapshot: S(agreeNow),
           seats: S(JSON.stringify(seats)), isTestUser: { BOOL: !!gate.body?.user?.metadata?.isTestUser }, snapshotAt: S(now), figuresAsOf: S(now) } }));
         await bumpRead("readMaLookup");
@@ -129,17 +134,17 @@ async function storeStudent(event, q, sidFromPath) {
       return resp(200, { ...base, inSnapshot: false, matchedBy: null, isTestUser: !!gate.body?.user?.metadata?.isTestUser, seatsAtSnapshot: seats, unmatchedReason: reason, lastTriedAt: now, mathAcademy: null, mathAcademyState: null, courseAgreement: "no math academy record",
         note: "missing from the snapshot; a live Math Academy lookup was made just now and did not find the student (HTTP 404 = no account under this organisation's key; HTTP 401 = account under another organisation's key); it will be retried after 24 hours" });
     }
-    if (un.Item) return resp(200, { ...base, inSnapshot: false, matchedBy: null, isTestUser: un.Item.isTestUser?.BOOL ?? null, seatsAtSnapshot: JSON.parse(un.Item.seats?.S || "[]"), unmatchedReason: un.Item.reason?.S, mathAcademy: null, mathAcademyState: null, courseAgreement: "no math academy record", note: "on the Timeback roster at snapshot time but no Math Academy record matched (HTTP 404 = no account under this organisation's key; HTTP 401 = account under another organisation's key; 'no email' = nothing to look up by)" });
-    return resp(200, { ...base, inSnapshot: false, matchedBy: null, mathAcademy: null, courseAgreement: "not in snapshot", note: "not on the Timeback Math Academy roster at snapshot time and not looked up since; the snapshot is one-off (no refresh scheduled) and this route makes no Math Academy call" });
+    if (un.Item) return resp(200, { ...base, inSnapshot: false, matchedBy: null, isTestUser: un.Item.isTestUser?.BOOL ?? null, seatsAtSnapshot: JSON.parse(un.Item.seats?.S || "[]"), unmatchedReason: un.Item.reason?.S, lastTriedAt: un.Item.lastTriedAt?.S || null, mathAcademy: null, mathAcademyState: null, courseAgreementAtSnapshot: "no math academy record", courseAgreement: "no math academy record", note: "on the Timeback roster at snapshot time but no Math Academy record matched (HTTP 404 = no account under this organisation's key; HTTP 401 = account under another organisation's key; 'no email' = nothing to look up by)" });
+    return resp(200, { ...base, inSnapshot: false, matchedBy: null, mathAcademy: null, mathAcademyState: null, courseAgreementAtSnapshot: null, courseAgreement: "not in snapshot", note: email ? "not on the Timeback Math Academy roster at the last snapshot; a live Math Academy lookup was tried within the last 24 hours and found nothing (see unmatchedReason on the tb_unmatched row) or the front has no Math Academy key configured" : "not on the Timeback Math Academy roster at the last snapshot and the Timeback user carries no email to look up by" });
   }
   const ma = JSON.parse(row.Item.ma.S);
   const maCourse = ma.currentCourse?.name || null;
-  const agreement = !maCourse ? "math academy has no current course" : seats.length === 0 ? "no current timeback seat" : seats.some(s => normCourse(s.courseName) === normCourse(maCourse)) ? "agree" : (ma.currentCourse?.completed ? "disagree, math academy course completed" : "disagree");
+  const agreement = agreementOf(ma, seats);
   const matchedBy = row.Item.matchedBy?.S;
   return resp(200, { ...base, inSnapshot: true, matchedBy, matchConfidence: matchedBy === "name" ? "low" : "high",
     figuresAsOf: row.Item.snapshotAt?.S || meta.snapshotAt,
     figuresBasis: ["lookup", "live-lookup"].includes(matchedBy) ? "Math Academy answered a direct per-student call at figuresAsOf" : "Math Academy's bulk list read at figuresAsOf; the list can lag Math Academy's live record by up to a day",
-    isTestUser: row.Item.isTestUser?.BOOL ?? null, mathAcademy: ma, mathAcademyState: maState(ma.currentCourse), courseAgreement: agreement, courseAgreementAtSnapshot: row.Item.courseAgreementAtSnapshot?.S || null,
+    isTestUser: row.Item.isTestUser?.BOOL ?? null, mathAcademy: minimal ? stripPii(ma) : ma, minimalView: minimal, mathAcademyState: maState(ma.currentCourse), courseAgreement: agreement, courseAgreementAtSnapshot: row.Item.courseAgreementAtSnapshot?.S || null,
     seatsAtSnapshot: JSON.parse(row.Item.seats?.S || "[]"),
     note: "mathAcademy is Math Academy's own record (copied) as of figuresAsOf; timeback.currentMathAcademySeats is read live now with your token; courseAgreement compares Math Academy's course name with EVERY current seat by normalised title and says agree if any seat matches; courseAgreementAtSnapshot is the same rule against seatsAtSnapshot. mathAcademyState 'not started' = progress 0 and xpRemaining 0 with no completion: the course is assigned and no task has been done, so neither figure is a measurement." });
 }
@@ -184,11 +189,12 @@ async function storeSub(event, q, sid, kind) {
   const token = event.headers?.authorization || event.headers?.Authorization || "";
   if (!/^Bearer\s+\S+/i.test(token)) return resp(401, { error: "send the reader's Timeback token as Authorization: Bearer <token>" });
   const gate = await tbGet(`/ims/oneroster/rostering/v1p2/users/${encodeURIComponent(sid)}`, token);
-  if (gate.status !== 200) return resp([401, 403, 404].includes(gate.status) ? gate.status : 502, { error: "Timeback did not answer 200 for this student under the presented token; nothing served", timebackStatus: gate.status });
+  if (gate.status !== 200) return resp(gate.status >= 400 && gate.status < 500 ? gate.status : 502, { error: "Timeback did not answer 200 for this student under the presented token; nothing served", timebackStatus: gate.status });
   const meta = await storeMeta(); if (!meta) return resp(503, { error: "no snapshot loaded" });
+  const fresh = { snapshotAt: meta.snapshotAt, snapshotAgeHours: meta.snapshotAgeHours, stale: meta.stale, storeBegan: meta.history[0]?.at || meta.snapshotAt };
   if (kind === "history") {
     const rows = (await queryAll(`hist#${sid}`)).map(unmarshalFlat).map(r => ({ date: r.sk, courseId: r.courseId, courseName: r.courseName, progress: r.progress, xpRemaining: r.xpRemaining, completed: r.completed || null, startDate: r.startDate || null, grade: r.grade, letterGrade: r.letterGrade || null, estimatedScore: r.estimatedScore || null, deactivated: r.deactivated, state: r.state, agreement: r.agreement, tbCourseIds: JSON.parse(r.tbCourseIds || "[]") })).sort((a, b) => a.date < b.date ? -1 : 1);
-    return resp(200, { sourcedId: sid, nights: rows.length, firstNight: rows[0]?.date || null, lastNight: rows.at(-1)?.date || null, history: rows, note: "one row per nightly snapshot since the store began (a snapshot is Math Academy's record that night); a course change shows as a different courseId between two nights and the last row of the old course carries its completed date; nothing before firstNight is known here" });
+    return resp(200, { sourcedId: sid, ...fresh, nights: rows.length, firstNight: rows[0]?.date || null, lastNight: rows.at(-1)?.date || null, history: rows, note: "one row per DATE (the last snapshot of that date wins) since storeBegan; a course change shows as a different courseId between two dates and the last row of the old course carries its completed date if Math Academy had set it by then; nothing before storeBegan is known here (Timeback's results hold that half: ENABLEMENT ex. 9)" });
   }
   if (kind === "activity") {
     const isDay = v => /^\d{4}-\d{2}-\d{2}$/.test(v) && !isNaN(Date.parse(v));
@@ -197,7 +203,9 @@ async function storeSub(event, q, sid, kind) {
     if (from > to) return resp(400, { error: "from is after to" });
     const tasks = (await queryAll(`act#${sid}`, { cond: " AND sk BETWEEN :a AND :b", vals: { ":a": S(from + "#"), ":b": S(to + "#~") } })).map(unmarshalFlat).map(r => ({ date: r.sk.split("#")[0], taskId: r.taskId, type: r.type, xp: r.xp, xpAwarded: r.xpAwarded, questions: r.questions, questionsCorrect: r.questionsCorrect, startedEpochMs: r.startedEpochMs ?? r.started, completedEpochMs: r.completedEpochMs ?? r.completed, courseId: r.courseId, courseName: r.courseName, topicId: r.topicId, topicName: r.topicName, timeElapsedMs: r.timeElapsedMs ?? r.timeElapsed, timeEngagedMs: r.timeEngagedMs ?? r.timeEngaged, timeProductiveMs: r.timeProductiveMs ?? r.timeProductive }));
     const days = (await queryAll(`actday#${sid}`, { cond: " AND sk BETWEEN :a AND :b", vals: { ":a": S(from), ":b": S(to) } })).map(unmarshalFlat).map(r => ({ date: r.sk, numTasks: r.numTasks, timeElapsedMs: r.timeElapsedMs ?? r.timeElapsed, timeEngagedMs: r.timeEngagedMs ?? r.timeEngaged, timeProductiveMs: r.timeProductiveMs ?? r.timeProductive, xpAwarded: r.xpAwarded, questions: r.questions, questionsCorrect: r.questionsCorrect, windowUtc: r.windowUtc || null, error: r.error || null, fetchedAt: r.fetchedAt }));
-    return resp(200, { sourcedId: sid, from, to, dayBoundary: "America/Chicago; each day is the UTC window in days[].windowUtc, tasks kept by their Math Academy completion time", units: "every clock and epoch here is MILLISECONDS (task and day alike); divide by 60000 for minutes", activityLastDate: meta.activityLastDate || null, days, tasks, note: "Math Academy's own per-task analysis, pulled the night after each America/Chicago day for students who had a Math Academy result in Timeback that day; a day absent here was not pulled (no Timeback result that day, or before the store began, or the pull has not reached it: see activityLastDate), never a day of zero work; ENABLEMENT example 11" });
+    const stuRow = await ddb.send(new GetItemCommand({ TableName: ST, Key: { pk: S("student"), sk: S(sid) } }));
+    const reasonIfEmpty = days.length ? null : !stuRow.Item ? "this student has no store row (no Math Academy id known), so no activity day could be pulled; read /store/student/{sourcedId} first" : `no day in ${from}..${to} was pulled for this student: either no Math Academy result in Timeback on those America/Chicago days, or the day is before storeBegan (${fresh.storeBegan.slice(0, 10)}), or after activityLastDate (${meta.activityLastDate || "none yet"})`;
+    return resp(200, { sourcedId: sid, ...fresh, reasonIfEmpty, from, to, dayBoundary: "America/Chicago; each day is the UTC window in days[].windowUtc, tasks kept by their Math Academy completion time", units: "every clock and epoch here is MILLISECONDS (task and day alike); divide by 60000 for minutes", activityLastDate: meta.activityLastDate || null, days, tasks, note: "Math Academy's own per-task analysis, pulled the night after each America/Chicago day for students who had a Math Academy result in Timeback that day; a day absent here was not pulled (no Timeback result that day, or before the store began, or the pull has not reached it: see activityLastDate), never a day of zero work; ENABLEMENT example 11" });
   }
   if (kind === "knowledge") {
     const row = await ddb.send(new GetItemCommand({ TableName: ST, Key: { pk: S("student"), sk: S(sid) } }));
@@ -213,8 +221,10 @@ async function storeSub(event, q, sid, kind) {
     if (live.status === 429) return resp(429, { error: "Math Academy's fair-use limit answered 429; try later, do not loop this route", mathAcademyStatus: 429, cachedAvailable: !!cached.Item });
     if (live.status !== 200 || !live.body) return resp(live.status === 0 ? 503 : 502, { error: "Math Academy did not return the knowledge map", mathAcademyStatus: live.status, detail: live.error || null, cachedAvailable: !!cached.Item });
     const now = new Date().toISOString(); const know = live.body.courses ? { courses: live.body.courses } : live.body;
+    const req = (know.courses || []).find(c => String(c.id) === String(courseId)) || null;
+    know.requestedCourse = req ? { id: req.id, name: req.name, completion: req.completion, indexInCourses: know.courses.indexOf(req), topics: (req.units || []).reduce((n, u) => n + (u.modules || []).reduce((m, mo) => m + (mo.topics || []).length, 0), 0) } : null;
     await ddb.send(new PutItemCommand({ TableName: ST, Item: { pk: S(`know#${sid}`), sk: S(String(courseId)), fetchedAt: S(now), knowledge: S(JSON.stringify(know)) } }));
-    return resp(200, { sourcedId: sid, courseId: String(courseId), fetchedAt: now, fromCache: false, knowledge: know, note: "one live Math Academy call was made for this map; cached for 7 days PER courseId (the prerequisite courses are already inside courses[], so asking for them by courseId spends another call for nothing); each unit/module/topic carries stability 0-1 (long-term retention); a stability of exactly 0 is Math Academy's value for topics it has no retention evidence on yet, so ties at 0 are 'not yet shown', not 'forgotten' (open question #12); ENABLEMENT example 12" });
+    return resp(200, { sourcedId: sid, courseId: String(courseId), fetchedAt: now, fromCache: false, knowledge: know, note: "one live Math Academy call was made for this map; cached for 7 days PER courseId (the prerequisite courses are already inside courses[], so asking for them by courseId spends another call for nothing); each unit/module/topic carries stability 0-1 (long-term retention); the requested course is usually the LAST element of courses[] (prerequisites first): use requestedCourse or match on id, and note courses[].id is a number while courseId here is a string; a stability of exactly 0 means Math Academy has no current retention evidence: untaught topics AND topics that were just failed both read 0 (open question, ticket 19), so zeros with a Timeback task on record belong at the top of a weakest list, not off it; ENABLEMENT example 12" });
   }
   return resp(404, { error: "unknown store sub-route" });
 }
@@ -232,7 +242,7 @@ export const handler = async (event) => {
   }
   if (p === "/store" && method === "GET") {
     const meta = await storeMeta();
-    return meta ? resp(200, { ...meta, routes: ["GET /store/student/{sourcedId}", "GET /store/student?email=", "GET /store/student/{sourcedId}/history", "GET /store/student/{sourcedId}/activity?from=&to=", "GET /store/student/{sourcedId}/knowledge[?courseId=&refresh=1]", "GET /store/course/{courseSourcedId}", "GET /store/course/{courseSourcedId}/students[?agreement=]  (token; sourcedIds only)"], gate: "student routes and the course student list: Authorization: Bearer <reader's Timeback token>; status and course-count routes: none (counts only)", mathAcademyCallsAtReadTime: "a per-student read makes NO Math Academy call unless the student is missing (then one live lookup, once per 24 h); the knowledge route makes one live call per courseId per 7 days; nothing else reaches Math Academy at read time", notes: STATUS_NOTES }) : resp(404, { error: "no snapshot loaded" });
+    return meta ? resp(200, { ...meta, routes: ["GET /store/student/{sourcedId}[?minimal=1]", "GET /store/student?email=", "GET /store/student/{sourcedId}/history", "GET /store/student/{sourcedId}/activity?from=&to=", "GET /store/student/{sourcedId}/knowledge[?courseId=&refresh=1]", "GET /store/course/{courseSourcedId}", "GET /store/course/{courseSourcedId}/students[?agreement=]  (token; ids + Math Academy course figures, no names)", "GET /store/course/{courseSourcedId}/activity?date=YYYY-MM-DD  (token; per-student day totals)", "GET /store/courses  (Math Academy course id -> name)"], gate: "student routes and the course student list: Authorization: Bearer <reader's Timeback token>; status and course-count routes: none (counts only)", mathAcademyCallsAtReadTime: "a per-student read makes NO Math Academy call unless the student is missing (then one live lookup, once per 24 h); the knowledge route makes one live call per courseId per 7 days; nothing else reaches Math Academy at read time", notes: STATUS_NOTES }) : resp(404, { error: "no snapshot loaded" });
   }
   const crsList = p.match(/^\/store\/course\/([^/]+)\/students$/);
   if (crsList && method === "GET") {
@@ -242,10 +252,37 @@ export const handler = async (event) => {
     if (ok.status !== 200) return resp(ok.status === 401 || ok.status === 403 ? ok.status : 502, { error: "Timeback did not accept the token", timebackStatus: ok.status });
     const meta = await storeMeta(); if (!meta) return resp(503, { error: "no snapshot loaded" });
     const cid = decodeURIComponent(crsList[1]); const want = q.agreement || null;
+    if (want && !AGREEMENT_VALUES.includes(want)) return resp(400, { error: "unknown agreement value", allowed: AGREEMENT_VALUES });
     const rows = [];
-    for (const it of await queryAll("student")) { const seats = JSON.parse(it.seats?.S || "[]"); if (!seats.some(s => s.courseSourcedId === cid)) continue; const ag = it.courseAgreementAtSnapshot?.S; if (want && ag !== want) continue; rows.push({ sourcedId: it.sk.S, courseAgreementAtSnapshot: ag, matchedBy: it.matchedBy?.S, isTestUser: it.isTestUser?.BOOL ?? null, mathAcademyState: maState(JSON.parse(it.ma?.S || "{}").currentCourse), mathAcademyCourseId: JSON.parse(it.ma?.S || "{}").currentCourse?.id ?? null }); }
-    if (!want || want === "no math academy record") for (const it of await queryAll("tb_unmatched")) { const seats = JSON.parse(it.seats?.S || "[]"); if (!seats.some(s => s.courseSourcedId === cid)) continue; rows.push({ sourcedId: it.sk.S, courseAgreementAtSnapshot: "no math academy record", unmatchedReason: it.reason?.S, matchedBy: null, isTestUser: it.isTestUser?.BOOL ?? null, mathAcademyState: null, mathAcademyCourseId: null }); }
-    return resp(200, { courseSourcedId: cid, snapshotAt: meta.snapshotAt, filter: want, students: rows.length, rows, note: "opaque Timeback ids and store labels only (no names, no figures); resolve a row with /store/student/{sourcedId}. Values for ?agreement=: agree | disagree | disagree, math academy course completed | no math academy record" });
+    for (const it of await queryAll("student")) { const seats = JSON.parse(it.seats?.S || "[]"); if (!seats.some(s => s.courseSourcedId === cid)) continue; const ag = it.courseAgreementAtSnapshot?.S; if (want && ag !== want) continue; const ma = JSON.parse(it.ma?.S || "{}"); const cc = ma.currentCourse || {}; rows.push({ sourcedId: it.sk.S, courseAgreementAtSnapshot: ag, matchedBy: it.matchedBy?.S, matchConfidence: it.matchedBy?.S === "name" ? "low" : "high", isTestUser: it.isTestUser?.BOOL ?? null, mathAcademyState: maState(cc), mathAcademyCourseId: cc.id ?? null, mathAcademyCourseName: cc.name ?? null, progress: cc.progress ?? null, xpRemaining: cc.xpRemaining ?? null, completed: cc.completed ?? null, startDate: cc.startDate ?? null, estimatedScore: cc.estimatedScore ?? null, deactivated: ma.deactivated ?? null, figuresAsOf: it.snapshotAt?.S || meta.snapshotAt }); }
+    if (!want || want === "no math academy record") for (const it of await queryAll("tb_unmatched")) { const seats = JSON.parse(it.seats?.S || "[]"); if (!seats.some(s => s.courseSourcedId === cid)) continue; rows.push({ sourcedId: it.sk.S, courseAgreementAtSnapshot: "no math academy record", unmatchedReason: it.reason?.S, lastTriedAt: it.lastTriedAt?.S || null, matchedBy: null, isTestUser: it.isTestUser?.BOOL ?? null, mathAcademyState: null, mathAcademyCourseId: null, mathAcademyCourseName: null }); }
+    const nonTest = rows.filter(r => r.isTestUser === false).length;
+    return resp(200, { courseSourcedId: cid, snapshotAt: meta.snapshotAt, stale: meta.stale, filter: want, count: rows.length, nonTestCount: nonTest, students: rows.length, rows, note: "one row per roster student of this Timeback course at rosterReadAt: opaque user.sourcedId, store labels, and Math Academy's course figures (no names); `students` is the same COUNT as `count` (kept for old readers), the list is `rows`. Values for ?agreement=: " + AGREEMENT_VALUES.join(" | ") + ". A cohort with figures is this one call; resolve a single row with /store/student/{sourcedId}." });
+  }
+  const crsAct = p.match(/^\/store\/course\/([^/]+)\/activity$/);
+  if (crsAct && method === "GET") {
+    const token = event.headers?.authorization || event.headers?.Authorization || "";
+    if (!/^Bearer\s+\S+/i.test(token)) return resp(401, { error: "send the reader's Timeback token as Authorization: Bearer <token>" });
+    const ok = await tbGet("/ims/oneroster/rostering/v1p2/users/?limit=1", token);
+    if (ok.status !== 200) return resp(ok.status >= 400 && ok.status < 500 ? ok.status : 502, { error: "Timeback did not accept the token", timebackStatus: ok.status });
+    const meta = await storeMeta(); if (!meta) return resp(503, { error: "no snapshot loaded" });
+    const day = q.date; if (!day || !/^\d{4}-\d{2}-\d{2}$/.test(day)) return resp(400, { error: "give ?date=YYYY-MM-DD (an America/Chicago day the store has pulled; see activityLastDate)" });
+    const cid = decodeURIComponent(crsAct[1]);
+    const members = [];
+    for (const it of await queryAll("student")) { const seats = JSON.parse(it.seats?.S || "[]"); if (seats.some(s => s.courseSourcedId === cid)) members.push({ sid: it.sk.S, isTestUser: it.isTestUser?.BOOL ?? null }); }
+    const out = [];
+    for (let i = 0; i < members.length; i += 100) {
+      const chunk = members.slice(i, i + 100);
+      const r = await ddb.send(new BatchGetItemCommand({ RequestItems: { [ST]: { Keys: chunk.map(m => ({ pk: S(`actday#${m.sid}`), sk: S(day) })) } } }));
+      for (const it of (r.Responses?.[ST] || [])) { const f = unmarshalFlat(it); const sid = f.pk.slice(7); const m = chunk.find(x => x.sid === sid); out.push({ sourcedId: sid, isTestUser: m?.isTestUser ?? null, numTasks: f.numTasks ?? null, timeElapsedMs: f.timeElapsedMs ?? f.timeElapsed ?? null, timeEngagedMs: f.timeEngagedMs ?? f.timeEngaged ?? null, timeProductiveMs: f.timeProductiveMs ?? f.timeProductive ?? null, xpAwarded: f.xpAwarded ?? null, questions: f.questions ?? null, questionsCorrect: f.questionsCorrect ?? null, error: f.error || null }); }
+    }
+    const good = out.filter(r => !r.error && r.numTasks); const sum = k => good.reduce((a, r) => a + (r[k] || 0), 0);
+    return resp(200, { courseSourcedId: cid, date: day, dayBoundary: "America/Chicago", units: "milliseconds", activityLastDate: meta.activityLastDate || null, snapshotAt: meta.snapshotAt, stale: meta.stale, rosterStudents: members.length, studentsWithActivity: good.length, studentsWithError: out.length - good.length, totals: { numTasks: sum("numTasks"), timeElapsedMs: sum("timeElapsedMs"), timeEngagedMs: sum("timeEngagedMs"), timeProductiveMs: sum("timeProductiveMs"), xpAwarded: sum("xpAwarded") }, rows: out, note: "one row per roster student of this Timeback course who had a pulled activity day on `date` (Math Academy's own per-task analysis summed by the store); students absent from rows had no Math Academy result in Timeback that day or the day was not pulled; opaque ids only; ENABLEMENT example 11" });
+  }
+  if (p === "/store/courses" && method === "GET") {
+    const meta = await storeMeta(); if (!meta) return resp(404, { error: "no snapshot loaded" });
+    let r; try { r = await ddb.send(new GetItemCommand({ TableName: ST, Key: { pk: S("meta"), sk: S("snapshot") }, ProjectionExpression: "maCourses" })); } catch { r = {}; }
+    return resp(200, { snapshotAt: meta.snapshotAt, mathAcademyCourses: JSON.parse(r.Item?.maCourses?.S || "{}"), note: "Math Academy's own course id -> name, as seen on student records in the store (its catalogue vocabulary, not Timeback's course ids); the values in mathAcademyCourseId on the course student list and currentCourse.id on rows" });
   }
   const crs = p.match(/^\/store\/course\/([^/]+)$/);
   if (crs && method === "GET") {
@@ -254,7 +291,7 @@ export const handler = async (event) => {
     if (c) c.activityLastDate = meta.activityLastDate || null;
     if (!c) return resp(404, { error: "no roster student sat in that Timeback course at snapshot time (or unknown course id)", snapshotAt: meta.snapshotAt, knownCourses: Object.keys(meta.byCourse).length });
     return resp(200, { courseSourcedId: decodeURIComponent(crs[1]), ...c, snapshotAt: meta.snapshotAt, rosterReadAt: meta.rosterReadAt, snapshotAgeHours: meta.snapshotAgeHours, stale: meta.stale,
-      note: "counts of roster students (current in-window seats in this course at rosterReadAt) by courseAgreementAtSnapshot; testUsers counted inside students; maNotStarted = Math Academy shows progress 0 and xpRemaining 0 (course assigned, no task done yet). No student values; for rows use /store/student/{sourcedId} with your token, about one second each." });
+      note: "counts of roster students (current in-window seats in this course at rosterReadAt) by courseAgreementAtSnapshot; `students`, `byAgreement` and `maNotStarted` INCLUDE test users; `nonTest` carries the same counts for non-test students only, plus byMathAcademyState; maNotStarted = Math Academy progress 0 and not completed (course assigned, nothing done). No student values; the rows are one call away at /store/course/{id}/students with your token." });
   }
   const sub = p.match(/^\/store\/student\/([^/]+)\/(history|activity|knowledge)$/);
   if (sub && method === "GET") return storeSub(event, q, decodeURIComponent(sub[1]), sub[2]);
