@@ -16,6 +16,7 @@ import boto3, botocore
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 FN = "mathacademy-timeback-skill"
 ROLE = "team-dev-mathacademy-skill-lambda"
+STORE_TABLE = "mathacademy-timeback-skill-store"   # one-off Math Academy snapshot, loaded by store/load_snapshot.py (which also grants the role read access)
 TABLE = "mathacademy-timeback-skill-feedback"   # the skill's own tracker (DynamoDB); mirrored to GitHub issues by .github/workflows/mirror-feedback.yml
 SECRET = "sat-cohort-tracker/ci"                 # no longer used by the function (kept for --check history); the role's read on it is removed at deploy
 REPO = "trilogy-group/mathacademy-timeback-skill"
@@ -75,7 +76,7 @@ if a.cmd == "deploy":
     code = buf.getvalue(); print(f"zip: {len(code):,} bytes")
     base = json.loads((ROOT / "deploy.json").read_text(encoding="utf-8"))["base"].rstrip("/")
     admin_key = (ROOT / "_scratch" / "_admin_key.txt").read_text(encoding="utf-8").strip()   # random, generated at build; same value is the repo's ADMIN_KEY Actions secret
-    env = {"Variables": {"TABLE": TABLE, "SOURCE": "mathacademy_timeback", "GIT_VERSION": git, "BASE": base, "ADMIN_KEY": admin_key, "MIRROR_REPO": REPO}}
+    env = {"Variables": {"TABLE": TABLE, "STORE_TABLE": STORE_TABLE, "TB_BASE": "https://api.alpha-1edtech.ai", "SOURCE": "mathacademy_timeback", "GIT_VERSION": git, "BASE": base, "ADMIN_KEY": admin_key, "MIRROR_REPO": REPO}}
     arn = role_arn() or sys.exit("role missing: run --create-roles first")
     if fn_exists():
         lam.update_function_configuration(FunctionName=FN, Environment=env, Timeout=30, MemorySize=256, Runtime="nodejs20.x", Handler="index.handler", Role=arn)
@@ -92,7 +93,7 @@ if a.cmd == "deploy":
                 raise
         lam.get_waiter("function_active").wait(FunctionName=FN); print("function created")
     if not url():
-        lam.create_function_url_config(FunctionName=FN, AuthType="NONE", Cors={"AllowOrigins": ["*"], "AllowMethods": ["GET", "POST"], "AllowHeaders": ["content-type"]})
+        lam.create_function_url_config(FunctionName=FN, AuthType="NONE", Cors={"AllowOrigins": ["*"], "AllowMethods": ["GET", "POST"], "AllowHeaders": ["content-type", "authorization", "x-admin-key"]})
         try:
             lam.add_permission(FunctionName=FN, StatementId="public-url", Action="lambda:InvokeFunctionUrl", Principal="*", FunctionUrlAuthType="NONE")
         except botocore.exceptions.ClientError as e:
