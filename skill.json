@@ -36,21 +36,23 @@
     "store": {
       "what": "this skill's own store of Math Academy's student records (Math Academy public API beta10), matched to Timeback students. Refreshed nightly at 03:00 America/Chicago (bulk list, four pages, plus one lookup per new student); at 03:45 the previous local day's per-task activity analysis (engaged / productive time) is pulled for every student who had a Math Academy result that day; every night's course figures are appended to a per-student history; the knowledge map is fetched live once on request and cached for seven days; a student missing from the store is looked up live once when first asked for. Every response carries snapshotAt and stale.",
       "history": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/student/{user.sourcedId}/history  (one row per nightly snapshot since the store began; course changes and completion dates)",
-      "activity": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/student/{user.sourcedId}/activity?from=YYYY-MM-DD&to=YYYY-MM-DD  (Math Academy's per-task timeElapsed / timeEngaged / timeProductive, type, xp, course, topic, taskId; day totals)",
+      "activity": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/student/{user.sourcedId}/activity?from=YYYY-MM-DD&to=YYYY-MM-DD  (America/Chicago days; Math Academy's per-task timeElapsedMs / timeEngagedMs / timeProductiveMs, type, xp, course, topic, taskId; day totals, also in milliseconds, with the UTC window used)",
       "knowledge": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/student/{user.sourcedId}/knowledge[?courseId=&refresh=1]  (one live Math Academy call on first ask, cached 7 days; never loop it over a roster)",
-      "status": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store  (snapshotAt, snapshotAgeHours, staleAfterDays, stale, history, counts, byCourse, calls; no student values; no credential)",
+      "status": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store  (snapshotAt, rosterReadAt, snapshotAgeHours, staleAfterDays, stale, schedule {nextSnapshotDueUtc, firstScheduledRunHasHappened, scheduledRunsSoFar}, history[] {at, source}, activityLastDate, lastActivityRun, snapshotCalls, readCalls, counts, byCourse, routes, notes; no student values; no credential)",
       "course": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/course/{course.sourcedId}  (one Timeback course's roster at snapshot time counted by courseAgreement, testUsers, maNotStarted; no credential)",
       "student": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/student/{user.sourcedId}  or  GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/student?email=<email>  (about one second each; two Timeback calls replayed)",
       "freshness": "nightly; every row carries snapshotAt, figuresAsOf and stale (true past staleAfterDays, 2 as served, so a missed night shows the next day); GET /store lists history (every snapshot loaded) and activityLastDate; past stale, quote Math Academy figures only with their date and take progress from Timeback's newest result (ENABLEMENT ex. 3); a stuck refresh is a ticket on the feedback wire",
       "key": "the Math Academy key is read at run time from one Secrets Manager secret by the nightly function and by the front (for the knowledge map and live lookups on a miss); it is never on the wire and readers never hold it",
-      "gate": "Authorization: Bearer <the reader's own Timeback token>. The route replays it against Timeback (GET users/{sourcedId}, GET enrollments) and serves the row only if Timeback answers 200 for that student under that token; a reader sees exactly the students its Timeback key can read. No Math Academy call is made at read time, and this skill holds no Math Academy key on its wire.",
-      "fields": "mathAcademy {id, username, firstName, lastName, created, deactivated, currentCourse {id, name, startDate, progress, xpRemaining, completed, grade, letterGrade, estimatedScore}, schedule, league}, matchedBy (username | email | lookup | name), timeback.currentMathAcademySeats (live), courseAgreement (agree | disagree | disagree, math academy course completed | no current timeback seat | math academy has no current course | no math academy record | not in snapshot); DICTIONARY § The Math Academy snapshot store"
+      "gate": "Authorization: Bearer <the reader's own Timeback token>. The route replays it against Timeback (GET users/{sourcedId}, GET enrollments) and serves the row only if Timeback answers 200 for that student under that token; a reader sees exactly the students its Timeback key can read. The reader never holds a Math Academy key.",
+      "mathAcademyCallsAtReadTime": "a per-student read makes no Math Academy call UNLESS the student is missing from the store (then one live lookup, once per 24 h per student); the knowledge route makes one live call per student per courseId per 7 days; nothing else reaches Math Academy at read time. GET /store counts both under readCalls. Never loop the per-student route over a roster to find unmatched students: use /store/course/{id}/students?agreement=no math academy record.",
+      "courseStudents": "GET https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/store/course/{course.sourcedId}/students[?agreement=agree|disagree|disagree, math academy course completed|no math academy record]  (the reader's token; opaque user.sourcedIds with their store labels; no names, no figures)",
+      "fields": "mathAcademy {id, username, firstName, lastName, created, deactivated, currentCourse {id, name, startDate, progress, xpRemaining, completed, grade, letterGrade, estimatedScore}, schedule, league} copied as Math Academy serves it; matchedBy (known | live-lookup | username | email | lookup | name) + matchConfidence; figuresAsOf (ISO) + figuresBasis; mathAcademyState (in progress | completed | not started); timeback.currentMathAcademySeats (live); courseAgreement (agree | disagree | disagree, math academy course completed | no current timeback seat | math academy has no current course | no math academy record | not in snapshot); DICTIONARY § The Math Academy snapshot store"
     },
     "dictionary": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/DICTIONARY.md",
     "enablement": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/ENABLEMENT.md",
     "reference": {
       "courses": { "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/reference/timeback-math-academy-courses.json", "sha256": "392c3a1d60e4c93b4b982c52974f9596cb976332f230164541b0f63991ea6855", "purpose": "the domain of the course field: every OneRoster course titled Math Academy, with ids; a dated snapshot (readAt inside), regenerate with the call it names" },
-      "courseXpSize": { "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/reference/course-xp-size.json", "sha256": "f734202c48a6fe0ca227319fdda28012146517638e0b3f53f9112ae5d9341ba5", "purpose": "the XP-remaining rule list; reads the course's totalXp live, carries no figure" },
+      "courseXpSize": { "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/reference/course-xp-size.json", "sha256": "0ea9eee7efdb16453c2b0368625e4f7fbecccd4611a392b248128735abba3ec9", "purpose": "the XP-remaining rule list; reads the course's totalXp live, carries no figure" },
       "topicCourseMap": { "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/reference/topic-course-map.json", "sha256": "c52b6d58a55a84f0679abbf1a61b7fee5eb633d9b247dc0491d0b0189e1215b2", "purpose": "topic id -> majority filed course id, a dated heuristic snapshot for ENABLEMENT example 7; regenerate rather than trust" }
     }
   },
@@ -58,14 +60,14 @@
     "DICTIONARY.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/DICTIONARY.md",
       "purpose": "DICTIONARY.md carries what the OpenAPI cannot: how each Math Academy field inside Timeback is born, what its values mean, the containers and their range, the invariants and their standing, and the numbered traps. Open it before trusting any field.",
-      "sha256": "d9886693b88a3efc5a061242c528b2f3dc42c9bf632eaadf1aeda777dd961d3f",
-      "gitVersion": "74c407f"
+      "sha256": "6e8c38cac7f0720af84aaca4e3102f6531b81037a512de192f01abef434e6750",
+      "gitVersion": "f993471"
     },
     "ENABLEMENT.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/ENABLEMENT.md",
       "purpose": "ENABLEMENT.md puts the source to work: twelve capabilities, a question-to-call catalog, and twelve worked examples with exact routes, output shapes and failure modes. Open it when you need to act.",
-      "sha256": "ff7c8e43969c953c8d555f032a9658cd49056c8959fd3f166cb8c7df2cd76157",
-      "gitVersion": "74c407f"
+      "sha256": "e236f1edb5e695475c71ae34ace238ce428a39f85dcf5b93b866affe26dcaa66",
+      "gitVersion": "f993471"
     },
     "note": "sha256 + gitVersion pin the exact bytes served at each url on this deploy; the .md routes echo them as X-Doc-SHA256 / X-Doc-Version headers."
   },
