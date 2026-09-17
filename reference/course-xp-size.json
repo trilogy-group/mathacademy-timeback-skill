@@ -6,7 +6,7 @@
   "Look the student's enrollment course.sourcedId up in courses[]; never match on title.",
   "sizeXp present → remaining = sizeXp × (1 − pctCompleteApp/100), basis 'calibrated 2026-09-16'.",
   "sizeXp null and the course is not SAT → remaining_lower = course.metadata.metrics.totalXp × (1 − pctCompleteApp/100), basis 'timeback lower bound' (Timeback's course XP figure is smaller than Math Academy's course size for every course measured).",
-  "SAT courses (use = never) → no estimate at all: Math Academy reports an estimated SAT score there, which Timeback never receives, and pctCompleteApp on those courses is stale or absent.",
+  "SAT Math Prep (use = never) → no estimate at all: Math Academy reports an estimated SAT score there instead of progress, a figure Timeback never receives, so pctCompleteApp on that course is stale or absent. SAT Math Fundamentals still reports progress and is sized like any other course.",
   "A course id not in courses[] → regenerate the courses reference (GET .../courses/?filter=title~'Math Academy') and treat the course as unsized until then."
  ],
  "accuracy_note": "On the calibration day, applied to Timeback's pctCompleteApp, the calibrated estimate was within 25% of Math Academy's own xpRemaining for roughly two thirds of students and within 40% for about three quarters. An order-of-magnitude planning figure, never the exact number Math Academy would show.",
@@ -217,8 +217,8 @@
    "status": "active",
    "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
    "mathAcademyCourse": "SAT Math Fundamentals",
-   "sizeXp": null,
-   "use": "never: SAT courses report an estimated SAT score, not progress",
+   "sizeXp": 12715,
+   "use": "size × (1 − pct/100)",
    "timebackTotalXp": 10208
   },
   {
@@ -228,7 +228,7 @@
    "orgSourcedId": "346488d3-efb9-4f56-95ea-f4a441de2370",
    "mathAcademyCourse": null,
    "sizeXp": null,
-   "use": "never: SAT courses report an estimated SAT score, not progress",
+   "use": "never: SAT Math Prep reports an estimated SAT score instead of progress, so pctCompleteApp is stale or absent",
    "timebackTotalXp": 1000
   },
   {

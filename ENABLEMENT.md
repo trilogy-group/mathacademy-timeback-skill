@@ -99,10 +99,10 @@ GET /ims/oneroster/rostering/v1p2/courses/<course.sourcedId>          # metadata
 ```
 
 - Progress is `metadata.pctCompleteApp` (integer here). Its age is `pctCompleteAppUpdatedAt`. Absent means no event yet (trap 3).
-- Estimated XP remaining: look the enrollment's `course.sourcedId` up in `reference/course-xp-size.json` (keyed by course id, one row per course) and follow its `rules` in order: a row with `sizeXp` → `sizeXp × (1 − pct/100)`, basis "calibrated 2026-09-16"; a row without `sizeXp` → the Timeback lower bound `course.metadata.metrics.totalXp × (1 − pct/100)`, basis "timeback lower bound"; a row whose `use` is `never` (the two SAT courses) → no estimate at all; an id not in the file → regenerate the courses reference and treat as unsized. Always name the basis. Never present either figure as Math Academy's.
+- Estimated XP remaining: look the enrollment's `course.sourcedId` up in `reference/course-xp-size.json` (keyed by course id, one row per course) and follow its `rules` in order: a row with `sizeXp` → `sizeXp × (1 − pct/100)`, basis "calibrated 2026-09-16"; a row without `sizeXp` → the Timeback lower bound `course.metadata.metrics.totalXp × (1 − pct/100)`, basis "timeback lower bound"; a row whose `use` is `never` (SAT Math Prep only, which reports an estimated SAT score instead of progress) → no estimate at all; an id not in the file → regenerate the courses reference and treat as unsized. Always name the basis. Never present either figure as Math Academy's.
 - Failure mode: taking the first active enrollment (an old course still `active`), or dividing enrollment `totalXp` by course `totalXp` to get progress.
 
-Output shape: `course.sourcedId`, `course.name`, `pctCompleteApp`, `pctCompleteAppUpdatedAt`, `enrollment.beginDate`, `metrics.totalXp`, `metrics.totalLessons`, `estRemaining {value | null, basis: "calibrated <date>" | "timeback lower bound" | "none: SAT course"}`.
+Output shape: `course.sourcedId`, `course.name`, `pctCompleteApp`, `pctCompleteAppUpdatedAt`, `enrollment.beginDate`, `metrics.totalXp`, `metrics.totalLessons`, `estRemaining {value | null, basis: "calibrated <date>" | "timeback lower bound" | "none: SAT Math Prep reports a score, not progress"}`.
 
 VERIFIED RUN (build, 2026-09-16): executed for one student; the enrollment percent matched the `pctCompleteApp` on that student's latest result.
 
