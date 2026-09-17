@@ -16,6 +16,9 @@
       "base": "https://api.alpha-1edtech.ai",
       "authHeader": "Authorization",
       "auth": "Bearer <token>; the reader brings its own Timeback credential. Mint the token with an OAuth 2.0 client-credentials POST (grant_type=client_credentials, client id + secret) to https://prod-beyond-timeback-api-2-idp.auth.us-east-1.amazoncognito.com/oauth2/token; tokens expire after expires_in seconds (one hour as served). This front holds no key and proxies no data.",
+      "keyKind": "a Timeback API client (OAuth 2.0 client id + secret on the Cognito pool above) with READ-ONLY scopes covering OneRoster rostering + gradebook reads and EduBridge analytics reads (the scopes named powerpath.readonly and analytics/v1p0/readOnly were sufficient for every call in ENABLEMENT.md). No write scope is needed and none should be granted.",
+      "keyContact": "one client per person or agent, never shared: request it from the Timeback platform team (owner of api.alpha-1edtech.ai; tracker trilogy-group/timeback-platform). This skill issues no keys.",
+      "denied": "a 401 on the token endpoint is a bad or expired client; a 403 or an empty result on a route that works for others is a scope or org limit of YOUR key, never an absence of data.",
       "selfDescribe": [
         "https://api.alpha-1edtech.ai/openapi.yaml",
         "https://api.alpha-1edtech.ai/edubridge/openapi.yaml"
