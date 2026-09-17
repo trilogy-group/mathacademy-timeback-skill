@@ -27,6 +27,16 @@ Dated probes behind the dictionary and enablement. Shapes and structure only; no
 - **Wire test:** `POST /feedback` → 201 ticket 1 (self-test, to be closed after the mirror runs); `GET /feedback/1` shows it; admin route refuses without the key and accepts with it; `?state=nope` → 400.
 - **Registered:** `POST /dss/register` → 201, estate intake ticket 1713 (`GET https://data-source-skills.vercel.app/feedback/1713`).
 
+## 2026-09-17 — listed, graded, first fix round
+
+- **Estate disposition (ticket 1713, closed 00:48Z): LISTED**, tier (a) PASS on all four predicates, row on `GET /dss/register`.
+- **Registration deep-grade panel** (01:27Z): compliance B, dictionary B, enablement B, adversarial C. Four confirmed findings filed on OUR wire as tickets 2–5, plus a conformance notice (ticket 6: four `/provider` documents moved; `/contract` unmoved, our pin unaffected).
+- **Fixes shipped this round** (owner approved each, 2026-09-17 morning):
+  - Ticket 2: the five open questions were cited with numbers that did not exist → filed for real as tickets 7–11; both documents now cite those numbers.
+  - Ticket 4: course-domain sentences re-derived from the reference file → the duplicate title is `Math Academy - Beyond AI` (two ids); the `4th grade` spelling example removed (it was a class-title observation, now stated as such); four orgs named; `primaryApp` rule corrected (absent on the 8th-grade course and the tobedeleted Beyond AI row, `nice_academy` on the partner variant).
+  - Ticket 3: `reference/course-xp-size.json` rebuilt keyed by `course.sourcedId`, one row per course (10 calibrated sizes, 11 lower-bound fall-throughs, 2 SAT `never`), with an ordered rule list; DICTIONARY derived-quantity and ENABLEMENT ex. 3 rewritten to follow it; SAT rule made absolute.
+  - Ticket 5: `pii` clause added to the front; DICTIONARY § "Students are children" marks the person-bearing fields and states the publish rule; ENABLEMENT gains a How-to-work bullet, ex. 1 resolves email to id once, ex. 4 output keyed on `user.sourcedId` with no email.
+
 ## Open
 
 - Eval file (`evals/mathacademy_timeback.md`) not written; the eight VERIFIED RUN blocks are the seed.

@@ -42,7 +42,7 @@ Every field below names its genesis in the contract's closed set: **captured** (
 
 - **Every Math Academy task is one Caliper event, and the event is the unit of everything here.** `[platform-note]`, verified by probe. Timeback stores it as one assessmentResult whose `sourcedId` is `caliper_` plus the Caliper event id, one assessmentLineItem, and two EduBridge fact rows. Nothing arrives per question, per minute, or per login.
 - **The Timeback course an event is filed under is the course of the student's ENROLLMENT, not the course Math Academy says the student is in.** `[platform-note]`, verified by probe on students whose two courses differ. This is the single most important thing in this document: if the enrollment is wrong, every event for that student is filed under the wrong course, and no field on the event says so. See trap 10 and ENABLEMENT example 7.
-- **Timeback's progression engine acts on a Math Academy event only when the course completion percent reaches 100 and the course is on an approved list of Timeback course ids.** `[platform-note]`. TimeSpentEvents are skipped by progression. Every other event is stored and never acted on. The approved list is not served anywhere the reader can reach (open question #1).
+- **Timeback's progression engine acts on a Math Academy event only when the course completion percent reaches 100 and the course is on an approved list of Timeback course ids.** `[platform-note]`. TimeSpentEvents are skipped by progression. Every other event is stored and never acted on. The approved list is not served anywhere the reader can reach (open question #7).
 - **Math Academy is grade 4 to 12 only** `[platform-note]`; a student below grade 4 in a Math Academy class is a roster fact to question, not a Math Academy fact.
 
 ---
@@ -75,12 +75,12 @@ Every field below names its genesis in the contract's closed set: **captured** (
 - **one instance:** a class is one section of a course at one org; a course is the catalogue object. Math Academy classes are titled `Math Academy - <course> Class` and are `metadata.is_automanaged: true` (created by the platform, not by staff). **captured.**
 - **id / identity:** `sourcedId` on both; the class references `course.sourcedId`. Course ids are the stable key. Titles are not (trap 1).
 - **native:** `GET /ims/oneroster/rostering/v1p2/classes/?filter=title~'Math Academy'`, `GET .../courses/?filter=title~'Math Academy'`, `GET .../classes/{id}/students` (returns `users`, not `students`, trap 15).
-- **domain of the course field** (the dated observation, read 2026-09-16, re-derive with the courses call): the course titles carrying Math Academy data are `Math Academy` (bare), `Math Academy - 4th grade`, `5th grade`, `6th grade`, `7th grade`, `8th grade`, `Prealgebra`, `Algebra I`, `Geometry`, `Algebra II`, `Precalculus`, `Integrated Math I`, `Integrated Math I (Honors)`, `Integrated Math II (Honors)`, `Integrated Math III (Honors)`, `SAT Math Fundamentals`, `SAT Math Prep`, `AP Calculus AB`, `AP Calculus BC`, `Linear Algebra`, `Beyond AI`, and one partner-org variant. The course ids for each are in this skill's `reference/timeback-math-academy-courses.json`, with the regenerating call. This is a closed set only as observed; nothing enforces it.
+- **domain of the course field** (the dated observation, read 2026-09-16, re-derive with the courses call): 23 course rows carry a Math Academy title, across four orgs. In the main org: `Math Academy` (bare), `Math Academy - 4th grade`, `5th grade`, `6th grade`, `7th grade`, `Prealgebra`, `Algebra I`, `Geometry`, `Algebra II`, `Precalculus`, `Integrated Math I`, `Integrated Math I (Honors)`, `Integrated Math II (Honors)`, `Integrated Math III (Honors)`, `SAT Math Fundamentals`, `SAT Math Prep`, `AP Calculus AB`, `AP Calculus BC`, `Linear Algebra`. In three other orgs: `Math Academy - 8th grade` (a non-uuid id, no `primaryApp`), `Math Academy - Beyond AI` **twice** (two ids, one `active`, one `tobedeleted`, the only duplicated title), and a partner variant `Nice Academy - Math Academy 6th Grade CCSS Coverage` (`primaryApp` `nice_academy`, `tobedeleted`). The ids for each are in this skill's `reference/timeback-math-academy-courses.json`, with the regenerating call. This is a closed set only as observed; nothing enforces it.
 
 ### user — the student, with the Math Academy login on it
 
 - **one instance:** one person. **captured** by the roster import.
-- **relevant fields:** `email`, `grades[]` (Timeback's grade for the student, not Math Academy's course), `metadata.isTestUser` (trap 12), `userProfiles[]` where `vendorId = "math_academy"` carries the Math Academy login username (**copied** from the onboarding call, `[platform-note]`). No Math Academy student id is stored anywhere on the user (open question #2).
+- **relevant fields:** `email` (PII), `givenName`/`familyName` (PII), `grades[]` (Timeback's grade for the student, not Math Academy's course), `metadata.isTestUser` (trap 12), `userProfiles[]` where `vendorId = "math_academy"` carries the Math Academy login username (PII; **copied** from the onboarding call, `[platform-note]`). No Math Academy student id is stored anywhere on the user (open question #8). See § Students are children for what may leave the reader's session.
 - **native:** `GET /ims/oneroster/rostering/v1p2/users/{sourcedId}`; `GET .../users/?filter=email='…'`.
 
 ### EduBridge daily activity — the day rollup
@@ -146,9 +146,9 @@ None. Every route here is a read. Progression, onboarding and enrollment changes
 
 ## course — field meanings
 
-- `title` — see the domain above. Not canonical: two spellings of the same grade exist, and one course is titled just `Math Academy` (trap 1).
+- `title` — see the domain above. Not canonical: one title (`Math Academy - Beyond AI`) names two course ids, one course is titled just `Math Academy`, and class titles derived from course titles vary in case (trap 1).
 - `grades[]` — the grade band the course is intended for.
-- `metadata.primaryApp` — `math_academy` on the canonical courses; absent on partner-org variants.
+- `metadata.primaryApp` — `math_academy` on 19 of the 23 rows; absent on `Math Academy - 8th grade` (which lives in another org under a non-uuid id) and on the `tobedeleted` `Beyond AI` row; `nice_academy` on the partner variant. Not a reliable selector for "is this a Math Academy course"; use the title filter plus the id list.
 - `metadata.metrics.totalXp` — Timeback's XP figure for the whole course. **judged** (set when the course was created). It is not Math Academy's course size (trap 11).
 
 ## EduBridge — field meanings
@@ -160,10 +160,12 @@ None. Every route here is a read. Progression, onboarding and enrollment changes
 
 ## Derived quantities this skill teaches (never fields on the wire)
 
-- **Estimated XP remaining in the current course.** Math Academy does not send its XP-remaining figure to Timeback. Two estimators, both **judged**:
-  - *From a per-course size constant:* `remaining ≈ courseSize × (1 − pctCompleteApp / 100)`. The constants are a calibration made once against the Math Academy API on 2026-09-16 (median over active students of Math Academy's own XP remaining divided by the share of the course left), stated in `reference/course-xp-size.json` with the method. They are a snapshot of Math Academy's course sizes, they retire when Math Academy re-sizes a course, and only a Math Academy key can re-derive them. Re-runnable by the source until a course edit; by the reader, never. Instrument version: the file's `calibrated` date.
-  - *From Timeback alone:* `remaining_lower ≈ course.metadata.metrics.totalXp × (1 − pctCompleteApp / 100)`. Every input is on the wire, but Timeback's course `totalXp` is a different quantity from Math Academy's course size, so read this as a lower bound and say so.
-  - Neither estimator is valid on the SAT courses, where Math Academy replaced progress with an estimated SAT score (a figure Timeback never receives); `pctCompleteApp` on those courses is a stale or absent number.
+- **Estimated XP remaining in the current course.** Math Academy does not send its XP-remaining figure to Timeback. The rule set lives in `reference/course-xp-size.json`, keyed by Timeback `course.sourcedId` (never title), one row per course in the domain above. In order:
+  1. Look the enrollment's `course.sourcedId` up in that file.
+  2. If the row carries `sizeXp`: `remaining ≈ sizeXp × (1 − pctCompleteApp / 100)`, basis "calibrated 2026-09-16". **judged**: a one-time calibration against the Math Academy API (median over active students of Math Academy's own XP remaining divided by the share of the course left), attached to every Timeback course id that maps to that Math Academy course. It retires when Math Academy re-sizes a course; re-runnable by the source until such an edit, by the reader never; instrument version = the file's `calibrated` date.
+  3. If the row has no `sizeXp` and is not an SAT course: `remaining_lower ≈ course.metadata.metrics.totalXp × (1 − pctCompleteApp / 100)`, basis "timeback lower bound". Every input is on the wire, but Timeback's course `totalXp` is a different, smaller quantity than Math Academy's course size, so this is a floor and must be labelled one.
+  4. If the row's `use` is `never` (the two SAT courses): no estimate. Math Academy reports an estimated SAT score there, a figure Timeback never receives, and `pctCompleteApp` on those courses is stale or absent.
+  5. If the course id is not in the file: regenerate the courses reference and treat the course as unsized (rule 3) until the file is updated.
 - **Suspect-course flag.** Whether the events for a student point at a course other than the one they are enrolled in, inferred from lesson topic ids (ENABLEMENT example 7). A heuristic with a stated false-alarm profile (trap 8), never a verdict.
 
 ## Expected invariants
@@ -181,7 +183,7 @@ None. Every route here is a read. Progression, onboarding and enrollment changes
 
 Each carries the query that measures its blast radius today; no figure of this document's travels with it.
 
-1. **Class and course titles are not canonical.** Two spellings of the same grade exist (`4th grade`, `4th Grade`), one course is titled just `Math Academy`, and partner orgs carry variants. Joining or grouping on title splits one course into several. Use `course.sourcedId`; the domain list is in `reference/timeback-math-academy-courses.json`. Measure: `GET .../courses/?filter=title~'Math Academy'&limit=100`, group by normalised title, count titles with more than one id.
+1. **Class and course titles are not canonical.** One course title, `Math Academy - Beyond AI`, names two course ids; one course is titled just `Math Academy`; the `8th grade` course lives in a different org under a non-uuid id; a partner org carries a `Nice Academy - Math Academy …` variant; and class titles, which are built from course titles, appear with differing case for the same grade. Joining or grouping on title merges or splits courses. Use `course.sourcedId`; the id list is in `reference/timeback-math-academy-courses.json`. Measure: `GET .../courses/?filter=title~'Math Academy'&limit=100`, group by title, count titles with more than one id; and `GET .../classes/?filter=title~'Math Academy'&limit=3000`, group by lower-cased title, count titles that appear in more than one spelling.
 2. **An `active` enrollment can be over.** `status='active'` with `endDate` in the past is common; a student also keeps old Math Academy enrollments beside the current one. Current means `status='active'` AND today within `beginDate..endDate` (null `endDate` = open). Measure: list a class's enrollments, count `active` rows whose `endDate` < today.
 3. **`pctCompleteApp` exists only after the first event.** A freshly created enrollment has no percent; absence means no event yet, not zero progress. And the percent is as old as `pctCompleteAppUpdatedAt`. Measure: enrollments in Math Academy classes with `status='active'` and no `metadata.pctCompleteApp`.
 4. **Waste is always zero for Math Academy.** `wasteSeconds` and `inactiveSeconds` are 0 on every Math Academy cell because the app sends no such signal. A dashboard that reads zero waste as good behaviour is wrong. Measure: weekly facts for any Math Academy student, count rows with `wasteSeconds != "0.00"`.
@@ -208,12 +210,16 @@ Each carries the query that measures its blast radius today; no figure of this d
 - EduBridge weekly fact `enrollmentId` → `enrollment.sourcedId`; fact `source` → the result's `sourcedId` (ActivityEvent) or the Caliper event id (TimeSpentEvent); fact `courseId` → `course.sourcedId`.
 - Foreign ids held here as claims: the Math Academy task id and topic id inside the task URL, and the Math Academy login username on `userProfiles`. Matching any of them to Math Academy's own records is the caller's, across both systems' contracts. This skill builds no crosswalk to Math Academy.
 
+## Students are children — what a reader may publish
+
+Every student-level row this source serves is about a minor. The identifiers on the wire (`user.sourcedId`, `email`, names in `givenName`/`familyName`, the Math Academy login username on `userProfiles`, and `enrollment.user.name`) are **person-bearing fields, marked here as PII**. A reader may use them inside its own work to join and to answer the question it was asked. A reader **publishes none of them**: anything that leaves the reader's session (a report, a dashboard, a ticket, a message to a third party) carries counts, classes, course ids, opaque student ids that the recipient is already entitled to resolve, or aggregates, and never a child's name, email or login, and never a row that identifies one child on its face. The worked examples in the enablement therefore key their outputs on `user.sourcedId`, not on email, and resolve email to id as the first step where a person hands the reader an email. This is stated by this skill's front under `pii` and binds every surface built on this source.
+
 ## Open questions — what this document does NOT assert
 
-Filed on this skill's own feedback wire (route published in the `/skill` front under `feedback`; each ticket is readable at `GET <feedback.open>/{number}` and mirrored daily to a GitHub issue on the repo named there). Stated open, never guessed:
+Filed as tickets on this skill's own feedback wire (route published in the `/skill` front under `feedback`; each is readable at `GET <feedback.open>/{number}` and mirrored daily to a GitHub issue on the repo named there). Stated open, never guessed:
 
-- **#1 — Which Timeback course ids are on the progression's approved Math Academy list.** The platform note says a fixed list exists; it is not served. This document does not assert which classes count for progression.
-- **#2 — Whether Timeback stores the Math Academy student id anywhere.** The onboarding response returns it; no reader-reachable field carries it. This document asserts only that the login username is on `userProfiles`.
-- **#3 — The meaning of `score: null` and `correctQuestions: null` on Math Academy results.**
-- **#4 — Retention of Caliper-derived results and EduBridge facts.** No horizon is published; absence claims here are bounded by the oldest-reachable-record query.
-- **#5 — Whether the duplicate TimeSpentEvent rows reported upstream affect these routes.**
+- **#7 — Which Timeback course ids are on the progression's approved Math Academy list.** The platform note says a fixed list exists; it is not served. This document does not assert which classes count for progression.
+- **#8 — Whether Timeback stores the Math Academy student id anywhere.** The onboarding response returns it; no reader-reachable field carries it. This document asserts only that the login username is on `userProfiles`.
+- **#9 — The meaning of `score: null` and `correctQuestions: null` on Math Academy results.**
+- **#10 — Retention of Caliper-derived results and EduBridge facts.** No horizon is published; absence claims here are bounded by the oldest-reachable-record query.
+- **#11 — Whether the duplicate TimeSpentEvent rows reported upstream affect these routes.**

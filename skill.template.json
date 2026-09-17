@@ -52,6 +52,14 @@
     },
     "note": "sha256 + gitVersion pin the exact bytes served at each url on this deploy; the .md routes echo them as X-Doc-SHA256 / X-Doc-Version headers."
   },
+  "pii": {
+    "subjects": "students, who are children",
+    "personBearingFields": ["user.email", "user.givenName", "user.familyName", "user.userProfiles[vendorId=math_academy].credentials[].username", "enrollment.user.name", "class students[].email"],
+    "readRule": "a reader may read and join on these inside its own session to answer the question it was asked",
+    "publishRule": "nothing that leaves the reader's session (report, dashboard, ticket, message) carries a child's name, email or login, or a row that identifies one child on its face; publish counts, classes, course ids, aggregates, or opaque user.sourcedId values the recipient is already entitled to resolve",
+    "documents": "every worked example in ENABLEMENT.md keys its output on user.sourcedId; DICTIONARY.md § Students are children states the rule and marks the fields",
+    "servedValues": "no served document or reference file of this skill contains any student value"
+  },
   "feedback": {
     "covers": "This lane covers this skill's two documents, its front, and its reference files. A defect in Timeback's APIs or data belongs to the Timeback platform (trilogy-group/timeback-platform); a defect in Math Academy's own product belongs to Math Academy. This wire does not relay third-party claims to either.",
     "report": "POST {{BASE}}/feedback with JSON {title, body, reporter, kind?} -> 201 {number, url}; no credential required",

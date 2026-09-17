@@ -15,6 +15,7 @@ This source answers *what a Math Academy student did, how far through their cour
 - **Aggregation is yours.** Counts, sums and groupings are done in-context over the pages you pulled, or read from EduBridge's own daily cells. When you sum weekly facts, filter `eventType` first (trap 5). When you emit an aggregate, name the numerator, the denominator and the roster basis (which students, filtered how).
 - **The task type is in the URL** (trap 7). Parse the last path segment; `lesson` is new material, `review` is spaced repetition over earlier topics.
 - **Filter out test users** (trap 12) before any census: `users.metadata.isTestUser`, plus name patterns your organisation knows.
+- **The students are children.** Use `user.sourcedId` as the key throughout; resolve an email to an id once, at the start, and let nothing person-bearing (name, email, Math Academy login) leave your session. Every output shape below is keyed on the opaque id for that reason (dictionary § Students are children; the front's `pii` clause).
 - **The range of an absence.** "No Math Academy activity" for a student is a claim about the results container for that student in that window; say so. A student with no results may have an enrollment with no events yet (trap 3), or may be below grade 4 and never onboarded, or may be outside the credential's org. Say which container you read and over what window; nothing older than the oldest reachable result is decidable.
 - **Timezone.** Pass the campus IANA timezone to EduBridge and use the same one when bucketing `scoreDate` (trap 17).
 - **A permission error is a key limit, not an absence.** 401 means mint again; 403 means the credential does not cover the route; report either, never estimate past it.
@@ -52,7 +53,8 @@ Every call is a direct native request against the base URL with the bearer heade
 ### 1 · Task history — "What did this student do on Math Academy this week?"
 
 ```
-GET /ims/oneroster/rostering/v1p2/users/?filter=email='<student email>'          # → users[0].sourcedId
+# start from the student's Timeback id (user.sourcedId). Only if a person handed you an email, resolve it ONCE and carry the id from then on:
+GET /ims/oneroster/rostering/v1p2/users/?filter=email='<student email>'          # → users[0].sourcedId ; the email does not travel further
 GET /ims/oneroster/gradebook/v1p2/assessmentResults
       ?filter=student.sourcedId='<sid>' AND scoreDate>='<YYYY-MM-DD>'
       &sort=scoreDate&orderBy=desc&limit=3000&offset=0                            # page until offset >= totalCount
@@ -97,10 +99,10 @@ GET /ims/oneroster/rostering/v1p2/courses/<course.sourcedId>          # metadata
 ```
 
 - Progress is `metadata.pctCompleteApp` (integer here). Its age is `pctCompleteAppUpdatedAt`. Absent means no event yet (trap 3).
-- Estimated XP remaining: `size × (1 − pct/100)` with `size` from `reference/course-xp-size.json` (a dated Math Academy calibration, labelled as such); or the Timeback-only lower bound `course.metadata.metrics.totalXp × (1 − pct/100)`, labelled as a lower bound. Never present either as Math Academy's figure. Not valid on SAT courses.
+- Estimated XP remaining: look the enrollment's `course.sourcedId` up in `reference/course-xp-size.json` (keyed by course id, one row per course) and follow its `rules` in order: a row with `sizeXp` → `sizeXp × (1 − pct/100)`, basis "calibrated 2026-09-16"; a row without `sizeXp` → the Timeback lower bound `course.metadata.metrics.totalXp × (1 − pct/100)`, basis "timeback lower bound"; a row whose `use` is `never` (the two SAT courses) → no estimate at all; an id not in the file → regenerate the courses reference and treat as unsized. Always name the basis. Never present either figure as Math Academy's.
 - Failure mode: taking the first active enrollment (an old course still `active`), or dividing enrollment `totalXp` by course `totalXp` to get progress.
 
-Output shape: `course.sourcedId`, `course.name`, `pctCompleteApp`, `pctCompleteAppUpdatedAt`, `enrollment.beginDate`, `metrics.totalXp`, `metrics.totalLessons`, `estRemaining {value, basis: "calibrated <date>" | "timeback lower bound"}`.
+Output shape: `course.sourcedId`, `course.name`, `pctCompleteApp`, `pctCompleteAppUpdatedAt`, `enrollment.beginDate`, `metrics.totalXp`, `metrics.totalLessons`, `estRemaining {value | null, basis: "calibrated <date>" | "timeback lower bound" | "none: SAT course"}`.
 
 VERIFIED RUN (build, 2026-09-16): executed for one student; the enrollment percent matched the `pctCompleteApp` on that student's latest result.
 
@@ -120,7 +122,7 @@ D. GET /ims/oneroster/gradebook/v1p2/assessmentResults
 - Aggregate labels: numerator = roster students with no Math Academy result in the window; denominator = active in-window enrollments of the class; basis = OneRoster enrollments, test users excluded (say whether you excluded them).
 - Failure mode: counting `active` enrollments whose `endDate` has passed; reading the class by title and merging two spellings; forgetting that "no result" is a claim about the results container only.
 
-Output shape: one row per quiet student — `user.sourcedId`, `email`, `course.name`, `enrollment.beginDate`, `lastMathAcademyResult (date or null in window)`, `pctCompleteApp`.
+Output shape: one row per quiet student — `user.sourcedId`, `course.sourcedId`, `course.name`, `enrollment.beginDate`, `lastMathAcademyResult (date or null in window)`, `pctCompleteApp`. No email, no name: the recipient resolves the id if they are entitled to (dictionary § Students are children).
 
 VERIFIED RUN (build, 2026-09-16): D returned pages of the documented shape for a 14-day window; A–C executed for one class.
 
@@ -205,4 +207,4 @@ VERIFIED RUN (build, 2026-09-16): executed for one UTC day; the shape held.
 
 File feedback on this skill's own wire, published in the `/skill` front under `feedback`: `POST <feedback.report>` with JSON `{title, body, reporter, kind?}` files a public, attributed ticket on this skill's own tracker and returns its number and URL; every ticket is mirrored daily into a GitHub issue on the repo named in the front (labels `skill-feedback` + `mathacademy_timeback`) and closures there are copied back. `GET <feedback.open>` lists the open items and `?state=closed|all` the rest; `GET <feedback.open>/{number}` shows one ticket with its thread. A report shaped `From: / Problem (dated evidence): / Ask: / Acceptance (a falsifiable test the fix must pass):` graduates straight into an eval case. Evidence in a ticket is a class, a field, a rule, or the query that measures it; never a student's name, contact, or an identifying row, and never a figure read off the wire. A question this pair cannot answer, or a report unacted on, is this skill failing its contract; say so.
 
-Standing open items: **#1** (which course ids progression honours), **#2** (Math Academy student id in Timeback), **#3** (null scores), **#4** (retention), **#5** (duplicate time rows).
+Standing open items, each a ticket on this wire: **#7** (which course ids progression honours), **#8** (Math Academy student id in Timeback), **#9** (null scores), **#10** (retention), **#11** (duplicate time rows).
