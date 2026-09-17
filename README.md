@@ -12,7 +12,7 @@ credential against Timeback's own APIs; nothing here calls Math Academy.
 | `ENABLEMENT.md` | 8 capabilities, question→call catalog, 8 worked examples with output shapes |
 | `skill.template.json` → `skill.json` | the five-clause front (`what / when / why / how / feedback`), rendered by `scripts/build_front.py` |
 | `reference/timeback-math-academy-courses.json` | the 23 OneRoster courses titled Math Academy (the domain of the course field) |
-| `reference/course-xp-size.json` | per-course XP size, a dated Math Academy calibration for the XP-remaining estimate |
+| `reference/course-xp-size.json` | the XP-remaining rule list: Timeback's course `totalXp` read live × share left; the no-estimate cases (no course XP, no percent yet, SAT Math Prep) |
 | `reference/topic-course-map.json` | topic id → majority Timeback course, a dated heuristic snapshot for example 7 |
 | `feedback/worker.js`, `feedback/wrangler.toml` | the Cloudflare Worker that serves the front, the documents and the feedback wire (GitHub issues) |
 | `scripts/build_front.py` | pins the live contract sha, document shas and git version into `skill.json` |
@@ -46,4 +46,4 @@ The Cloudflare Worker variant (`feedback/worker.js`, `feedback/wrangler.toml`) i
 
 - Served documents carry meaning and method, never values read off the wire; no student names, emails or identifying rows anywhere in the served files.
 - Timeback writes are never made; every route used is a GET.
-- The Math Academy API was used exactly once, at build time, to ground the invariants and the two calibrated reference files; it is not part of the skill.
+- The Math Academy API was used exactly once, at build time, to ground the invariants and the topic-course snapshot; it is not part of the skill. The XP-remaining estimate uses Timeback's own course XP figure, read live.
