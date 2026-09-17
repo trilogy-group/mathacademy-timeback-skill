@@ -7,7 +7,7 @@ subprocess.check_call([sys.executable, str(ROOT / "scripts" / "build_front.py")]
 pub = ROOT / "public"
 if pub.exists(): shutil.rmtree(pub)
 (pub / "reference").mkdir(parents=True)
-for f in ("skill.json", "DICTIONARY.md", "ENABLEMENT.md"):
+for f in ("skill.json", "DICTIONARY.md", "ENABLEMENT.md", "about.html"):
     shutil.copy(ROOT / f, pub / f)
 for f in (ROOT / "reference").glob("*.json"):
     shutil.copy(f, pub / "reference" / f.name)

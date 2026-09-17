@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Math Academy data source skill — what it is and how it works</title>
+<style>
+  :root { --ink:#1b1f24; --muted:#5b6470; --line:#e3e7ec; --accent:#0b6e4f; --accent2:#2a5db0; --warn:#b3541e; --bg:#fafbfc; --card:#ffffff; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:16px/1.55 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color:var(--ink); background:var(--bg); }
+  header { background:linear-gradient(135deg,#0b6e4f,#2a5db0); color:#fff; padding:44px 20px 36px; }
+  header .wrap { max-width:1040px; margin:0 auto; }
+  h1 { margin:0 0 8px; font-size:2rem; letter-spacing:-.01em; }
+  header p { margin:0; opacity:.92; max-width:760px; font-size:1.05rem; }
+  main { max-width:1040px; margin:0 auto; padding:28px 20px 60px; }
+  section { margin:34px 0; }
+  h2 { font-size:1.35rem; margin:0 0 12px; color:var(--ink); border-left:5px solid var(--accent); padding-left:12px; }
+  h3 { font-size:1.05rem; margin:18px 0 6px; }
+  p, li { color:var(--ink); }
+  .muted { color:var(--muted); }
+  .grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px 18px; box-shadow:0 1px 2px rgba(0,0,0,.03); }
+  .card h3 { margin-top:0; }
+  .stat { font-size:1.7rem; font-weight:700; color:var(--accent2); line-height:1.1; }
+  .stat small { display:block; font-size:.8rem; font-weight:500; color:var(--muted); margin-top:4px; }
+  .ok { color:var(--accent); font-weight:700; } .bad { color:var(--warn); font-weight:700; }
+  .flow { display:flex; flex-wrap:wrap; gap:10px; align-items:stretch; }
+  .step { flex:1 1 180px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; position:relative; }
+  .step .t { font-size:.78rem; text-transform:uppercase; letter-spacing:.06em; color:var(--accent2); font-weight:700; }
+  .step .h { font-weight:700; margin:4px 0 6px; }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { background:#f1f4f8; font-size:.85rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  tr:last-child td { border-bottom:none; }
+  code { background:#eef1f5; padding:1px 6px; border-radius:6px; font-size:.9em; }
+  a { color:var(--accent2); }
+  .pill { display:inline-block; background:#eef6f2; color:var(--accent); border-radius:999px; padding:2px 10px; font-size:.82rem; font-weight:600; margin-right:6px; }
+  .pill.b { background:#eaf0fb; color:var(--accent2); } .pill.w { background:#fbefe6; color:var(--warn); }
+  footer { color:var(--muted); font-size:.9rem; border-top:1px solid var(--line); padding-top:16px; margin-top:40px; }
+  ul.tight li { margin:4px 0; }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>Math Academy data source skill</h1>
+  <p>One place where an AI agent, or a person, can learn what Alpha's Math Academy data means, where it lives inside Timeback, and read Math Academy's own figures without ever calling Math Academy. Built to the data source skills contract; refreshed every night; serves no child's data to anyone who could not already read it in Timeback.</p>
+</div></header>
+<main>
+
+<section>
+  <h2>Right now</h2>
+  <p class="muted">Read live from the store's status page each time this page loads. Nothing here is a student value.</p>
+  <div class="grid" id="live">
+    <div class="card"><div class="stat" id="s-snap">…</div><small class="muted">last snapshot of Math Academy's student list</small></div>
+    <div class="card"><div class="stat" id="s-age">…</div><small class="muted">hours since that snapshot · <span id="s-stale"></span></small></div>
+    <div class="card"><div class="stat" id="s-act">…</div><small class="muted">newest school day with per-task activity</small></div>
+    <div class="card"><div class="stat" id="s-next">…</div><small class="muted">next scheduled refresh (Central time)</small></div>
+    <div class="card"><div class="stat" id="s-roster">…</div><small class="muted">students with a current Math Academy seat · <span id="s-nontest"></span> real</small></div>
+    <div class="card"><div class="stat" id="s-agree">…</div><small class="muted">real students whose Timeback course matches Math Academy's</small></div>
+    <div class="card"><div class="stat" id="s-disagree">…</div><small class="muted">real students in a different course on each side</small></div>
+    <div class="card"><div class="stat" id="s-runs">…</div><small class="muted">snapshots loaded so far · <span id="s-sched"></span></small></div>
+  </div>
+</section>
+
+<section>
+  <h2>What it is, in plain words</h2>
+  <p>Every task a student completes on Math Academy is sent to Timeback as an event and stored there. That covers <em>what students did</em>. But several things Math Academy knows never reach Timeback: the course Math Academy is actually running the student in, the exact XP left, the course grade, the SAT score estimate, how much of the time on a task was attentive or productive, and the per-topic knowledge map.</p>
+  <p>This skill does two things. It <strong>explains Timeback's Math Academy data</strong>: every field, how it is born, the traps, and twelve worked recipes an agent can follow. And it <strong>keeps a nightly copy of Math Academy's own records</strong>, matched to Timeback students, so agents get the missing figures from one place, and Math Academy's API is called a few hundred times a night instead of thousands of times a day.</p>
+  <div class="grid">
+    <div class="card"><h3>The documents</h3><p>A <a href="/DICTIONARY.md">dictionary</a> (meaning of every field, 26 named traps, open questions) and an <a href="/ENABLEMENT.md">enablement</a> (12 capabilities with step-by-step recipes). An agent reads the <a href="/skill">front page</a> first; it points at both.</p></div>
+    <div class="card"><h3>The store</h3><p>Math Academy's record per student: true course and start date, progress, exact XP remaining, grade, SAT estimate, completion date, account state; per-task engaged and productive time; a nightly history; knowledge maps on request.</p></div>
+    <div class="card"><h3>The feedback wire</h3><p>Anyone can file a finding at <code>POST /feedback</code>. Tickets are public, mirrored to GitHub daily, and every one filed so far has been fixed or answered. <a href="/feedback?state=all">See them</a>.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>The nightly cycle</h2>
+  <div class="flow">
+    <div class="step"><div class="t">3:00 am Central</div><div class="h">Snapshot</div>Pull Math Academy's full student list (4 pages) and Timeback's Math Academy roster. Match them: first by the id stored last night, then by login, then one lookup per new student. Rewrite every student's current state. Append tonight's row to each student's history.</div>
+    <div class="step"><div class="t">3:45 am Central</div><div class="h">Activity</div>For every student who had a Math Academy result on each school day since the last pull, fetch Math Academy's per-task record with its three clocks. The newest already-pulled day is re-pulled to catch late rows; rows are keyed by task, so nothing duplicates.</div>
+    <div class="step"><div class="t">On request</div><div class="h">Knowledge map</div>The first time someone asks for a student's map, one live call fetches it; it is cached for seven days. A student missing from the store is looked up live once, then carried every night after.</div>
+    <div class="step"><div class="t">Always</div><div class="h">Health</div>The status page shows every snapshot ever loaded, the last activity run and a <code>stale</code> flag that turns on if a night is missed. Alarms email the owner on any failed or missing run.</div>
+  </div>
+</section>
+
+<section>
+  <h2>What is refreshed how</h2>
+  <table>
+    <tr><th>Data</th><th>Each night</th><th>Grows or replaces</th></tr>
+    <tr><td>Current state: one row per student (course, XP left, grade, seats, agreement)</td><td>Rebuilt in full from tonight's pull</td><td><span class="pill">replaced</span> a complete picture every night</td></tr>
+    <tr><td>History: one compact row per student per date</td><td>Tonight's row added</td><td><span class="pill b">appended</span> never deleted; course changes and completion dates accumulate</td></tr>
+    <tr><td>Activity: one row per Math Academy task, with elapsed, engaged and productive time</td><td>Each unpulled school day, plus a re-pull of the newest one</td><td><span class="pill b">appended</span> by day, keyed by task so re-pulls overwrite</td></tr>
+    <tr><td>Knowledge maps</td><td>Untouched</td><td><span class="pill w">on demand</span> cached seven days per student per course</td></tr>
+  </table>
+  <p class="muted">Cost to Math Academy per night: 4 bulk calls, one lookup per newly added student, and one activity call per student who was active that day, roughly 400. Nothing is called during the school day except a first-time knowledge map or a missing student.</p>
+</section>
+
+<section>
+  <h2>Who can read what</h2>
+  <div class="grid">
+    <div class="card"><h3>No key needed</h3><ul class="tight"><li>The front page, both documents, the reference files</li><li>The status page: freshness, counts, schedule</li><li>Per-course counts (how many agree, disagree, not started), with test accounts split out</li><li>Math Academy's course id to name map</li></ul></div>
+    <div class="card"><h3>With the reader's own Timeback key</h3><ul class="tight"><li>A student's Math Academy record, history, activity and knowledge map</li><li>A course's student list with Math Academy's figures per student</li><li>A course's engagement totals for one day</li></ul><p class="muted">The skill replays the reader's token against Timeback and serves a student only if Timeback confirms that token can read them. The skill issues no keys and holds none for readers.</p></div>
+    <div class="card"><h3>Never</h3><ul class="tight"><li>No student value in any document or reference file</li><li>No names or logins to anyone without a token; a <code>?minimal=1</code> view drops them even for readers who have one</li><li>No figures read off the wire in the documents, only the queries that measure them</li></ul></div>
+  </div>
+</section>
+
+<section>
+  <h2>The twelve questions it answers</h2>
+  <table>
+    <tr><th>#</th><th>Question a guide or lead asks</th><th>Where the answer comes from</th></tr>
+    <tr><td>1</td><td>What did this student do on Math Academy this week?</td><td>Timeback results, task by task, with type, topic, XP and accuracy</td></tr>
+    <tr><td>2</td><td>How many minutes and XP per day?</td><td>Timeback's daily rollups (engaged minutes)</td></tr>
+    <tr><td>3</td><td>What course is she in and how far along?</td><td>The store first (exact figures, dated), Timeback's newest result for today's percent</td></tr>
+    <tr><td>4</td><td>Who has gone quiet in this course?</td><td>Roster minus the estate's results, then the store says why (moved on, not started, wrong course, no record)</td></tr>
+    <tr><td>5</td><td>Who finished, and were they moved on?</td><td>Results first (the platform deletes the finished seat), confirmed by Math Academy's completion date</td></tr>
+    <tr><td>6</td><td>Where is he struggling, and did he recover?</td><td>Not-credited tasks by topic, latest attempt decides</td></tr>
+    <tr><td>7</td><td>Is anyone in the wrong Timeback course?</td><td>The store's course list, definitively; a weak Timeback-only heuristic as fallback</td></tr>
+    <tr><td>8</td><td>How much Math Academy happened across the school yesterday?</td><td>Every result of the school day, attributed to the course it was filed under</td></tr>
+    <tr><td>9</td><td>Tell me this student's whole Math Academy story</td><td>Every seat, every event under it, gaps, where 100 was reached</td></tr>
+    <tr><td>10</td><td>What are Math Academy's own figures for this student?</td><td>The store: true course, exact XP left, grade, SAT estimate, agreement with the seat</td></tr>
+    <tr><td>11</td><td>Was he really working? Elapsed vs engaged vs productive</td><td>The store's activity rows; Timeback holds only the engaged clock</td></tr>
+    <tr><td>12</td><td>What does this student actually know?</td><td>The knowledge map: retention per topic for the course and its prerequisites</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Things the documents say plainly</h2>
+  <ul class="tight">
+    <li><strong>The course an event is filed under is Timeback's seat, not Math Academy's course.</strong> If the seat is wrong, every event is filed wrong and no field says so. The store's agreement check is the only definitive answer.</li>
+    <li><strong>A Timeback "100 percent" is not "finished".</strong> It is rounded, it can dip back, and Math Academy marks a course complete at the student's last lesson, sometimes months later.</li>
+    <li><strong>Timeback's Math Academy minutes are engaged minutes</strong>, not wall time. Idle time on an open tab is already excluded; only the store shows it.</li>
+    <li><strong>The Timeback-only XP estimate is a rough fallback</strong> that has run from 15 percent high to 64 percent low. The store has the exact figure.</li>
+    <li><strong>Students leave Math Academy on purpose.</strong> After finishing, progression gives them other math: TEKS Math, hole-filling, Math Raiders, supplements. That is never a flag.</li>
+    <li><strong>The store began on 17 September 2026.</strong> History and activity build from there; everything earlier is in Timeback's own records.</li>
+    <li><strong>Test accounts fill rosters</strong> (about a third of seats) and barely appear in activity. Every count here is shown with them split out.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Testing</h2>
+  <p>Fifteen independent cold-agent runs on 17 September 2026, each starting from the front page with a read-only Timeback key and no other knowledge, answered real guide questions and tried to break the skill. About 150 findings, every one fixed the same day and recorded as a closed ticket on the feedback wire. An adversarial reviewer verified every hash pin, that no student value reaches anyone without a token, and that the login gate leaks nothing. Contract predicates are re-checked on every deploy.</p>
+</section>
+
+<section>
+  <h2>Links</h2>
+  <ul class="tight">
+    <li>Front page (start here): <a href="/skill">/skill</a></li>
+    <li>Dictionary: <a href="/DICTIONARY.md">/DICTIONARY.md</a> · Enablement: <a href="/ENABLEMENT.md">/ENABLEMENT.md</a></li>
+    <li>Store status: <a href="/store">/store</a> · Math Academy course names: <a href="/store/courses">/store/courses</a></li>
+    <li>Feedback wire: <a href="/feedback?state=all">/feedback</a> · Repository: <a href="https://github.com/trilogy-group/mathacademy-timeback-skill">trilogy-group/mathacademy-timeback-skill</a></li>
+    <li>The registry this skill is listed in: <a href="https://data-source-skills.vercel.app/dss/register">data-source-skills.vercel.app</a></li>
+  </ul>
+</section>
+
+<footer>mathacademy_timeback · Alpha · maintained by the school's math lead · this page carries no student data and reads only the public status route.</footer>
+</main>
+<script>
+(async () => {
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  try {
+    const d = await (await fetch("/store", { cache: "no-store" })).json();
+    const fmt = iso => iso ? new Date(iso).toLocaleString("en-US", { timeZone: "America/Chicago", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " CT" : "—";
+    set("s-snap", fmt(d.snapshotAt));
+    set("s-age", d.snapshotAgeHours ?? "—");
+    const st = document.getElementById("s-stale"); st.textContent = d.stale ? "STALE: a refresh was missed" : "fresh"; st.className = d.stale ? "bad" : "ok";
+    set("s-act", d.activityLastDate || "none yet");
+    set("s-next", fmt(d.schedule?.nextSnapshotDueUtc));
+    const c = d.counts || {}; set("s-roster", c.timebackRoster ?? "—"); set("s-nontest", c.nonTest?.students ?? "—");
+    const nt = c.nonTest?.byAgreement || {};
+    set("s-agree", (nt["agree"] || 0) + (nt["agree, math academy course completed"] || 0));
+    set("s-disagree", (nt["disagree"] || 0) + (nt["disagree, math academy course completed"] || 0));
+    set("s-runs", (d.history || []).length);
+    const sc = document.getElementById("s-sched"); sc.textContent = d.schedule?.firstScheduledRunHasHappened ? "scheduler proven" : "first scheduled run pending"; sc.className = d.schedule?.firstScheduledRunHasHappened ? "ok" : "bad";
+  } catch (e) { set("s-snap", "status unavailable"); }
+})();
+</script>
+</body>
+</html>

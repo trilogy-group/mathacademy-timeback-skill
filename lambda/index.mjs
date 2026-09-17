@@ -239,6 +239,7 @@ export const handler = async (event) => {
   if (method === "GET" || method === "HEAD") {
     if (p === "/" || p === "/skill") return serveFile("skill.json", "application/json; charset=utf-8", method);
     if (p === "/DICTIONARY.md" || p === "/ENABLEMENT.md") return serveFile(p.slice(1), "text/markdown; charset=utf-8", method);
+    if (p === "/about" || p === "/about.html") return serveFile("about.html", "text/html; charset=utf-8", method);
     if (p.startsWith("/reference/") && p.endsWith(".json")) return serveFile(p.slice(1), "application/json; charset=utf-8", method);
   }
   if (p === "/store" && method === "GET") {

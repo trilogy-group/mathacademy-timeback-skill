@@ -51,6 +51,7 @@
       "courseActivity": "GET {{BASE}}/store/course/{course.sourcedId}/activity?date=YYYY-MM-DD  (the reader's token; every roster student's day totals for one pulled America/Chicago day, milliseconds; the cohort form of ENABLEMENT ex. 11)",
       "fields": "mathAcademy {id, username, firstName, lastName, created, deactivated, currentCourse {id, name, startDate, progress, xpRemaining, completed, grade, letterGrade, estimatedScore}, schedule, league} copied as Math Academy serves it (SAT Math Prep: progress null, estimatedScore set, xpRemaining still exact); matchedBy (known | live-lookup | activity-lookup | username | email | lookup | name) + matchConfidence; figuresAsOf (ISO) + figuresBasis; mathAcademyState (not started | in progress | at 100, not marked complete | completed); timeback.currentMathAcademySeats (live; flat seats {enrollmentSourcedId, courseSourcedId, courseName, classSourcedId, beginDate, endDate, pctCompleteApp}); courseAgreement (agree | agree, math academy course completed | disagree | disagree, math academy course completed | no current timeback seat | math academy has no current course | no math academy record | not in snapshot), a normalised name comparison plus Math Academy's completed flag, nothing more; DICTIONARY § The Math Academy snapshot store"
     },
+    "explainer": "{{BASE}}/about  (a plain-words page for people: what the skill is, the nightly cycle, who can read what, live freshness; carries no student data)",
     "dictionary": "{{BASE}}/DICTIONARY.md",
     "enablement": "{{BASE}}/ENABLEMENT.md",
     "reference": {

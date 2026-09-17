@@ -33,7 +33,7 @@ map is fetched live on first request and cached.
 | | |
 |---|---|
 | Front | `https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/skill` |
-| Documents | `…/DICTIONARY.md`, `…/ENABLEMENT.md`, `…/reference/*.json` on the same origin |
+| Documents | `…/DICTIONARY.md`, `…/ENABLEMENT.md`, `…/reference/*.json` on the same origin; `…/about` is the plain-words explainer page (`about.html`) |
 | Store | `GET …/store` (status, counts, byCourse, history); `GET …/store/course/{id}` (+ `/students[?agreement=]`, `/activity?date=`), `GET …/store/courses`; `GET …/store/student/{sourcedId}[?minimal=1]` (or `?email=`) + `/history`, `/activity?from&to`, `/knowledge` with `Authorization: Bearer <reader's Timeback token>`; the Lambda replays the token against Timeback and serves only students it answers 200 for; Math Academy is called only for the knowledge map (cached 7 d) and a live lookup on a store miss |
 | Nightly | Lambda `mathacademy-timeback-nightly` (role `team-dev-mathacademy-skill-nightly`: logs, `sat-cohort-tracker/ci` secret read, store table, self re-invoke), schedules `mathacademy-timeback-snapshot-nightly` 03:00 and `mathacademy-timeback-activity-nightly` 03:45 America/Chicago via role `team-dev-mathacademy-skill-scheduler`; `py -3 lambda/nightly/deploy.py check|invoke snapshot|invoke activity [<day> [force]]|disable|enable`; activity runs cover the day before the last pulled day through yesterday (overlap re-pulled, keyed by task id, no duplicates) |
 | Alerts | SNS topic `mathacademy-timeback-alerts` (email to the owner) fed by CloudWatch alarms `mathacademy-timeback-nightly-errors`, `mathacademy-timeback-nightly-missed` (no invocation in a UTC day), `mathacademy-timeback-skill-errors`; `py -3 lambda/nightly/alarms.py --check` |
