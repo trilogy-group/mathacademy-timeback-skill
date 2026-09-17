@@ -62,7 +62,7 @@ def summarise(students, tb_unmatched):
         for seat in u["seats"]:
             c = course(seat); c["students"] += 1; _bump(c["byAgreement"], "no math academy record")
             if u["isTestUser"]: c["testUsers"] += 1
-            else: c["nonTest"]["students"] += 1; _bump(c["nonTest"]["byAgreement"], "no math academy record")
+            else: c["nonTest"]["students"] += 1; _bump(c["nonTest"]["byAgreement"], "no math academy record"); _bump(c["nonTest"]["byMathAcademyState"], "no math academy record")
     return overall, by_course
 
 def ma_courses(students, ma_unmatched):

@@ -192,7 +192,10 @@ def counts_for(bulk, roster, students, tb_unmatched, ma_unmatched):
             "maNotStarted": sum(1 for s_ in students if ma_state(s_["mathAcademy"].get("currentCourse")) == "not started"),
             "nonTest": {"students": sum(1 for r in roster.values() if not r["isTestUser"]),
                         "maNotStarted": sum(1 for s_ in students if not s_["isTestUser"] and ma_state(s_["mathAcademy"].get("currentCourse")) == "not started"),
-                        "byAgreement": {k: sum(1 for s_ in students if not s_["isTestUser"] and s_["courseAgreementAtSnapshot"] == k) for k in sorted({s_["courseAgreementAtSnapshot"] for s_ in students})}},
+                        "byAgreement": {**{k: sum(1 for s_ in students if not s_["isTestUser"] and s_["courseAgreementAtSnapshot"] == k) for k in sorted({s_["courseAgreementAtSnapshot"] for s_ in students})},
+                                        "no math academy record": sum(1 for u in tb_unmatched if not u["isTestUser"])},
+                        "byMathAcademyState": {**{k: sum(1 for s_ in students if not s_["isTestUser"] and ma_state(s_["mathAcademy"].get("currentCourse")) == k) for k in ("not started", "in progress", "at 100, not marked complete", "completed")},
+                                               "no math academy record": sum(1 for u in tb_unmatched if not u["isTestUser"])}},
             "courseAgreement": overall}, by_course
 
 
@@ -245,7 +248,7 @@ def write_snapshot(ddb, table, snap, nightly=True, source="manual"):
         items.append({"PutRequest": {"Item": hist_row(st, day)}})
     for u in snap["tb_unmatched"]:
         items.append({"PutRequest": {"Item": {"pk": S("tb_unmatched"), "sk": S(u["sourcedId"]), "reason": S(u["reason"]), "seats": S(json.dumps(u["seats"])),
-                                              "isTestUser": {"BOOL": bool(u["isTestUser"])}, "snapshotAt": S(at), "email": S(u.get("email") or "")}}})
+                                              "isTestUser": {"BOOL": bool(u["isTestUser"])}, "snapshotAt": S(at), "lastTriedAt": S(at), "email": S(u.get("email") or "")}}})
     for m in snap["ma_unmatched"]:
         items.append({"PutRequest": {"Item": {"pk": S("ma_unmatched"), "sk": S(m.get("id")), "ma": S(json.dumps(m, ensure_ascii=False)), "snapshotAt": S(at)}}})
     _batch(ddb, table, items)
