@@ -10,8 +10,9 @@ This source answers *what a Math Academy student did, how far through their cour
 
 - **Select Math Academy explicitly.** The results container holds every app's Caliper rows. Pass `metadata.appName='Math Academy'` (or a student filter and check `metadata.appName` on each row) and say which set you read.
 - **Page to `totalCount`.** `limit` caps at 3000; loop on `offset` until `offset >= totalCount` (trap 18).
-- **Use course ids, never titles** (trap 1). The id list is in `reference/timeback-math-academy-courses.json` and regenerates with one call.
-- **Current enrollment = active AND in its date window** (trap 2). Prefer `primary = "true"` when a student holds several.
+- **Use course ids, never titles, and expect many sections per course** (trap 1). The id list is in `reference/timeback-math-academy-courses.json` and regenerates with one call. "The X class" is every class whose `course.sourcedId` is X.
+- **Current enrollment = active AND in its date window** (trap 2). Prefer `primary = "true"` when a student holds several. Rosters come from enrollments, never from the class students route (trap 20).
+- **Where an event was filed is on its line item** (trap 21), not on the student's current enrollment. Attribute events to courses through line items.
 - **Aggregation is yours.** Counts, sums and groupings are done in-context over the pages you pulled, or read from EduBridge's own daily cells. When you sum weekly facts, filter `eventType` first (trap 5). When you emit an aggregate, name the numerator, the denominator and the roster basis (which students, filtered how).
 - **The task type is in the URL** (trap 7). Parse the last path segment; `lesson` is new material, `review` is spaced repetition over earlier topics.
 - **Filter out test users** (trap 12) before any census: `users.metadata.isTestUser`, plus name patterns your organisation knows.
@@ -98,7 +99,7 @@ GET /ims/oneroster/rostering/v1p2/enrollments/?filter=user.sourcedId='<sid>' AND
 GET /ims/oneroster/rostering/v1p2/courses/<course.sourcedId>          # metadata.metrics.totalXp (Timeback's figure; trap 11)
 ```
 
-- Progress is `metadata.pctCompleteApp` (integer here). Its age is `pctCompleteAppUpdatedAt`. Absent means no event yet (trap 3).
+- Progress is `metadata.pctCompleteApp` (integer here). Its age is `pctCompleteAppUpdatedAt`, and it can sit a day behind real activity because some events carry no percent (trap 3). Absent means no percent-bearing event since this enrollment began.
 - Estimated XP remaining: `course.metadata.metrics.totalXp × (1 − pctCompleteApp/100)`, basis "timeback course XP", with the course figure read live from the course object. No estimate when the course carries no `totalXp`, when the enrollment has no `pctCompleteApp` yet, or on SAT Math Prep (it reports an estimated SAT score instead of progress; SAT Math Fundamentals is estimated normally). The rule list is `reference/course-xp-size.json`. Always name the basis; dictionary trap 11 gives the check for a course whose figure has lagged a Math Academy re-size.
 - Failure mode: taking the first active enrollment (an old course still `active`), dividing enrollment `totalXp` by course `totalXp` to get progress, or reading the enrollment's `metrics.totalXp` as the course size.
 
@@ -109,22 +110,25 @@ VERIFIED RUN (build, 2026-09-16): executed for one student; the enrollment perce
 ### 4 · Who has gone quiet — "Who in this class hasn't touched Math Academy in two weeks?"
 
 ```
-A. GET /ims/oneroster/rostering/v1p2/classes/?filter=title~'Math Academy'&limit=3000        # or a known class id
-B. GET /ims/oneroster/rostering/v1p2/enrollments/?filter=class.sourcedId='<classId>' AND status='active'&limit=3000
-      # keep rows with today inside beginDate..endDate → the roster (user.sourcedId)
-C. GET /ims/oneroster/rostering/v1p2/classes/<classId>/students?limit=3000                    # key is `users`: email, grades, metadata.isTestUser
+A. GET /ims/oneroster/rostering/v1p2/classes/?filter=title~'Math Academy'&limit=3000
+      # a course has MANY sections with the same title (trap 1): keep every class whose course.sourcedId is the course you mean
+B. for each class: GET /ims/oneroster/rostering/v1p2/enrollments/?filter=class.sourcedId='<classId>' AND status='active'&limit=3000
+      # keep rows with today inside beginDate..endDate → the roster (user.sourcedId); this, not the students route, is the roster (trap 20)
+C. for each class: GET /ims/oneroster/rostering/v1p2/classes/<classId>/students?limit=3000
+      # key is `users`; use ONLY to resolve roster ids to metadata.isTestUser (it also returns users whose enrollment is deleted)
 D. GET /ims/oneroster/gradebook/v1p2/assessmentResults
       ?filter=metadata.appName='Math Academy' AND scoreDate>='<today − N days>'&limit=3000&offset=0   # page; collect student.sourcedId
       # quiet = roster − active set
 ```
 
 - D is one paged read for the whole estate (about two thousand rows a day, order 10,000 a week); it replaces per-student loops. For one student, ex. 1 with `limit=1&orderBy=desc` gives the last event directly.
-- Aggregate labels: numerator = roster students with no Math Academy result in the window; denominator = active in-window enrollments of the class; basis = OneRoster enrollments, test users excluded (say whether you excluded them).
-- Failure mode: counting `active` enrollments whose `endDate` has passed; reading the class by title and merging two spellings; forgetting that "no result" is a claim about the results container only.
+- "Quiet" means no Math Academy result in the window from ANY enrollment; to say when the student last did anything, run ex. 1's query for that student with `limit=1&orderBy=desc` and no date bound.
+- Aggregate labels: numerator = roster students with no Math Academy result in the window; denominator = active in-window enrollments across all sections of the course; basis = OneRoster enrollments, test users excluded (say whether you excluded them).
+- Failure mode: taking one section as "the class"; taking the roster from the students route (trap 20); counting `active` enrollments whose `endDate` has passed; forgetting that "no result" is a claim about the results container only.
 
-Output shape: one row per quiet student — `user.sourcedId`, `course.sourcedId`, `course.name`, `enrollment.beginDate`, `lastMathAcademyResult (date or null in window)`, `pctCompleteApp`. No email, no name: the recipient resolves the id if they are entitled to (dictionary § Students are children).
+Output shape: one row per quiet student — `user.sourcedId`, `class.sourcedId` (section), `course.sourcedId`, `enrollment.beginDate`, `lastMathAcademyResult (date or null in window)`, `pctCompleteApp (may be absent, trap 3)`. No email, no name: the recipient resolves the id if they are entitled to (dictionary § Students are children).
 
-VERIFIED RUN (build, 2026-09-16): D returned pages of the documented shape for a 14-day window; A–C executed for one class.
+VERIFIED RUN (build, 2026-09-16; cold run by an agent with no prior context, 2026-09-17): D returned pages of the documented shape for a 14-day window; A–C executed across every section of one course, and the cold run produced the table above, including sections with no active enrollment.
 
 ### 5 · Who finished — "Who has completed their Math Academy course?"
 
@@ -151,7 +155,7 @@ GET /ims/oneroster/gradebook/v1p2/assessmentResults?filter=student.sourcedId='<s
       # group by topicId (from the URL); title from the line item
 ```
 
-- Negative XP is a failed review; a failed lesson awards 0 (trap: XP is signed). `score` null rows carry no accuracy signal (trap 9).
+- Negative XP is a failed review; a failed lesson awards 0 (trap: XP is signed). `score` null means zero correct (trap 9); count it as a fail.
 - Aggregate labels: per topic, count of failed attempts over count of attempts, this student, this window.
 - Failure mode: treating `review` failures on an earlier course's topic as a gap in the current course; they are spaced-repetition checks (trap 8).
 
@@ -186,16 +190,19 @@ VERIFIED RUN (build, 2026-09-16): A and B executed over 14 days of estate-wide e
 ### 8 · Estate-wide day — "How much Math Academy happened yesterday?"
 
 ```
-GET /ims/oneroster/gradebook/v1p2/assessmentResults?filter=metadata.appName='Math Academy' AND scoreDate>='<day>T00:00:00Z' AND scoreDate<='<day>T23:59:59Z'&limit=3000&offset=0   # page
-      # group by student.sourcedId; join enrollments for course; sum metadata.xp; count by URL type
+A. GET /ims/oneroster/gradebook/v1p2/assessmentResults?filter=metadata.appName='Math Academy' AND scoreDate>='<day>T00:00:00Z' AND scoreDate<='<day>T23:59:59Z'&limit=3000&offset=0   # page
+B. GET /ims/oneroster/gradebook/v1p2/assessmentLineItems?filter=dateLastModified>='<day>'&limit=3000&offset=0   # page; keep the ids A referenced
+      # course = the LINE ITEM's course.sourcedId (trap 21); never the student's current enrollment
+      # group by course; sum metadata.xp; count by URL type; count distinct students
 ```
 
-- Aggregate labels: events, students, XP by course; basis = every Caliper result with `appName` Math Academy in the UTC day, test users excluded or not (say which).
-- Failure mode: taking one page as the day (trap 18); mixing UTC and campus days (trap 17).
+- The course an event was filed under is the line item's, and on a sample day a few percent of events were filed under a since-deleted enrollment's course; joining through current enrollments mis-attributes those and leaves students with only deleted enrollments unattributed. B is large (every app's line items for the day) but one paged read; the alternative is one GET per distinct line item.
+- Aggregate labels: events, students, XP by filed course; basis = every Caliper result with `appName` Math Academy in the UTC day, test users excluded or not (say which).
+- Failure mode: taking one page as the day (trap 18); mixing UTC and campus days (trap 17); attributing by enrollment instead of line item (trap 21).
 
 Output shape: one row per course — `course.sourcedId`, `course.name`, `students`, `events`, `xp`, `lessons`, `reviews`, `quizzes`, `placements`.
 
-VERIFIED RUN (build, 2026-09-16): executed for one UTC day; the shape held.
+VERIFIED RUN (build, 2026-09-16; cold run 2026-09-17): executed for one UTC day; the cold run produced the by-course table from line items and showed the enrollment-based join disagreeing on a few percent of rows, which is why B replaced it.
 
 ## Cross-system notes
 

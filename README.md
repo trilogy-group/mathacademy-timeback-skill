@@ -8,7 +8,7 @@ credential against Timeback's own APIs; nothing here calls Math Academy.
 
 | Path | What |
 |---|---|
-| `DICTIONARY.md` | the product lens: containers, field genesis, invariants, 19 numbered traps, open questions |
+| `DICTIONARY.md` | the product lens: containers, field genesis, invariants, 21 numbered traps, open questions |
 | `ENABLEMENT.md` | 8 capabilities, question→call catalog, 8 worked examples with output shapes |
 | `skill.template.json` → `skill.json` | the five-clause front (`what / when / why / how / feedback`), rendered by `scripts/build_front.py` |
 | `reference/timeback-math-academy-courses.json` | the 23 OneRoster courses titled Math Academy (the domain of the course field) |
