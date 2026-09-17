@@ -1,5 +1,5 @@
 {
-  "_about": "Deployment settings read by scripts/build_front.py. base = the public origin the worker serves on; repo = the GitHub repo that takes feedback issues. Both are placeholders until the owner picks them.",
-  "base": "https://REPLACE-ME.workers.dev",
-  "repo": "REPLACE_OWNER/REPLACE_REPO"
+  "_about": "Deployment settings read by scripts/build_front.py. base = the Lambda function URL the front is served on; repo = the GitHub repo that takes feedback issues.",
+  "base": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws",
+  "repo": "trilogy-group/mathacademy-timeback-skill"
 }

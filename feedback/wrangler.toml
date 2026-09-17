@@ -10,6 +10,6 @@ directory = "../public"      # built by scripts/build_public.py: skill.json, DIC
 binding = "ASSETS"
 
 [vars]
-REPO = "REPLACE_OWNER/REPLACE_REPO"
+REPO = "trilogy-group/mathacademy-timeback-skill"
 SOURCE = "mathacademy_timeback"
 GIT_VERSION = "unversioned"
