@@ -29,6 +29,8 @@ except Exception:
 t = (ROOT / "skill.template.json").read_text(encoding="utf-8")
 for k, v in {"BASE": base, "REPO": repo, "CONTRACT_SHA256": contract_sha, "CONTRACT_VERSION": ver,
              "DICTIONARY_SHA256": sha("DICTIONARY.md"), "ENABLEMENT_SHA256": sha("ENABLEMENT.md"),
+             "REF_COURSES_SHA256": sha("reference/timeback-math-academy-courses.json"), "REF_XP_SHA256": sha("reference/course-xp-size.json"),
+             "REF_TOPICS_SHA256": sha("reference/topic-course-map.json"),
              "GIT_VERSION": git, "VERSION": datetime.date.today().isoformat()}.items():
     t = t.replace("{{" + k + "}}", v)
 json.loads(t)  # must be valid JSON

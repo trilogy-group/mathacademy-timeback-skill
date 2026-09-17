@@ -2,55 +2,58 @@
 
 What Math Academy data inside Timeback is good for, and how to put it to work. Worked examples are direct instruction: guidance, not truth. The dictionary governs meaning; the live OpenAPI files govern shape. Read both fresh.
 
-This source answers *what a Math Academy student did, how far through their course they are, who has gone quiet, who has finished, and whether Timeback's record of their course looks coherent*, all from Timeback's own APIs with a Timeback credential and no Math Academy call. Siblings answer the other halves: **timeback_production** and **timeback_analytics** (registered at the dss estate) hold the whole learning record across every app, screen-capture minutes and waste, MAP testing and mastery; **the Math Academy API itself** holds what never reaches Timeback (estimated SAT score, exact XP remaining, course grade, engaged versus productive time, the course catalogue). Route to them when the question crosses over.
+This source answers *what a Math Academy student did, how far through their course they are, who has gone quiet, who has finished, where a student is struggling, how a student's Math Academy history unfolded, and whether Timeback's record of their course looks coherent*, all from Timeback's own APIs with a Timeback credential and no Math Academy call. Siblings answer the other halves: **timeback_production** (front `https://timeback-loops-k8.vercel.app/dss/timeback_production/skill`) and **timeback_analytics** (front `https://platform.timeback.com/mcps/analytics/skill`) hold the whole learning record across every app, MAP testing and mastery, screen-capture minutes and waste; **the Math Academy API itself** holds what never reaches Timeback (the exact XP remaining, the estimated SAT score, the course grade, the engaged versus productive split, the per-topic knowledge map, the course catalogue), reached as a one-off per § One-off exact figures. Route to them when the question crosses over.
 
-**Base:** `https://api.alpha-1edtech.ai`. Every call: `Authorization: Bearer <token>`, minted once per hour from the Cognito client-credentials endpoint (dictionary § native surface). The two OpenAPI files are keyless. Discovery is those files plus this dictionary/enablement pair. Never tell the user a capability is missing without checking the OpenAPI first.
+**Base:** `https://api.alpha-1edtech.ai`. Every call: `Authorization: Bearer <token>`, minted once per hour from the Cognito client-credentials endpoint with the one POST a read-only reader makes (dictionary § native surface); cache the token, mint again on 401, retry a connection reset or 5xx once. The two OpenAPI files are keyless. Discovery is those files plus this dictionary/enablement pair. Never tell the user a capability is missing without checking the OpenAPI first.
 
 ## How to work
 
-- **Select Math Academy explicitly.** The results container holds every app's Caliper rows. Pass `metadata.appName='Math Academy'` (or a student filter and check `metadata.appName` on each row) and say which set you read.
+- **Select Math Academy explicitly, by equality.** The results container holds every app's Caliper rows, and other apps' rows may carry no `appName` at all. Filter `metadata.appName='Math Academy'` on the wire (combined with a student filter when you have one) and check `metadata.appName == 'Math Academy'` on each row you keep (trap 22).
 - **Page to `totalCount`.** `limit` caps at 3000; loop on `offset` until `offset >= totalCount` (trap 18).
-- **Use course ids, never titles, and expect many sections per course** (trap 1). The id list is in `reference/timeback-math-academy-courses.json` and regenerates with one call. "The X class" is every class whose `course.sourcedId` is X.
-- **Current enrollment = active AND in its date window** (trap 2). Prefer `primary = "true"` when a student holds several. Rosters come from enrollments, never from the class students route (trap 20).
+- **Use course ids, never titles, and expect many sections per course** (trap 1). "The X class" is every class whose `course.sourcedId` is X: `classes/?filter=course.sourcedId='X'` returns them in one call.
+- **Current enrollment = active AND in its date window** (trap 2); a `tobedeleted` seat is never current. Rosters come from enrollments, never from the class students route (trap 20). Where a student holds two current Math Academy enrollments, report both (invariant 5); do not rely on `primary`.
+- **Progress comes from the newest result**, `metadata.pctCompleteApp` on the latest Math Academy result for that course, with the enrollment's copy as a convenience only (trap 3).
 - **Where an event was filed is on its line item** (trap 21), not on the student's current enrollment. Attribute events to courses through line items.
-- **Aggregation is yours.** Counts, sums and groupings are done in-context over the pages you pulled, or read from EduBridge's own daily cells. When you sum weekly facts, filter `eventType` first (trap 5). When you emit an aggregate, name the numerator, the denominator and the roster basis (which students, filtered how).
-- **The task type is in the URL** (trap 7). Parse the last path segment; `lesson` is new material, `review` is spaced repetition over earlier topics.
-- **Filter out test users** (trap 12) before any census: `users.metadata.isTestUser`, plus name patterns your organisation knows.
-- **The students are children.** Use `user.sourcedId` as the key throughout; resolve an email to an id once, at the start, and let nothing person-bearing (name, email, Math Academy login) leave your session. Every output shape below is keyed on the opaque id for that reason (dictionary § Students are children; the front's `pii` clause).
-- **The range of an absence.** "No Math Academy activity" for a student is a claim about the results container for that student in that window; say so. A student with no results may have an enrollment with no events yet (trap 3), or may be below grade 4 and never onboarded, or may be outside the credential's org. Say which container you read and over what window; nothing older than the oldest reachable result is decidable.
-- **Timezone.** Pass the campus IANA timezone to EduBridge and use the same one when bucketing `scoreDate` (trap 17).
+- **Aggregation is yours.** Counts, sums and groupings are done in-context over the pages you pulled, or read from EduBridge's own cells. When you sum weekly facts, filter `eventType` first and join time rows to results on `datetime` (traps 5, 26). Active minutes are a floor (invariant 1). When you emit an aggregate, name the numerator, the denominator and the roster basis (which students, filtered how).
+- **The task type is in the URL** (trap 7). `lesson` is new material, `review` is spaced repetition over earlier topics, and negative XP means the task was failed whatever its type. Quiz URLs do not carry a topic id (trap 25).
+- **Filter out test users** (trap 12) before any roster census: `users.metadata.isTestUser`, plus name patterns your organisation knows. They dominate rosters and barely appear in activity, so state whether a count is of the roster or of activity.
+- **The students are children.** Use `user.sourcedId` as the key throughout; resolve an email to an id once, at the start; let nothing person-bearing leave your session; scrub cached responses (dictionary § Students are children, trap 24).
+- **The range of an absence.** "No Math Academy activity" is a claim about the results container, for that student, filtered to Math Academy, in that window, under a key known to cover them. Say it that way. Days absent from an EduBridge object are days with no activity, not zeros.
+- **Timezone.** Nothing served tells you a student's zone. Use the school's local zone if you know it, otherwise UTC on both OneRoster and EduBridge, and say which (trap 17).
 - **A permission error is a key limit, not an absence.** 401 means mint again; 403 means the credential does not cover the route; report either, never estimate past it.
 
 ## Capabilities — what you can answer here
 
 Each is buildable by a cold agent with `GET /skill`, this pair, and a Timeback credential. This list is the claim surface.
 
-1. **A student's Math Academy task history** — every task with type, topic, XP, accuracy and time, in a window.
+1. **A student's Math Academy task history** — every task with type, topic, XP, accuracy and (where a time row exists) time, in a window.
 2. **A student's daily and weekly Math Academy totals** — XP, questions, correct, active minutes per day.
-3. **A student's current Math Academy course and how far through it they are** — course, completion percent and its age, running totals, and an estimated XP remaining with its basis named.
-4. **Who has gone quiet** — students in a Math Academy class or course with no Math Academy event in N days.
-5. **Who has finished their course** — completion percent at 100, and whether they have since moved.
-6. **Where a student is struggling** — failed reviews, negative XP, low accuracy by topic.
-7. **Whether a student's Timeback course looks wrong** — a suspect-course flag from lesson topic ids, paired with the quiet check, with its false-alarm profile stated.
-8. **Estate-wide Math Academy activity for a day or a week** — every event across all students without a student list.
+3. **A student's current Math Academy course and how far through it they are** — course, completion percent and its age, and an estimated XP remaining with its basis and its known bias named.
+4. **Who has gone quiet** — students in a Math Academy course (all its sections) with no Math Academy event in N days.
+5. **Who has finished their course** — newest result at 100, and whether they have since been moved.
+6. **Where a student is struggling** — failed tasks and low accuracy by topic, and whether a failed topic was re-taught and passed.
+7. **Whether a student's Timeback course looks wrong** — a suspect-course flag from lesson topic ids, with its uncheckable and quiet buckets named and its false-alarm profile stated.
+8. **Estate-wide Math Academy activity for a day or a week** — every event across all students, attributed to the course it was filed under.
+9. **A student's Math Academy timeline** — every seat they have held, the events filed under each (including under deleted seats), the percent reached, and the gaps.
 
 ## Question → composition catalog
 
 | The user asks… | Compose |
 |---|---|
-| "What did this student do on Math Academy this week?" | results by `student.sourcedId` + `scoreDate>=`, parse URL for type/topic, join line item titles (ex. 1) |
+| "What did this student do on Math Academy this week?" | results by `student.sourcedId AND metadata.appName AND scoreDate>=`, parse URL for type/topic, join line item titles (ex. 1) |
 | "How many minutes and XP per day?" | EduBridge `/analytics/activity` by student and range, read `factsByApp[day].Math["Math Academy"]` (ex. 2) |
-| "What course is she in and how far along?" | enrollments by user → active in-window Math Academy class → `metadata.pctCompleteApp`, `pctCompleteAppUpdatedAt`, `metrics`; course id → estimate (ex. 3) |
-| "Who in this class hasn't touched Math Academy in two weeks?" | class → students → per-student latest result; or estate-wide results since day D → set of active students; difference against the class roster (ex. 4) |
-| "Who finished?" | enrollments in Math Academy classes with `pctCompleteApp = 100`; check for a newer enrollment (ex. 5) |
-| "Where is he struggling?" | results by student, keep `review` rows with `xp < 0` or `score < 60`, group by topic title (ex. 6) |
-| "Is anyone in the wrong course?" | topic map from estate-wide lesson events; per student share of topics pointing elsewhere; pair with quiet check (ex. 7) |
-| "How much Math Academy happened yesterday across the school?" | estate-wide results with `metadata.appName` and `scoreDate>=`, group by student and course (ex. 8) |
-| "What is her EXACT XP remaining / estimated SAT score?" | not in Timeback: one direct Math Academy call with the organisation's Math Academy key (§ One-off exact figures), never a loop |
+| "What course is she in and how far along?" | enrollments by user → current Math Academy seats → newest result's `pctCompleteApp` for that course → live course `totalXp` → estimate with basis (ex. 3) |
+| "Who in this course hasn't touched Math Academy in two weeks?" | every section by `course.sourcedId` → active in-window enrollments → estate-wide results since day D → roster minus active set (ex. 4) |
+| "Who finished?" | roster → newest result per student → `pctCompleteApp` 100 → newer Math Academy seat or not (ex. 5) |
+| "Where is he struggling, and did he recover?" | results by student, failed tasks by topic, lesson-after-failed-review detector (ex. 6) |
+| "Is anyone in the wrong course?" | topic map from estate-wide lesson/multistep events by line-item course; per student share pointing elsewhere; uncheckable, quiet and unenrolled buckets (ex. 7) |
+| "How much Math Academy happened yesterday across the school?" | estate-wide results with `metadata.appName` and `scoreDate` bounds, course from line items via per-course line-item listing (ex. 8) |
+| "Tell me this student's whole Math Academy story." | all-time results + all Math Academy enrollments + line items → timeline (ex. 9) |
+| "What is her EXACT XP remaining / SAT score / knowledge map?" | not in Timeback: one direct Math Academy call with the organisation's Math Academy key (§ One-off exact figures), never a loop |
 
 ## Worked examples
 
-Every call is a direct native request against the base URL with the bearer header. Filters are plain query-string parameters. Dates in filters are ISO; `scoreDate` compares as a timestamp, so `>= '2026-09-01'` means midnight UTC.
+Every call is a direct native request against the base URL with the bearer header. Filters are plain query-string parameters, URL-encoded whole. Dates in filters are ISO; `scoreDate` compares as a timestamp, so `>= '2026-09-01'` means midnight UTC.
 
 ### 1 · Task history — "What did this student do on Math Academy this week?"
 
@@ -58,61 +61,61 @@ Every call is a direct native request against the base URL with the bearer heade
 # start from the student's Timeback id (user.sourcedId). Only if a person handed you an email, resolve it ONCE and carry the id from then on:
 GET /ims/oneroster/rostering/v1p2/users/?filter=email='<student email>'          # → users[0].sourcedId ; the email does not travel further
 GET /ims/oneroster/gradebook/v1p2/assessmentResults
-      ?filter=student.sourcedId='<sid>' AND scoreDate>='<YYYY-MM-DD>'
+      ?filter=student.sourcedId='<sid>' AND metadata.appName='Math Academy' AND scoreDate>='<YYYY-MM-DD>'
       &sort=scoreDate&orderBy=desc&limit=3000&offset=0                            # page until offset >= totalCount
-      # keep rows where metadata.appName == 'Math Academy'
-GET /ims/oneroster/gradebook/v1p2/assessmentLineItems/<assessmentLineItem.sourcedId>   # title = topic name (one per row; cache)
+GET /ims/oneroster/gradebook/v1p2/assessmentLineItems/<assessmentLineItem.sourcedId>   # title = topic name, course = filed course (one per row; cache)
 ```
 
-- Parse `metadata.originalObjectId`: `/topics/<topicId>/<type>` or `/tasks/<taskId>/placement`.
-- Read `metadata.xp` (signed), `score`, `metadata.totalQuestions`, `metadata.correctQuestions` (may be null), `scoreDate` (UTC completion time).
-- For seconds per task, read the student's weekly facts (ex. 2, step B) and join `TimeSpentEvent` rows on timestamp and topic title; the result row itself carries no duration.
-- Failure mode: treating `dateLastModified` as the activity time (it is ingestion time), or reading `review` rows as new lessons.
+- Parse `metadata.originalObjectId`: `/topics/<topicId>/<type>` for lesson, review, quiz, multistep; `/tasks/<taskId>/<type>` (no topic) for placement, exam, supplemental. Quiz ids in the topic slot are quiz instances, not topics (trap 25).
+- Read `metadata.xp` (signed; negative = failed), `score` (null = zero correct), `metadata.totalQuestions`, `metadata.correctQuestions`, `scoreDate` (UTC completion time), `metadata.pctCompleteApp` (may be absent).
+- For seconds per task, read the student's weekly facts (ex. 2, step B) and join `TimeSpentEvent` rows on `datetime` = `scoreDate`; some tasks have no time row (invariant 1). Never join on `activityName` (trap 26).
+- Failure mode: treating `dateLastModified` as the activity time (it is ingestion time, sometimes days late); reading `review` rows as new lessons; reading a null score as missing.
 
-Output shape: one row per task — `scoreDate (UTC)`, `type`, `topicId`, `topicTitle`, `xp (int, signed)`, `score (0–100 or null)`, `correct/total`, `attempt`, `pctCompleteApp (string %)`.
+Output shape: one row per task — `scoreDate (UTC)`, `type`, `topicId (null for placement/exam/supplemental; quiz-instance id for quiz)`, `title`, `filedCourseSourcedId`, `xp (int, signed)`, `score (0–100, null = 0 correct)`, `correct/total`, `attempt`, `pctCompleteApp (string % or absent)`, `activeSeconds (or null)`.
 
-VERIFIED RUN (build, 2026-09-16): the calls executed against one active student and returned the shape above, with `review` and `lesson` rows interleaved and a minority of rows carrying `score: null`.
+VERIFIED RUN (build 2026-09-16; four cold runs 2026-09-17): the calls executed and returned the shape above; the cold runs met every URL type including exam and supplemental, negative XP on lessons, and tasks without a time row.
 
 ### 2 · Daily totals — "How many minutes and XP per day?"
 
 ```
-A. GET /edubridge/analytics/activity?studentId=<sid>&startDate=<YYYY-MM-DD>T00:00:00Z&endDate=<YYYY-MM-DD>T23:59:59Z&timezone=<IANA>
-      # facts[<day>].Math.activityMetrics / timeSpentMetrics ; factsByApp[<day>].Math["Math Academy"] isolates the app
-B. GET /edubridge/analytics/facts/weekly?studentId=<sid>&weekDate=<any date in the week>&timezone=<IANA>
-      # facts[] = event rows; keep app == 'Math Academy'; eventType 'ActivityEvent' for XP/questions, 'TimeSpentEvent' for activeSeconds
+A. GET /edubridge/analytics/activity?studentId=<sid>&startDate=<YYYY-MM-DD>T00:00:00Z&endDate=<YYYY-MM-DD>T23:59:59Z&timezone=<IANA or UTC>
+      # factsByApp[<day>].Math["Math Academy"].activityMetrics / timeSpentMetrics  — the Math Academy cell; facts[<day>].Math mixes apps (trap 23)
+B. GET /edubridge/analytics/facts/weekly?studentId=<sid>&weekDate=<any date in the week>&timezone=<same zone>
+      # facts[] = event rows; keep app == 'Math Academy'; eventType 'ActivityEvent' for XP/questions, 'TimeSpentEvent' for activeSeconds; datetime = scoreDate
 ```
 
-- A gives the day rollup; B gives the events behind it. B has two rows per task (trap 5); `activeSeconds` is a string.
+- A gives the day rollup; B gives the events behind it. B has one ActivityEvent row per task and a TimeSpentEvent row for most (traps 5, 26); `activeSeconds` is a string. Days with no activity are absent from A, not zero.
 - `wasteSeconds` is always 0 for Math Academy (trap 4): do not report it as clean behaviour.
-- Aggregate labels: XP = sum of `ActivityEvent.xpEarned`; minutes = sum of `TimeSpentEvent.activeSeconds` / 60; basis = this student's Math Academy rows in the requested window and timezone.
-- Failure mode: omitting `timezone` and getting UTC days; summing all fact rows and doubling the event count.
+- Aggregate labels: XP = sum of `ActivityEvent.xpEarned`; minutes = sum of `TimeSpentEvent.activeSeconds` / 60, a floor; basis = this student's Math Academy rows in the requested window and zone.
+- Failure mode: omitting `timezone` and getting UTC days without saying so; summing all fact rows and doubling the event count; reading `facts[day].Math` as Math Academy alone when Math Raiders contributed.
 
-Output shape: one row per day — `date`, `xpEarned`, `correct/total`, `masteredUnits`, `activeMinutes`, plus per-day `apps[]` confirming only `Math Academy` contributed.
+Output shape: one row per active day — `date`, `xpEarned`, `correct/total`, `masteredUnits`, `activeMinutes (floor)`, `apps[]` for the Math cell.
 
-VERIFIED RUN (build, 2026-09-16): A and B executed for one student and one week; the sum of `ActivityEvent.xpEarned` per day equalled A's `xpEarned` for that day on every day checked.
+VERIFIED RUN (build 2026-09-16; cold runs 2026-09-17): A and B executed; daily XP, questions, correct and mastered units equalled the summed result rows on every day checked; minutes matched the time rows to the second where a time row existed.
 
 ### 3 · Current course and progress — "What course is she in and how far along?"
 
 ```
 GET /ims/oneroster/rostering/v1p2/enrollments/?filter=user.sourcedId='<sid>' AND status='active'&limit=3000
-      # keep rows whose class.name contains 'Math Academy' and whose beginDate..endDate contains today; prefer primary == "true"
-      # read course.sourcedId, course.name, metadata.pctCompleteApp, metadata.pctCompleteAppUpdatedAt, metadata.metrics.totalXp / totalLessons
-GET /ims/oneroster/rostering/v1p2/courses/<course.sourcedId>          # metadata.metrics.totalXp (Timeback's figure; trap 11)
+      # keep rows whose course.name starts 'Math Academy' and whose beginDate..endDate contains today → the current seat(s); report both if two
+GET /ims/oneroster/gradebook/v1p2/assessmentResults?filter=student.sourcedId='<sid>' AND metadata.appName='Math Academy'&sort=scoreDate&orderBy=desc&limit=20
+      # newest result whose metadata.pctCompleteApp is present → progress; its scoreDate → the progress's age
+GET /ims/oneroster/rostering/v1p2/courses/<course.sourcedId>          # metadata.metrics.totalXp, read live (trap 11)
 ```
 
-- Progress is `metadata.pctCompleteApp` (integer here). Its age is `pctCompleteAppUpdatedAt`, and it can sit a day behind real activity because some events carry no percent (trap 3). Absent means no percent-bearing event since this enrollment began.
-- Estimated XP remaining: `course.metadata.metrics.totalXp × (1 − pctCompleteApp/100)`, basis "timeback course XP", with the course figure read live from the course object. No estimate when the course carries no `totalXp`, when the enrollment has no `pctCompleteApp` yet, or on SAT Math Prep (it reports an estimated SAT score instead of progress; SAT Math Fundamentals is estimated normally). The rule list is `reference/course-xp-size.json`. Always name the basis; dictionary trap 11 gives the check for a course whose figure has lagged a Math Academy re-size.
-- Failure mode: taking the first active enrollment (an old course still `active`), dividing enrollment `totalXp` by course `totalXp` to get progress, or reading the enrollment's `metrics.totalXp` as the course size.
+- Progress is the newest result's `pctCompleteApp` (string); the enrollment's `metadata.pctCompleteApp` is a convenience that is often absent (trap 3). Its age is that result's `scoreDate`.
+- Estimated XP remaining: `course.metadata.metrics.totalXp × (1 − pct/100)`, basis "timeback course XP", per the rules in `reference/course-xp-size.json` (no estimate when the course carries no `totalXp`, when no percent exists yet, or on SAT Math Prep). **State the bias**: the estimate runs low for most students, typically by a fifth to nearly half, because Math Academy awards extra XP on failed reviews; present it as a band, never as the figure. Never present it as Math Academy's number.
+- Do not report the enrollment's `metrics.totalXp` as XP earned: it is a course-size snapshot or an unexplained figure, not a running total (dictionary § enrollment). XP earned under a seat is the signed sum of result `xp` for that seat (ex. 9).
+- Failure mode: taking the first active enrollment (an old course still `active`); trusting `primary`; dividing anything by course `totalXp` to get progress.
 
-Output shape: `course.sourcedId`, `course.name`, `pctCompleteApp`, `pctCompleteAppUpdatedAt`, `enrollment.beginDate`, `metrics.totalXp`, `metrics.totalLessons`, `estRemaining {value | null, basis: "timeback course XP" | "none: course has no totalXp" | "none: no pctCompleteApp yet" | "none: SAT Math Prep reports a score, not progress"}`.
+Output shape: per current seat — `course.sourcedId`, `course.name`, `enrollment.beginDate`, `pct (from newest result)`, `pctAsOf (scoreDate)`, `estRemaining {value | null, basis: "timeback course XP" | "none: course has no totalXp" | "none: no percent yet" | "none: SAT Math Prep reports a score", biasNote}`.
 
-VERIFIED RUN (build, 2026-09-16): executed for one student; the enrollment percent matched the `pctCompleteApp` on that student's latest result.
+VERIFIED RUN (build 2026-09-16; cold runs 2026-09-17): executed; the newest result's percent matched the enrollment's copy where the copy existed and was present where the copy was missing.
 
-### 4 · Who has gone quiet — "Who in this class hasn't touched Math Academy in two weeks?"
+### 4 · Who has gone quiet — "Who in this course hasn't touched Math Academy in two weeks?"
 
 ```
-A. GET /ims/oneroster/rostering/v1p2/classes/?filter=title~'Math Academy'&limit=3000
-      # a course has MANY sections with the same title (trap 1): keep every class whose course.sourcedId is the course you mean
+A. GET /ims/oneroster/rostering/v1p2/classes/?filter=course.sourcedId='<courseId>'&limit=3000      # every section (trap 1)
 B. for each class: GET /ims/oneroster/rostering/v1p2/enrollments/?filter=class.sourcedId='<classId>' AND status='active'&limit=3000
       # keep rows with today inside beginDate..endDate → the roster (user.sourcedId); this, not the students route, is the roster (trap 20)
 C. for each class: GET /ims/oneroster/rostering/v1p2/classes/<classId>/students?limit=3000
@@ -120,118 +123,145 @@ C. for each class: GET /ims/oneroster/rostering/v1p2/classes/<classId>/students?
 D. GET /ims/oneroster/gradebook/v1p2/assessmentResults
       ?filter=metadata.appName='Math Academy' AND scoreDate>='<today − N days>'&limit=3000&offset=0   # page; collect student.sourcedId
       # quiet = roster − active set
+E. for each quiet student: GET .../assessmentResults?filter=student.sourcedId='<sid>' AND metadata.appName='Math Academy'&sort=scoreDate&orderBy=desc&limit=1
+      # their last Math Academy result ever, or none
 ```
 
-- D is one paged read for the whole estate (about two thousand rows a day, order 10,000 a week); it replaces per-student loops. For one student, ex. 1 with `limit=1&orderBy=desc` gives the last event directly.
-- "Quiet" means no Math Academy result in the window from ANY enrollment; to say when the student last did anything, run ex. 1's query for that student with `limit=1&orderBy=desc` and no date bound.
-- Aggregate labels: numerator = roster students with no Math Academy result in the window; denominator = active in-window enrollments across all sections of the course; basis = OneRoster enrollments, test users excluded (say whether you excluded them).
-- Failure mode: taking one section as "the class"; taking the roster from the students route (trap 20); counting `active` enrollments whose `endDate` has passed; forgetting that "no result" is a claim about the results container only.
+- D is one paged read for the whole estate; it replaces per-student loops. Aggregate labels: numerator = roster students with no Math Academy result in the window; denominator = active in-window enrollments across all sections of the course; basis = OneRoster enrollments, test users excluded (say so).
+- Distinguish in the output: never any result at all; enrolled after the window began; stopped, with the last date.
+- Failure mode: taking one section as "the course"; taking the roster from the students route (trap 20); counting `active` enrollments whose `endDate` has passed; forgetting that "no result" is a claim about the results container only.
 
-Output shape: one row per quiet student — `user.sourcedId`, `class.sourcedId` (section), `course.sourcedId`, `enrollment.beginDate`, `lastMathAcademyResult (date or null in window)`, `pctCompleteApp (may be absent, trap 3)`. No email, no name: the recipient resolves the id if they are entitled to (dictionary § Students are children).
+Output shape: one row per quiet student — `user.sourcedId`, `class.sourcedId` (section), `course.sourcedId`, `enrollment.beginDate`, `lastMathAcademyResultEver (date or null)`, `pct (from that result, or absent)`. No email, no name (dictionary § Students are children).
 
-VERIFIED RUN (build, 2026-09-16; cold run by an agent with no prior context, 2026-09-17): D returned pages of the documented shape for a 14-day window; A–C executed across every section of one course, and the cold run produced the table above, including sections with no active enrollment.
+VERIFIED RUN (build 2026-09-16; two cold runs 2026-09-17): A–E executed across every section of a course; the cold runs produced the table above including sections with no active enrollment and students with no result ever.
 
 ### 5 · Who finished — "Who has completed their Math Academy course?"
 
 ```
-GET /ims/oneroster/rostering/v1p2/enrollments/?filter=class.sourcedId='<classId>' AND status='active'&limit=3000
-      # keep metadata.pctCompleteApp == 100
-GET /ims/oneroster/rostering/v1p2/enrollments/?filter=user.sourcedId='<sid>'&limit=3000
-      # does a newer Math Academy enrollment exist (beginDate after pctCompleteAppUpdatedAt)? if not, the student finished and was not moved
+A. roster of the course as in ex. 4 (A–C), test users flagged
+B. GET /ims/oneroster/gradebook/v1p2/assessmentResults?filter=metadata.appName='Math Academy' AND scoreDate>='<today − 60 days>'&limit=3000&offset=0   # page
+      # per roster student: newest result with a pctCompleteApp; finished = that percent is 100
+C. GET /ims/oneroster/rostering/v1p2/enrollments/?filter=user.sourcedId='<sid>'&limit=3000
+      # a Math Academy seat that began after the 100 was reached? same course again (re-enrolled, not advanced)? no Math Academy seat at all (moved to a non-Math Academy class)?
 ```
 
-- A finished course with no successor enrollment is the case the platform's progression should have handled; report it as a finding with the enrollment id, never as a student's fault.
-- Failure mode: using `metrics.totalXp` against course `totalXp` as "finished" (trap 11).
+- Read the 100 from results, not from enrollments: the enrollment's percent is missing on most seats (trap 3).
+- A finished seat with no newer Math Academy seat is the case the platform's progression should have handled; report it with the seat id, never as a student's fault. A newer seat in the same course is "re-enrolled, not advanced". A student whose only newer seats are non-Math Academy math classes has left Math Academy.
+- One Timeback-side tell for "finished on Math Academy but still parked": a 100 percent seat whose recent events are all reviews, no lessons (trap 10).
+- Failure mode: using `metrics.totalXp` as "finished"; reading enrollment `pctCompleteApp` alone.
 
-Output shape: `user.sourcedId`, `course.name`, `pctCompleteAppUpdatedAt`, `hasNewerMathAcademyEnrollment (bool)`.
+Output shape: `user.sourcedId`, `course.sourcedId`, `reached100On (scoreDate)`, `disposition: not moved | advanced to <course.sourcedId> | re-enrolled same course | left Math Academy`.
 
-VERIFIED RUN (build, 2026-09-16): executed over one class; the shape held.
+VERIFIED RUN (build 2026-09-16; cold run 2026-09-17): over one course the enrollment-based reading found nobody while the results-based reading found finished students in each disposition above; hence this form.
 
-### 6 · Where a student is struggling — "Which topics is he failing?"
+### 6 · Where a student is struggling — "Which topics is he failing, and did he recover?"
 
 ```
-GET /ims/oneroster/gradebook/v1p2/assessmentResults?filter=student.sourcedId='<sid>' AND scoreDate>='<date>'&limit=3000
-      # keep metadata.appName == 'Math Academy'
-      # struggling rows: metadata.xp < 0 (failed review), or score < 60, or attempt > 1
-      # group by topicId (from the URL); title from the line item
+GET /ims/oneroster/gradebook/v1p2/assessmentResults?filter=student.sourcedId='<sid>' AND metadata.appName='Math Academy' AND scoreDate>='<date>'&limit=3000
+      # failed = metadata.xp < 0, or score < 60 (null = 0), or attempt > 1
+      # group lesson/review/multistep by topicId (from the URL); group quizzes by line-item title (trap 25)
+      # recovered = a passed lesson or review on the same topic after the failed one
 ```
 
-- Negative XP is a failed review; a failed lesson awards 0 (trap: XP is signed). `score` null means zero correct (trap 9); count it as a fail.
-- Aggregate labels: per topic, count of failed attempts over count of attempts, this student, this window.
-- Failure mode: treating `review` failures on an earlier course's topic as a gap in the current course; they are spaced-repetition checks (trap 8).
+- Negative XP is any failed task, not only reviews. `score` null is zero correct (trap 9).
+- Aggregate labels: per topic, failed attempts over attempts, this student, this window; separate lessons from reviews (a failed review of an earlier course's topic is spaced repetition, trap 8), and quizzes from both.
+- Failure mode: grouping quizzes by the id in the URL; treating review failures on an earlier course's topic as a gap in the current course.
 
-Output shape: one row per topic — `topicId`, `topicTitle`, `attempts`, `failed`, `lastType`, `lastScoreDate`.
+Output shape: one row per topic — `topicId (or quiz title)`, `title`, `attempts`, `failed`, `byType {lesson, review, quiz, multistep}`, `lastType`, `lastScoreDate`, `recovered (bool)`.
 
-VERIFIED RUN (build, 2026-09-16): executed for one student over one month; the shape held.
+VERIFIED RUN (build 2026-09-16; two cold runs 2026-09-17): executed for students with 100+ tasks in the window; the cold runs found failures clustered by topic family and most failed topics re-taught and passed within days.
 
 ### 7 · Suspect course — "Is anyone in the wrong course?"
 
-The filed course is the enrollment's course, not Math Academy's (dictionary rule 2, trap 10). Timeback alone can only infer a disagreement from what the student is being taught.
+The filed course is a Timeback enrollment's course, not Math Academy's (dictionary load-bearing rules, second bullet; trap 10). Timeback alone can only infer a disagreement from what the student is being taught.
 
 ```
 A. Build the topic map (once per run, estate-wide):
    GET /ims/oneroster/gradebook/v1p2/assessmentResults?filter=metadata.appName='Math Academy' AND scoreDate>='<today − 14 days>'&limit=3000&offset=0   # page
-      # keep rows whose URL type is lesson | quiz | multistep (never review)
-      # for each student: current Math Academy enrollment course (ex. 3), skip isTestUser
-      # for each topicId: count distinct students per enrolled course; keep topics with >= 5 students and top course share >= 0.8
-B. Per student: over their lesson/quiz/multistep topics that are in the map, share whose mapped course != the student's enrolled course
-      # flag when share >= 0.8 and at least 3 mapped topics; report the course the topics point at
-C. Pair with ex. 4: a student with no events in the window cannot be checked this way and is reported as "quiet, unchecked"
+      # keep rows whose URL type is lesson | multistep (never review: earlier courses; never quiz: no topic id)
+      # filed course per row = its line item's course.sourcedId (list line items per course: assessmentLineItems?filter=course.sourcedId='…' AND dateLastModified>='<since>')
+      # skip isTestUser students; for each topicId count distinct students per FILED course id; keep topics with >= 5 students and top course share >= 0.8
+B. Per student on the roster (ex. 4 A–C), over their lesson/multistep topics that are in the map: share whose mapped course id != their current enrollment's course id
+      # flag when share >= 0.8 and at least 3 mapped topics; report the course id the topics point at
+C. Buckets every student lands in exactly one of: flagged; checked-clear; active but uncheckable (< 3 mapped topics); active with no current Math Academy enrollment (cannot be checked, report as its own finding); quiet (no events in the window)
 ```
 
-- This is a **heuristic**. Its known false alarms are students in a grade-N class whose lesson topics map to grade N−1 or N+1, because adjacent Math Academy courses share topics; report "suspect: topics point at <course>", never "wrong". A definitive answer needs the Math Academy course from Math Academy, outside this skill.
-- Half of the students whose course was known to disagree during the build had no recent events at all; that is why step C is part of the example.
-- The pre-built map in `reference/topic-course-map.json` is a dated snapshot of step A; regenerate it rather than trust it.
-- Aggregate labels: flagged over checkable (students with ≥ 3 mapped lesson topics in the window), roster basis stated.
+- This is a **heuristic**. Its known false alarms are students in a grade-N class whose lesson topics map to grade N−1 or N+1, because adjacent Math Academy courses share topics; report "suspect: topics point at <course id>", never "wrong". Two cold runs found flags that were in fact Timeback records with a deleted seat still receiving events (trap 21), so a flag is worth reading against the student's timeline (ex. 9) before dismissing it.
+- The map is dense for grade-level courses and thin for high-school courses, so high-school students are often uncheckable; say so rather than reporting them clear.
+- The pre-built map in `reference/topic-course-map.json` is a dated snapshot of step A keyed by course id; regenerate it rather than trust it. Step A costs a paged estate-wide read plus one per-course line-item listing and one user read per active student; budget for it.
+- Aggregate labels: flagged over checkable, with the uncheckable, unenrolled and quiet counts beside it, roster basis stated.
 
-Output shape: one row per flagged student — `user.sourcedId`, `enrolledCourse`, `topicsPointAt`, `share`, `mappedTopics`, `lastEvent`.
+Output shape: one row per roster student — `user.sourcedId`, `bucket`, `enrolledCourseSourcedId`, `topicsPointAtCourseSourcedId (flagged only)`, `share`, `mappedTopics`, `lastEvent`.
 
-VERIFIED RUN (build, 2026-09-16): A and B executed over 14 days of estate-wide events; the map and the flags came out in the shape above, and the flag set was compared with a Math Academy-side truth list during the build to state the false-alarm profile above.
+VERIFIED RUN (build 2026-09-16; three cold runs 2026-09-17): A–C executed estate-wide and over two courses; the flag set was compared with a Math Academy-side truth list during the build to state the false-alarm profile above, and the cold runs added the uncheckable and unenrolled buckets.
 
 ### 8 · Estate-wide day — "How much Math Academy happened yesterday?"
 
 ```
 A. GET /ims/oneroster/gradebook/v1p2/assessmentResults?filter=metadata.appName='Math Academy' AND scoreDate>='<day>T00:00:00Z' AND scoreDate<='<day>T23:59:59Z'&limit=3000&offset=0   # page
-B. GET /ims/oneroster/gradebook/v1p2/assessmentLineItems?filter=dateLastModified>='<day>'&limit=3000&offset=0   # page; keep the ids A referenced
-      # course = the LINE ITEM's course.sourcedId (trap 21); never the student's current enrollment
+B. for each Math Academy course id (reference/timeback-math-academy-courses.json):
+   GET /ims/oneroster/gradebook/v1p2/assessmentLineItems?filter=course.sourcedId='<courseId>' AND dateLastModified>='<day − 7 days>'&limit=3000&offset=0   # page
+      # course = the LINE ITEM's course.sourcedId for each result id in A (trap 21); results whose line item is not found are 'unattributed' (ingestion lag, invariant 4)
       # group by course; sum metadata.xp; count by URL type; count distinct students
 ```
 
-- The course an event was filed under is the line item's, and on a sample day a few percent of events were filed under a since-deleted enrollment's course; joining through current enrollments mis-attributes those and leaves students with only deleted enrollments unattributed. B is large (every app's line items for the day) but one paged read; the alternative is one GET per distinct line item.
+- Attribute by line item, never by the student's current enrollment: a noticeable share of a day's events sit under deleted seats or belong to students with no current seat, and an enrollment join misplaces or drops them. Line items filtered by date alone are far too many to page (trap 19); the per-course listing is the workable path, and fetching each result's line item one by one is the fallback.
 - Aggregate labels: events, students, XP by filed course; basis = every Caliper result with `appName` Math Academy in the UTC day, test users excluded or not (say which).
-- Failure mode: taking one page as the day (trap 18); mixing UTC and campus days (trap 17); attributing by enrollment instead of line item (trap 21).
+- Failure mode: taking one page as the day (trap 18); mixing UTC and campus days (trap 17); attributing by enrollment (trap 21); windowing line items on `dateLastModified` too tightly and losing late-ingested rows.
 
-Output shape: one row per course — `course.sourcedId`, `course.name`, `students`, `events`, `xp`, `lessons`, `reviews`, `quizzes`, `placements`.
+Output shape: one row per filed course — `course.sourcedId`, `course.name`, `students`, `events`, `xp`, `lessons`, `reviews`, `quizzes`, `multisteps`, `placements`, `exams`, `supplementals`; plus an `unattributed` row.
 
-VERIFIED RUN (build, 2026-09-16; cold run 2026-09-17): executed for one UTC day; the cold run produced the by-course table from line items and showed the enrollment-based join disagreeing on a few percent of rows, which is why B replaced it.
+VERIFIED RUN (build 2026-09-16; two cold runs 2026-09-17): the cold runs produced the by-course table from line items and showed the enrollment-based join disagreeing on a meaningful share of rows, which is why B is the recipe.
+
+### 9 · Student timeline — "Tell me this student's whole Math Academy story."
+
+```
+A. GET /ims/oneroster/rostering/v1p2/enrollments/?filter=user.sourcedId='<sid>'&limit=3000
+      # keep course.name starting 'Math Academy' → every seat ever, with status, beginDate, endDate, course.sourcedId
+B. GET /ims/oneroster/gradebook/v1p2/assessmentResults?filter=student.sourcedId='<sid>' AND metadata.appName='Math Academy'&sort=scoreDate&orderBy=asc&limit=3000&offset=0   # page, all time
+C. GET /ims/oneroster/gradebook/v1p2/assessmentLineItems/<id> for each distinct line item in B   # filed course per event (cache; or list per course from A)
+      # assemble: per seat — first/last event under it, events count, signed XP sum, highest pctCompleteApp seen, placements; events filed under a seat that is tobedeleted; events filed under a course with no seat at all; gaps between seats; where the percent reached 100 and what began after
+```
+
+- Read this before trusting any single "current course" answer: a student's events are routinely filed under a deleted seat while a new seat sits empty (trap 21), and "finished" lives on the results, not the seat (trap 3).
+- XP earned per seat is the signed sum of result `xp` under that seat's course; never the enrollment's `metrics.totalXp`.
+- Aggregate labels: per seat, events and XP from results filed under that course; time from weekly facts is optional and a floor.
+- Failure mode: assuming one seat per course; reading `primary`; using enrollment metrics as totals.
+
+Output shape: one row per seat, ordered by first event — `course.sourcedId`, `course.name`, `status`, `beginDate`, `endDate`, `firstEvent`, `lastEvent`, `events`, `xpSigned`, `maxPct`, `placements`, `eventsWhileSeatDeleted`; plus rows for `course with events but no seat`; plus `gapsDays` between seats.
+
+VERIFIED RUN (cold run 2026-09-17): a fresh agent assembled this from A–C for a student with two seats and a gap, and every derived figure reconciled with EduBridge's daily cells.
 
 ## Cross-system notes
 
 - The Math Academy task id and topic id inside the task URL are this source's only handles into Math Academy. They are claims; matching them to Math Academy's records is the caller's, over both systems.
-- Timeback never receives Math Academy's estimated SAT score, exact XP remaining, course grade, engaged/productive split, daily goals, or its course catalogue. A question that needs them routes to the Math Academy API.
+- Timeback never receives Math Academy's exact XP remaining, estimated SAT score, course grade, engaged/productive split, or per-topic knowledge map. A question that needs them routes to the Math Academy API.
+- Waste and integrity signals for Math Academy sessions live in timeback_analytics' capture estate, not here (trap 4).
 
 ### One-off exact figures from Math Academy (outside this skill's wire)
 
-When a reader needs the exact figure this skill can only estimate, one direct call to Math Academy answers it. This is a documented fallback for a single student on demand, not a data path of this skill: do not poll it, do not loop it over a roster, and never store its key in anything this skill serves. It needs a **Math Academy public API key** for the organisation the student belongs to (issued by Math Academy to the school; one per organisation; a student under another organisation's key answers 401 "Not Authorized", which is a key limit, not an absence).
+When a reader needs the exact figure this skill can only estimate, one direct call to Math Academy answers it. This is a documented fallback for a single student on demand, not a data path of this skill: do not poll it, do not loop it over a roster, and never store its key in anything this skill serves. It needs a **Math Academy public API key** for the organisation the student belongs to (issued by Math Academy to the school; one per organisation; a student under another organisation's key answers 401 "Not Authorized", which is a key limit, not an absence). The current API version is `beta10` (`beta9` still answers); its fair-use limit answers `429` with a `Retry-After` header.
 
 ```
-GET https://mathacademy.com/api/beta9/students/<student email or Math Academy id>
+GET https://mathacademy.com/api/beta10/students/<student email, Math Academy id or username>
     Public-API-Key: <the organisation's key>
     # -> student.currentCourse: { id, name, startDate, progress (0-1), xpRemaining, completed, grade, letterGrade, estimatedScore }
-    #    estimatedScore appears instead of progress on SAT Math Prep; xpRemaining is the exact figure the skill estimates
-GET https://mathacademy.com/api/beta9/students/<email or id>/activity?startDate=<YYYY-MM-DD>&endDate=<YYYY-MM-DD>
-    # -> activity.tasks[]: { id, type (Lesson|Review|Quiz|Multistep|Placement|Exam), xp, xpAwarded, questions, questionsCorrect,
+    #    estimatedScore appears instead of progress on SAT Math Prep; xpRemaining is the exact figure this skill estimates
+GET https://mathacademy.com/api/beta10/students/<id>/activity?startDate=<YYYY-MM-DD>&endDate=<YYYY-MM-DD>
+    # -> activity.tasks[]: { id, type (Lesson|Review|Quiz|Multistep|Placement|Exam|Supplemental), xp, xpAwarded, questions, questionsCorrect,
     #    started, completed (epoch ms), course{id,name}, topic{id,name}, analysis{timeElapsed,timeEngaged,timeProductive} }; activity.totals
+GET https://mathacademy.com/api/beta10/students/<id>/courses/<mathAcademyCourseId>/knowledge
+    # -> courses[] (the course asked for plus up to two prerequisite courses): { id, name, completion (0-1),
+    #    units[] { id, name, stability, modules[] { id, name, stability, topics[] { id, name, stability (0-1, long-term retention) } } } }
 ```
 
-- The email Math Academy knows is the login username on the student's Timeback `userProfiles` entry (vendorId `math_academy`); it is usually the Timeback email but not always.
+- The email Math Academy knows is the login username on the student's Timeback `userProfiles` entry (vendorId `math_academy`); it is usually the Timeback email but not always, and the per-student call accepts the username too.
 - Reconcile before trusting: the task ids in `activity.tasks[].id` are the same numbers as `/tasks/<taskId>/` in this skill's result URLs, so a one-off pull can be checked against Timeback's rows for the same days.
-- What this fallback gives that Timeback cannot: `xpRemaining` exact, `estimatedScore` on SAT Math Prep, `letterGrade`, task `type` as a field, engaged versus productive time.
+- What this fallback gives that Timeback cannot: `xpRemaining` exact, `estimatedScore` on SAT Math Prep, `letterGrade`, task `type` as a field, engaged versus productive time, and the per-topic knowledge map.
 - Math Academy's API has changed without notice before (a version retired, progress replaced by a score on one course); read the response shape, do not assume it.
-- Waste and integrity signals for Math Academy sessions live in timeback_analytics' capture estate, not here (trap 4).
 
 ## Improvement loop
 
-File feedback on this skill's own wire, published in the `/skill` front under `feedback`: `POST <feedback.report>` with JSON `{title, body, reporter, kind?}` files a public, attributed ticket on this skill's own tracker and returns its number and URL; every ticket is mirrored daily into a GitHub issue on the repo named in the front (labels `skill-feedback` + `mathacademy_timeback`) and closures there are copied back. `GET <feedback.open>` lists the open items and `?state=closed|all` the rest; `GET <feedback.open>/{number}` shows one ticket with its thread. A report shaped `From: / Problem (dated evidence): / Ask: / Acceptance (a falsifiable test the fix must pass):` graduates straight into an eval case. Evidence in a ticket is a class, a field, a rule, or the query that measures it; never a student's name, contact, or an identifying row, and never a figure read off the wire. A question this pair cannot answer, or a report unacted on, is this skill failing its contract; say so.
+File feedback on this skill's own wire, published in the `/skill` front under `feedback`: `POST <feedback.report>` with JSON `{title, body, reporter, kind?}` files a public, attributed ticket on this skill's own tracker and returns its number and URL; every ticket is mirrored daily into a GitHub issue on the repo named in the front (labels `skill-feedback` + `mathacademy_timeback`) and closures there are copied back. `GET <feedback.open>` lists the open items and `?state=closed|all` the rest; `GET <feedback.open>/{number}` shows one ticket with its thread. Titles are capped at 200 characters and bodies at 10,000. A report shaped `From: / Problem (dated evidence): / Ask: / Acceptance (a falsifiable test the fix must pass):` graduates straight into an eval case. Evidence in a ticket is a class, a field, a rule, or the query that measures it; never a student's name, contact, or an identifying row, and never a figure read off the wire. A question this pair cannot answer, or a report unacted on, is this skill failing its contract; say so.
 
 Standing open items, each a ticket on this wire: **#7** (which course ids progression honours), **#8** (Math Academy student id in Timeback), **#9** (null scores), **#10** (retention), **#11** (duplicate time rows).
