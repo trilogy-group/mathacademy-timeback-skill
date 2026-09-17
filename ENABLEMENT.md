@@ -46,6 +46,7 @@ Each is buildable by a cold agent with `GET /skill`, this pair, and a Timeback c
 | "Where is he struggling?" | results by student, keep `review` rows with `xp < 0` or `score < 60`, group by topic title (ex. 6) |
 | "Is anyone in the wrong course?" | topic map from estate-wide lesson events; per student share of topics pointing elsewhere; pair with quiet check (ex. 7) |
 | "How much Math Academy happened yesterday across the school?" | estate-wide results with `metadata.appName` and `scoreDate>=`, group by student and course (ex. 8) |
+| "What is her EXACT XP remaining / estimated SAT score?" | not in Timeback: one direct Math Academy call with the organisation's Math Academy key (§ One-off exact figures), never a loop |
 
 ## Worked examples
 
@@ -208,6 +209,25 @@ VERIFIED RUN (build, 2026-09-16; cold run 2026-09-17): executed for one UTC day;
 
 - The Math Academy task id and topic id inside the task URL are this source's only handles into Math Academy. They are claims; matching them to Math Academy's records is the caller's, over both systems.
 - Timeback never receives Math Academy's estimated SAT score, exact XP remaining, course grade, engaged/productive split, daily goals, or its course catalogue. A question that needs them routes to the Math Academy API.
+
+### One-off exact figures from Math Academy (outside this skill's wire)
+
+When a reader needs the exact figure this skill can only estimate, one direct call to Math Academy answers it. This is a documented fallback for a single student on demand, not a data path of this skill: do not poll it, do not loop it over a roster, and never store its key in anything this skill serves. It needs a **Math Academy public API key** for the organisation the student belongs to (issued by Math Academy to the school; one per organisation; a student under another organisation's key answers 401 "Not Authorized", which is a key limit, not an absence).
+
+```
+GET https://mathacademy.com/api/beta9/students/<student email or Math Academy id>
+    Public-API-Key: <the organisation's key>
+    # -> student.currentCourse: { id, name, startDate, progress (0-1), xpRemaining, completed, grade, letterGrade, estimatedScore }
+    #    estimatedScore appears instead of progress on SAT Math Prep; xpRemaining is the exact figure the skill estimates
+GET https://mathacademy.com/api/beta9/students/<email or id>/activity?startDate=<YYYY-MM-DD>&endDate=<YYYY-MM-DD>
+    # -> activity.tasks[]: { id, type (Lesson|Review|Quiz|Multistep|Placement|Exam), xp, xpAwarded, questions, questionsCorrect,
+    #    started, completed (epoch ms), course{id,name}, topic{id,name}, analysis{timeElapsed,timeEngaged,timeProductive} }; activity.totals
+```
+
+- The email Math Academy knows is the login username on the student's Timeback `userProfiles` entry (vendorId `math_academy`); it is usually the Timeback email but not always.
+- Reconcile before trusting: the task ids in `activity.tasks[].id` are the same numbers as `/tasks/<taskId>/` in this skill's result URLs, so a one-off pull can be checked against Timeback's rows for the same days.
+- What this fallback gives that Timeback cannot: `xpRemaining` exact, `estimatedScore` on SAT Math Prep, `letterGrade`, task `type` as a field, engaged versus productive time.
+- Math Academy's API has changed without notice before (a version retired, progress replaced by a score on one course); read the response shape, do not assume it.
 - Waste and integrity signals for Math Academy sessions live in timeback_analytics' capture estate, not here (trap 4).
 
 ## Improvement loop

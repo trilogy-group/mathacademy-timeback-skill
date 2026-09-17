@@ -48,6 +48,8 @@ Dated probes behind the dictionary and enablement. Shapes and structure only; no
 - **XP-remaining spot check** (10 random recently active students vs Math Academy's exact figure): low on 7/10, median 33% off; recorded in the rules file's accuracy note.
 - Filed as a ticket on the skill's wire (owner cold test) and closed with this fix.
 
+- **Owner ask (2026-09-17):** a documented one-off fallback to the Math Academy API for the exact fields (xpRemaining, estimatedScore, letterGrade, task type, engaged/productive) → ENABLEMENT § One-off exact figures (endpoint shapes, key kind, reconciliation via task ids, caveats), front `when` points at it; explicitly not a data path of this skill.
+
 ## Open
 
 - Eval file (`evals/mathacademy_timeback.md`) not written; the eight VERIFIED RUN blocks are the seed.
