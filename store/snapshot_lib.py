@@ -369,7 +369,8 @@ def run_activity(c, ddb, table, day, tz_offset_hours=-5, time_left=lambda: 10 **
         time.sleep(0.15)
     _batch(ddb, table, items); save("done")
     finished = datetime.datetime.now(UTC).isoformat(timespec="seconds")
+    prev = (ddb.get_item(TableName=table, Key={"pk": S("meta"), "sk": S("snapshot")}).get("Item") or {}).get("activityLastDate", {}).get("S") or ""
     ddb.update_item(TableName=table, Key={"pk": S("meta"), "sk": S("snapshot")}, UpdateExpression="SET activityLastDate = :d, lastActivityRun = :r",
-                    ExpressionAttributeValues={":d": S(day), ":r": S(json.dumps({"day": day, "students": total, "done": done, "errors": errors, "noMaId": no_id, "finishedAt": finished, "maCalls": c.calls["ma_activity"], "windowUtc": f"{day_start.isoformat()}/{day_end.isoformat()}"}))})
+                    ExpressionAttributeValues={":d": S(max(day, prev)), ":r": S(json.dumps({"day": day, "students": total, "done": done, "errors": errors, "noMaId": no_id, "finishedAt": finished, "maCalls": c.calls["ma_activity"], "windowUtc": f"{day_start.isoformat()}/{day_end.isoformat()}", "rePull": bool(force)}))})
     c.log(f"activity {day}: done {done}/{total}, errors {errors}, calls {c.calls}")
     return {"day": day, "status": "done", "done": done, "total": total, "errors": errors, "noMaId": no_id}
