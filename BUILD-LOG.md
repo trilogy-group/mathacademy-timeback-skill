@@ -37,6 +37,8 @@ Dated probes behind the dictionary and enablement. Shapes and structure only; no
   - Ticket 3: `reference/course-xp-size.json` rebuilt keyed by `course.sourcedId`, one row per course (10 calibrated sizes, 11 lower-bound fall-throughs, 2 SAT `never`), with an ordered rule list; DICTIONARY derived-quantity and ENABLEMENT ex. 3 rewritten to follow it; SAT rule made absolute.
   - Ticket 5: `pii` clause added to the front; DICTIONARY § "Students are children" marks the person-bearing fields and states the publish rule; ENABLEMENT gains a How-to-work bullet, ex. 1 resolves email to id once, ex. 4 output keyed on `user.sourcedId` with no email.
 
+- **Owner corrections, 2026-09-17 morning:** (a) the front now states the key kind (read-only Timeback client, one per person or agent, requested from the Timeback platform team; `how.native.keyKind`, `keyContact`, `denied`); (b) the no-estimate rule for XP remaining applies to **SAT Math Prep only** — SAT Math Fundamentals still reports progress and carries its calibrated size (the tracker's 2026-09-02 note recorded the score-instead-of-progress change on SAT Math Prep students only; the earlier "both SAT courses" wording was wrong). Registry now shows 12 rows including ours.
+
 ## Open
 
 - Eval file (`evals/mathacademy_timeback.md`) not written; the eight VERIFIED RUN blocks are the seed.
