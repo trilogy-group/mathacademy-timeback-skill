@@ -55,7 +55,7 @@
     <div class="card"><div class="stat" id="s-age">…</div><small class="muted">hours since that snapshot · <span id="s-stale"></span></small></div>
     <div class="card"><div class="stat" id="s-act">…</div><small class="muted">newest school day with per-task activity</small></div>
     <div class="card"><div class="stat" id="s-next">…</div><small class="muted">next scheduled refresh (Central time)</small></div>
-    <div class="card"><div class="stat" id="s-roster">…</div><small class="muted">students with a current Math Academy seat · <span id="s-nontest"></span> real</small></div>
+    <div class="card"><div class="stat" id="s-roster">…</div><small class="muted">students with a current Math Academy seat · <span id="s-nontest"></span></small></div>
     <div class="card"><div class="stat" id="s-agree">…</div><small class="muted">real students whose Timeback course matches Math Academy's</small></div>
     <div class="card"><div class="stat" id="s-disagree">…</div><small class="muted">real students in a different course on each side</small></div>
     <div class="card"><div class="stat" id="s-runs">…</div><small class="muted">snapshots loaded so far · <span id="s-sched"></span></small></div>
@@ -98,8 +98,8 @@
 <section>
   <h2>Who can read what</h2>
   <div class="grid">
-    <div class="card"><h3>No key needed</h3><ul class="tight"><li>The front page, both documents, the reference files</li><li>The status page: freshness, counts, schedule</li><li>Per-course counts (how many agree, disagree, not started), with test accounts split out</li><li>Math Academy's course id to name map</li></ul></div>
-    <div class="card"><h3>With the reader's own Timeback key</h3><ul class="tight"><li>A student's Math Academy record, history, activity and knowledge map</li><li>A course's student list with Math Academy's figures per student</li><li>A course's engagement totals for one day</li></ul><p class="muted">The skill replays the reader's token against Timeback and serves a student only if Timeback confirms that token can read them. The skill issues no keys and holds none for readers.</p></div>
+    <div class="card"><h3>No key needed</h3><ul class="tight"><li>The front page, both documents, the reference files</li><li>The status page: freshness, schedule, health, what the last runs cost</li><li>Math Academy's course id to name map (its public catalogue)</li></ul></div>
+    <div class="card"><h3>With the reader's own Timeback key</h3><ul class="tight"><li>Counts: how many students per course agree, disagree, never started, with test accounts split out</li><li>A student's Math Academy record, history, activity and knowledge map</li><li>A course's student list with Math Academy's figures per student</li><li>A course's engagement totals for one day</li></ul><p class="muted">The skill replays the reader's token against Timeback and serves a student only if Timeback confirms that token can read them. The skill issues no keys and holds none for readers.</p></div>
     <div class="card"><h3>Never</h3><ul class="tight"><li>No student value in any document or reference file</li><li>No names or logins to anyone without a token; a <code>?minimal=1</code> view drops them even for readers who have one</li><li>No figures read off the wire in the documents, only the queries that measure them</li></ul></div>
   </div>
 </section>
@@ -165,10 +165,12 @@
     const st = document.getElementById("s-stale"); st.textContent = d.stale ? "STALE: a refresh was missed" : "fresh"; st.className = d.stale ? "bad" : "ok";
     set("s-act", d.activityLastDate || "none yet");
     set("s-next", fmt(d.schedule?.nextSnapshotDueUtc));
-    const c = d.counts || {}; set("s-roster", c.timebackRoster ?? "—"); set("s-nontest", c.nonTest?.students ?? "—");
-    const nt = c.nonTest?.byAgreement || {};
-    set("s-agree", (nt["agree"] || 0) + (nt["agree, math academy course completed"] || 0));
-    set("s-disagree", (nt["disagree"] || 0) + (nt["disagree, math academy course completed"] || 0));
+    const c = d.counts || {};
+    if (d.countsGated) { set("s-roster", "needs a key"); set("s-nontest", "counts are served only to a reader with a Timeback token"); set("s-agree", "needs a key"); set("s-disagree", "needs a key"); }
+    else { set("s-roster", c.timebackRoster ?? "—"); set("s-nontest", (c.nonTest?.students ?? "—") + " real");
+      const nt = c.nonTest?.byAgreement || {};
+      set("s-agree", (nt["agree"] || 0) + (nt["agree, math academy course completed"] || 0));
+      set("s-disagree", (nt["disagree"] || 0) + (nt["disagree, math academy course completed"] || 0)); }
     set("s-runs", (d.history || []).length);
     const sc = document.getElementById("s-sched"); sc.textContent = d.schedule?.firstScheduledRunHasHappened ? "scheduler proven" : "first scheduled run pending"; sc.className = d.schedule?.firstScheduledRunHasHappened ? "ok" : "bad";
   } catch (e) { set("s-snap", "status unavailable"); }

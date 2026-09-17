@@ -50,6 +50,12 @@ async function storeMeta() {
     snapshotCalls: JSON.parse(r.Item.calls?.S || "{}"), readCalls: { maLookupOnMiss: num(r.Item.readMaLookup) || 0, maKnowledge: num(r.Item.readMaKnowledge) || 0 },
     counts: JSON.parse(r.Item.counts?.S || "{}"), byCourse: JSON.parse(r.Item.byCourse?.S || "{}") };
 }
+async function tokenOk(event) {
+  const token = event.headers?.authorization || event.headers?.Authorization || "";
+  if (!/^Bearer\s+\S+/i.test(token)) return { ok: false, status: 401 };
+  const r = await tbGet("/ims/oneroster/rostering/v1p2/users/?limit=1", token);
+  return { ok: r.status === 200, status: r.status, token };
+}
 async function bumpRead(field) { try { await ddb.send(new UpdateItemCommand({ TableName: ST, Key: { pk: S("meta"), sk: S("snapshot") }, UpdateExpression: "ADD #f :one", ExpressionAttributeNames: { "#f": field }, ExpressionAttributeValues: { ":one": N(1) } })); } catch (e) { console.log("bumpRead failed", field, e?.name, e?.message); } }
 const sm = new SecretsManagerClient({});
 let MA_KEY_CACHE = null;
@@ -257,7 +263,12 @@ export const handler = async (event) => {
       if (!meta.schedule.firstScheduledRunHasHappened && nowChi >= new Date("2026-09-18T06:00:00")) problems.push("the scheduled 03:00 run has never fired");
       meta.health = { ok: problems.length === 0, checkedAt: new Date().toISOString(), problems, note: "computed from the fields on this response; the repo's daily health-check workflow opens a GitHub issue when ok is false" };
     }
-    return meta ? resp(200, { ...meta, routes: ["GET /store/student/{sourcedId}[?minimal=1]", "GET /store/student?email=", "GET /store/student/{sourcedId}/history", "GET /store/student/{sourcedId}/activity?from=&to=", "GET /store/student/{sourcedId}/knowledge[?courseId=&refresh=1]", "GET /store/course/{courseSourcedId}", "GET /store/course/{courseSourcedId}/students[?agreement=]  (token; ids + Math Academy course figures, no names)", "GET /store/course/{courseSourcedId}/activity?date=YYYY-MM-DD  (token; per-student day totals)", "GET /store/courses  (Math Academy course id -> name)"], gate: "student routes and the course student list: Authorization: Bearer <reader's Timeback token>; status and course-count routes: none (counts only)", mathAcademyCallsAtReadTime: "a per-student read makes NO Math Academy call unless the student is missing (then one live lookup, once per 24 h); the knowledge route makes one live call per courseId per 7 days; nothing else reaches Math Academy at read time", notes: STATUS_NOTES }) : resp(404, { error: "no snapshot loaded" });
+    if (meta) {
+      const auth = await tokenOk(event);
+      if (!auth.ok) { delete meta.byCourse; meta.counts = { gated: "counts of students by course and agreement are served only with the reader's Timeback token (Authorization: Bearer <token>); freshness, schedule, health and calls are open" }; }
+      meta.countsGated = !auth.ok;
+    }
+    return meta ? resp(200, { ...meta, routes: ["GET /store/student/{sourcedId}[?minimal=1]", "GET /store/student?email=", "GET /store/student/{sourcedId}/history", "GET /store/student/{sourcedId}/activity?from=&to=", "GET /store/student/{sourcedId}/knowledge[?courseId=&refresh=1]", "GET /store/course/{courseSourcedId}", "GET /store/course/{courseSourcedId}/students[?agreement=]  (token; ids + Math Academy course figures, no names)", "GET /store/course/{courseSourcedId}/activity?date=YYYY-MM-DD  (token; per-student day totals)", "GET /store/courses  (Math Academy course id -> name)"], gate: "everything about students, including the per-course counts and the counts on this page: Authorization: Bearer <reader's Timeback token>; open without a token: freshness, schedule, health, calls, routes, notes and /store/courses (Math Academy's course names)", mathAcademyCallsAtReadTime: "a per-student read makes NO Math Academy call unless the student is missing (then one live lookup, once per 24 h); the knowledge route makes one live call per courseId per 7 days; nothing else reaches Math Academy at read time", notes: STATUS_NOTES }) : resp(404, { error: "no snapshot loaded" });
   }
   const crsList = p.match(/^\/store\/course\/([^/]+)\/students$/);
   if (crsList && method === "GET") {
@@ -301,6 +312,8 @@ export const handler = async (event) => {
   }
   const crs = p.match(/^\/store\/course\/([^/]+)$/);
   if (crs && method === "GET") {
+    const auth = await tokenOk(event);
+    if (!auth.ok) return resp(auth.status === 401 ? 401 : (auth.status >= 400 && auth.status < 500 ? auth.status : 502), { error: "per-course counts are served only with the reader's Timeback token (Authorization: Bearer <token>)", timebackStatus: auth.status === 401 ? undefined : auth.status });
     const meta = await storeMeta(); if (!meta) return resp(404, { error: "no snapshot loaded" });
     const c = meta.byCourse[decodeURIComponent(crs[1])];
     if (c) c.activityLastDate = meta.activityLastDate || null;
