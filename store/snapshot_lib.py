@@ -426,7 +426,7 @@ def run_backfill(c, ddb, table, start_day, time_left=lambda: 10 ** 9, cursor=Non
     """Per store student with a Math Academy id, pull activity from start_day to today in ~quarter ranges; write task rows under
     their America/Chicago day and recompute day totals. Resumable through a cursor (the last student id done)."""
     end = datetime.datetime.now(CHICAGO).date(); start = datetime.date.fromisoformat(start_day)
-    rows = sorted(((it["sk"]["S"], it["maId"]["S"]) for it in _query_all(ddb, table, "student", "sk, maId") if "maId" in it), key=lambda x: x[0])
+    rows = sorted(((it["sk"]["S"], it["maId"]["S"]) for it in _query_all(ddb, table, "student", "sk, maId, backfilledAt") if "maId" in it and "backfilledAt" not in it), key=lambda x: x[0])
     if cursor: rows = [r for r in rows if r[0] > cursor]
     done = 0; tasks_written = 0; last = cursor; days_touched = set()
     for sid, ma_id in rows:
@@ -450,6 +450,7 @@ def run_backfill(c, ddb, table, start_day, time_left=lambda: 10 ** 9, cursor=Non
                                                   "windowUtc": S("/".join(x.isoformat() for x in local_day_window(day))), "source": S("backfill"), "fetchedAt": S(datetime.datetime.now(UTC).isoformat(timespec="seconds"))}}})
             days_touched.add(day)
         _batch(ddb, table, items); tasks_written += sum(len(v) for v in by_day.values()); done += 1; last = sid
+        ddb.update_item(TableName=table, Key={"pk": S("student"), "sk": S(sid)}, UpdateExpression="SET backfilledAt = :t, backfilledFrom = :f", ExpressionAttributeValues={":t": S(datetime.datetime.now(UTC).isoformat(timespec="seconds")), ":f": S(start_day)})
         if done % 50 == 0: c.log(f"backfill: {done} students, {tasks_written} tasks, {len(days_touched)} distinct days, calls {c.calls['ma_activity']}")
     ddb.update_item(TableName=table, Key={"pk": S("meta"), "sk": S("snapshot")}, UpdateExpression="SET backfill = :b",
                     ExpressionAttributeValues={":b": S(json.dumps({"from": start_day, "to": end.isoformat(), "students": done, "tasks": tasks_written, "finishedAt": datetime.datetime.now(UTC).isoformat(timespec="seconds")}))})

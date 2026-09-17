@@ -62,7 +62,7 @@ if a.cmd == "--create-roles":
         "Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": ["dynamodb:PutItem", "dynamodb:GetItem", "dynamodb:UpdateItem", "dynamodb:Query"], "Resource": table_arn}]}))
     store_arn = s.client("dynamodb").describe_table(TableName=STORE_TABLE)["Table"]["TableArn"]
     iam.put_role_policy(RoleName=ROLE, PolicyName="store-table", PolicyDocument=json.dumps({
-        "Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": ["dynamodb:GetItem", "dynamodb:Query", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:BatchGetItem"], "Resource": store_arn}]}))
+        "Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": ["dynamodb:GetItem", "dynamodb:Query", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:BatchGetItem", "dynamodb:BatchWriteItem"], "Resource": store_arn}]}))
     iam.put_role_policy(RoleName=ROLE, PolicyName="read-one-secret", PolicyDocument=json.dumps({   # since 2026-09-17 evening: the MA key for on-demand knowledge maps + live lookups on a store miss
         "Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": "secretsmanager:GetSecretValue", "Resource": f"arn:aws:secretsmanager:us-east-1:{acct}:secret:{SECRET}-*"}]}))
     print("policies attached (basic execution + DynamoDB on", TABLE, "and", STORE_TABLE, "+ GetSecretValue on", SECRET, ")"); sys.exit(0)
@@ -82,7 +82,7 @@ if a.cmd == "deploy":
     env = {"Variables": {"TABLE": TABLE, "STORE_TABLE": STORE_TABLE, "TB_BASE": "https://api.alpha-1edtech.ai", "SECRET_NAME": SECRET, "SOURCE": "mathacademy_timeback", "GIT_VERSION": git, "BASE": base, "ADMIN_KEY": admin_key, "MIRROR_REPO": REPO}}
     arn = role_arn() or sys.exit("role missing: run --create-roles first")
     if fn_exists():
-        lam.update_function_configuration(FunctionName=FN, Environment=env, Timeout=30, MemorySize=256, Runtime="nodejs20.x", Handler="index.handler", Role=arn)
+        lam.update_function_configuration(FunctionName=FN, Environment=env, Timeout=90, MemorySize=512, Runtime="nodejs20.x", Handler="index.handler", Role=arn)
         w = lam.get_waiter("function_updated"); w.wait(FunctionName=FN)
         lam.update_function_code(FunctionName=FN, ZipFile=code); w.wait(FunctionName=FN); print("function updated")
     else:

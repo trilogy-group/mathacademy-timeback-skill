@@ -47,7 +47,7 @@ async function storeMeta() {
     schedule: { snapshot: "03:00 America/Chicago daily", activity: "03:45 America/Chicago daily, for the previous America/Chicago day", nextSnapshotDueUtc: next.toISOString(), scheduledRunsSoFar: scheduled, manualRunsSoFar: history.length - scheduled, firstScheduledRunHasHappened: scheduled > 0 },
     activityLastDate: r.Item.activityLastDate?.S || null, lastActivityRun: r.Item.lastActivityRun?.S ? JSON.parse(r.Item.lastActivityRun.S) : null,
     nightly: r.Item.nightly?.BOOL ?? false, apiVersion: r.Item.apiVersion?.S, history,
-    snapshotCalls: JSON.parse(r.Item.calls?.S || "{}"), readCalls: { maLookupOnMiss: num(r.Item.readMaLookup) || 0, maKnowledge: num(r.Item.readMaKnowledge) || 0 },
+    snapshotCalls: JSON.parse(r.Item.calls?.S || "{}"), readCalls: { maLookupOnMiss: num(r.Item.readMaLookup) || 0, maKnowledge: num(r.Item.readMaKnowledge) || 0, maActivityBackfill: num(r.Item.readMaActivityBackfill) || 0 }, backfill: r.Item.backfill?.S ? JSON.parse(r.Item.backfill.S) : null,
     counts: JSON.parse(r.Item.counts?.S || "{}"), byCourse: JSON.parse(r.Item.byCourse?.S || "{}") };
 }
 async function tokenOk(event) {
@@ -192,6 +192,31 @@ function adminOk(event) {
   return want && k.length === want.length && timingSafeEqual(Buffer.from(k), Buffer.from(want));
 }
 
+const chicagoDay = ms => new Date(ms).toLocaleDateString("en-CA", { timeZone: "America/Chicago" });   // YYYY-MM-DD
+const chicagoWindowUtc = day => { const f = new Intl.DateTimeFormat("en-US", { timeZone: "America/Chicago", timeZoneName: "shortOffset" }); const off = d => { const m = /GMT([+-]\d+)/.exec(f.formatToParts(d).find(x => x.type === "timeZoneName").value); return m ? Number(m[1]) : -5; };
+  const guess = new Date(day + "T06:00:00Z"); const o = off(guess); const start = new Date(Date.parse(day + "T00:00:00Z") - o * 36e5); const o2 = off(new Date(start.getTime() + 864e5)); const end = new Date(Date.parse(day + "T00:00:00Z") + 864e5 - o2 * 36e5); return `${start.toISOString()}/${end.toISOString()}`; };
+async function backfillStudentActivity(sid, maId, from = "2025-07-01") {
+  // per-quarter Math Academy activity for one student, bucketed into America/Chicago days; rows keyed by task so re-runs overwrite
+  const end = new Date(); const ranges = []; let a = new Date(from + "T00:00:00Z");
+  while (a <= end) { const b = new Date(Math.min(a.getTime() + 91 * 864e5, end.getTime())); ranges.push([a.toISOString().slice(0, 10), b.toISOString().slice(0, 10)]); a = new Date(b.getTime() + 864e5); }
+  const byDay = {}; let calls = 0;
+  for (const [s, e] of ranges) {
+    const r = await maGet(`/students/${encodeURIComponent(maId)}/activity?startDate=${s}&endDate=${e}`); calls++;
+    if (r.status !== 200) continue;
+    for (const task of (r.body?.activity?.tasks || [])) { if (!task.completed) continue; const day = chicagoDay(Number(task.completed)); (byDay[day] ||= []).push(task); }
+  }
+  const N1 = v => ({ N: String(v || 0) }); const puts = [];
+  for (const [day, tasks] of Object.entries(byDay)) {
+    for (const task of tasks) { const an = task.analysis || {}; puts.push({ PutRequest: { Item: { pk: S(`act#${sid}`), sk: S(`${day}#${task.id}`), taskId: S(task.id), type: S(task.type), xp: N1(task.xp), xpAwarded: N1(task.xpAwarded), questions: N1(task.questions), questionsCorrect: N1(task.questionsCorrect), startedEpochMs: N1(task.started), completedEpochMs: N1(task.completed), courseId: S(task.course?.id), courseName: S(task.course?.name), topicId: S(task.topic?.id), topicName: S(task.topic?.name), timeElapsedMs: N1(an.timeElapsed), timeEngagedMs: N1(an.timeEngaged), timeProductiveMs: N1(an.timeProductive) } } }); }
+    const sum = k => tasks.reduce((x, task) => x + Number((task.analysis || {})[k] || 0), 0);
+    puts.push({ PutRequest: { Item: { pk: S(`actday#${sid}`), sk: S(day), numTasks: N1(tasks.length), timeElapsedMs: N1(sum("timeElapsed")), timeEngagedMs: N1(sum("timeEngaged")), timeProductiveMs: N1(sum("timeProductive")), xpAwarded: N1(tasks.reduce((x, task) => x + Number(task.xpAwarded || 0), 0)), questions: N1(tasks.reduce((x, task) => x + Number(task.questions || 0), 0)), questionsCorrect: N1(tasks.reduce((x, task) => x + Number(task.questionsCorrect || 0), 0)), windowUtc: S(chicagoWindowUtc(day)), source: S("on-demand-backfill"), fetchedAt: S(new Date().toISOString()) } } });
+  }
+  const { BatchWriteItemCommand } = await import("@aws-sdk/client-dynamodb");
+  for (let i = 0; i < puts.length; i += 25) { let chunk = puts.slice(i, i + 25); for (let tries = 0; tries < 6 && chunk.length; tries++) { const r = await ddb.send(new BatchWriteItemCommand({ RequestItems: { [ST]: chunk } })); chunk = r.UnprocessedItems?.[ST] || []; } }
+  await ddb.send(new UpdateItemCommand({ TableName: ST, Key: { pk: S("student"), sk: S(sid) }, UpdateExpression: "SET backfilledAt = :t, backfilledFrom = :f", ExpressionAttributeValues: { ":t": S(new Date().toISOString()), ":f": S(from) } }));
+  await bumpRead("readMaActivityBackfill");
+  return { calls, tasks: puts.length - Object.keys(byDay).length, days: Object.keys(byDay).length };
+}
 async function storeSub(event, q, sid, kind) {
   const token = event.headers?.authorization || event.headers?.Authorization || "";
   if (!/^Bearer\s+\S+/i.test(token)) return resp(401, { error: "send the reader's Timeback token as Authorization: Bearer <token>" });
@@ -210,7 +235,17 @@ async function storeSub(event, q, sid, kind) {
     if (from > to) return resp(400, { error: "from is after to" });
     const tasks = (await queryAll(`act#${sid}`, { cond: " AND sk BETWEEN :a AND :b", vals: { ":a": S(from + "#"), ":b": S(to + "#~") } })).map(unmarshalFlat).map(r => ({ date: r.sk.split("#")[0], taskId: r.taskId, type: r.type, xp: r.xp, xpAwarded: r.xpAwarded, questions: r.questions, questionsCorrect: r.questionsCorrect, startedEpochMs: r.startedEpochMs ?? r.started, completedEpochMs: r.completedEpochMs ?? r.completed, courseId: r.courseId, courseName: r.courseName, topicId: r.topicId, topicName: r.topicName, timeElapsedMs: r.timeElapsedMs ?? r.timeElapsed, timeEngagedMs: r.timeEngagedMs ?? r.timeEngaged, timeProductiveMs: r.timeProductiveMs ?? r.timeProductive }));
     const days = (await queryAll(`actday#${sid}`, { cond: " AND sk BETWEEN :a AND :b", vals: { ":a": S(from), ":b": S(to) } })).map(unmarshalFlat).map(r => ({ date: r.sk, numTasks: r.numTasks, timeElapsedMs: r.timeElapsedMs ?? r.timeElapsed, timeEngagedMs: r.timeEngagedMs ?? r.timeEngaged, timeProductiveMs: r.timeProductiveMs ?? r.timeProductive, xpAwarded: r.xpAwarded, questions: r.questions, questionsCorrect: r.questionsCorrect, windowUtc: r.windowUtc || null, error: r.error || null, fetchedAt: r.fetchedAt }));
-    const stuRow = await ddb.send(new GetItemCommand({ TableName: ST, Key: { pk: S("student"), sk: S(sid) } }));
+    let stuRow = await ddb.send(new GetItemCommand({ TableName: ST, Key: { pk: S("student"), sk: S(sid) } }));
+    let backfill = null;
+    if (stuRow.Item && stuRow.Item.maId?.S && !stuRow.Item.backfilledAt && (await maKey())) {
+      // first ask for this student's activity: pull their whole Math Academy history once (about five calls), then serve
+      backfill = await backfillStudentActivity(sid, stuRow.Item.maId.S);
+      const again = await queryAll(`act#${sid}`, { cond: " AND sk BETWEEN :a AND :b", vals: { ":a": S(from + "#"), ":b": S(to + "#~") } });
+      tasks.length = 0; for (const it of again.map(unmarshalFlat)) tasks.push({ date: it.sk.split("#")[0], taskId: it.taskId, type: it.type, xp: it.xp, xpAwarded: it.xpAwarded, questions: it.questions, questionsCorrect: it.questionsCorrect, startedEpochMs: it.startedEpochMs ?? it.started, completedEpochMs: it.completedEpochMs ?? it.completed, courseId: it.courseId, courseName: it.courseName, topicId: it.topicId, topicName: it.topicName, timeElapsedMs: it.timeElapsedMs ?? it.timeElapsed, timeEngagedMs: it.timeEngagedMs ?? it.timeEngaged, timeProductiveMs: it.timeProductiveMs ?? it.timeProductive });
+      const againDays = await queryAll(`actday#${sid}`, { cond: " AND sk BETWEEN :a AND :b", vals: { ":a": S(from), ":b": S(to) } });
+      days.length = 0; for (const it of againDays.map(unmarshalFlat)) days.push({ date: it.sk, numTasks: it.numTasks, timeElapsedMs: it.timeElapsedMs ?? it.timeElapsed, timeEngagedMs: it.timeEngagedMs ?? it.timeEngaged, timeProductiveMs: it.timeProductiveMs ?? it.timeProductive, xpAwarded: it.xpAwarded, questions: it.questions, questionsCorrect: it.questionsCorrect, windowUtc: it.windowUtc || null, error: it.error || null, fetchedAt: it.fetchedAt });
+      stuRow = await ddb.send(new GetItemCommand({ TableName: ST, Key: { pk: S("student"), sk: S(sid) } }));
+    }
     let daysRequested = null;
     if (q.from && q.to) {
       const a = new Date(q.from + "T00:00:00Z"), b = new Date(q.to + "T00:00:00Z"); const span = Math.round((b - a) / 864e5);
@@ -219,12 +254,13 @@ async function storeSub(event, q, sid, kind) {
         daysRequested = [];
         for (let i = 0; i <= span; i++) {
           const day = new Date(a.getTime() + i * 864e5).toISOString().slice(0, 10); const row = byDate[day];
-          daysRequested.push({ date: day, status: row ? (row.error ? "error" : "pulled") : day < "2026-09-15" ? "before the activity store began (2026-09-15)" : day > last ? "not pulled yet (after activityLastDate)" : "no Math Academy result in Timeback for this student that day, nothing to pull", numTasks: row?.numTasks ?? null, error: row?.error || null });
+          daysRequested.push({ date: day, status: row ? (row.error ? "error" : "pulled") : (stuRow.Item?.backfilledAt ? (day >= (stuRow.Item.backfilledFrom?.S || "2025-07-01") && day <= (meta.activityLastDate || day) ? "no Math Academy task that day (backfilled range)" : day > (meta.activityLastDate || "") ? "not pulled yet (after activityLastDate)" : "before the backfilled range") : day < "2026-09-15" ? "before the activity store began (2026-09-15); read this route once more, the first ask backfills the student" : day > last ? "not pulled yet (after activityLastDate)" : "no Math Academy result in Timeback for this student that day, nothing to pull"), numTasks: row?.numTasks ?? null, error: row?.error || null });
         }
       }
     }
     const reasonIfEmpty = days.length ? null : !stuRow.Item ? "this student has no store row (no Math Academy id known), so no activity day could be pulled; read /store/student/{sourcedId} first" : `no day in ${from}..${to} was pulled for this student: either no Math Academy result in Timeback on those America/Chicago days, or the day is before storeBegan (${fresh.storeBegan.slice(0, 10)}), or after activityLastDate (${meta.activityLastDate || "none yet"})`;
-    return resp(200, { sourcedId: sid, ...fresh, reasonIfEmpty, daysRequested, from, to, dayBoundary: "America/Chicago; each day is the UTC window in days[].windowUtc, tasks kept by their Math Academy completion time", units: "every clock and epoch here is MILLISECONDS (task and day alike); divide by 60000 for minutes", activityLastDate: meta.activityLastDate || null, days, tasks, note: "Math Academy's own per-task analysis, pulled the night after each America/Chicago day for students who had a Math Academy result in Timeback that day; a day absent here was not pulled (no Timeback result that day, or before the store began, or the pull has not reached it: see activityLastDate), never a day of zero work; ENABLEMENT example 11" });
+    const coverage = stuRow.Item?.backfilledAt ? { backfilledAt: stuRow.Item.backfilledAt.S, backfilledFrom: stuRow.Item.backfilledFrom?.S || "2025-07-01", note: "this student's whole Math Academy activity has been pulled from backfilledFrom on; a day absent after that is a day with no Math Academy task" } : { backfilledAt: null, note: "only nightly-pulled days for this student so far" };
+    return resp(200, { sourcedId: sid, ...fresh, backfilledNow: backfill, coverage, reasonIfEmpty, daysRequested, from, to, dayBoundary: "America/Chicago; each day is the UTC window in days[].windowUtc, tasks kept by their Math Academy completion time", units: "every clock and epoch here is MILLISECONDS (task and day alike); divide by 60000 for minutes", activityLastDate: meta.activityLastDate || null, days, tasks, note: "Math Academy's own per-task analysis, pulled the night after each America/Chicago day for students who had a Math Academy result in Timeback that day; a day absent here was not pulled (no Timeback result that day, or before the store began, or the pull has not reached it: see activityLastDate), never a day of zero work; ENABLEMENT example 11" });
   }
   if (kind === "knowledge") {
     const row = await ddb.send(new GetItemCommand({ TableName: ST, Key: { pk: S("student"), sk: S(sid) } }));
