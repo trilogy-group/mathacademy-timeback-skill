@@ -1,18 +1,18 @@
 # mathacademy_timeback — a data source skill
 
-The meaning layer for Math Academy data inside Timeback, built to the dss estate's contract
-(https://data-source-skills.vercel.app/contract). Timeback-only: readers use their Timeback
-credential against Timeback's own APIs; readers never call Math Academy. Since 2026-09-17 the skill also
-holds a store of Math Academy's own student records (store/), refreshed nightly by a scheduled Lambda
-(snapshot 03:00, activity 03:45 America/Chicago), served behind the reader's Timeback token; the knowledge
-map is fetched live on first request and cached.
+Math Academy's own record of Alpha's students, served to agents behind their Timeback token, built to the dss estate's contract
+(https://data-source-skills.vercel.app/contract). Two halves, Math Academy first: a store of Math Academy's student records
+(store/; refreshed nightly by a scheduled Lambda at 03:00 America/Chicago, per-task activity at 03:45, backfilled from 2025-07-01,
+course episodes, nightly history, knowledge maps on request) answers every question about a student's work; Timeback's own APIs
+answer who sits where (rosters, seats, flags, grades) and which Timeback course an event was filed under. Readers bring a read-only
+Timeback credential and never call Math Academy; the store's Math Academy key lives in Secrets Manager and never reaches the wire.
 
 ## What is in this folder
 
 | Path | What |
 |---|---|
 | `DICTIONARY.md` | the product lens: containers, field genesis, invariants, 26 numbered traps, open questions (tickets 7–11, 19–24) |
-| `ENABLEMENT.md` | 12 capabilities, question→call catalog, 12 worked examples with output shapes |
+| `ENABLEMENT.md` | 12 capabilities, question→call catalog, Part A: eleven Math-Academy-first store recipes, Part B: nine Timeback recipes (roster half, today, filed-course view, fallbacks) |
 | `store/snapshot_lib.py`, `store/agreement.py` | the store library: bulk pull, roster, match chain (known id → username → email → lookup → name), agreement rule, DynamoDB layout, activity pull |
 | `lambda/nightly/handler.py`, `lambda/nightly/deploy.py` | the nightly Lambda (python3.12, 900 s; modes `snapshot` and `activity`, resumable) and its roles + EventBridge schedules |
 | `store/pull_snapshot.py` | one snapshot: Math Academy bulk list (4 pages) + per-student lookups, matched to the Timeback roster (username → email → lookup → name); writes `_scratch/_snapshot_<date>.json` (PII, never committed) |
