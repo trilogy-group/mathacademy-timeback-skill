@@ -2005,11 +2005,6 @@
    "sentence": "- **The students are children.** Key everything on `user.sourcedId` (not uniformly a uuid: some ids are `user_...` or `pcb-course-...` strings; never truncate any id, student or course, in a join: two 5th-grade student ids share their first eight characters and two course ids share `pcb-course-`); r",
    "reviewed": "owner run"
   },
-  "1795fc2d5e36": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "`mathAcademyState` reads it: `not started` (progress 0; say \"not started in <course>\", never \"0 XP left\"; `xpRemainingReading` on every row says how to read the XP figure, print it instead of a bare 0), `in progress`, `at 100, not marked complete` (progress ≥ 0.995), `completed` (Math Academy closed",
-   "reviewed": "owner run"
-  },
   "4fdb8e3cc170": {
    "doc": "ENABLEMENT.md",
    "sentence": "- **The roster is the store's list at `rosterReadAt`, that is TODAY's roster, whatever day you ask about.** The course-day route counts today's members on every past day (`rosterAsOf` on the response): a student who left the course since is not counted, a student who joined since is counted with wor",
@@ -2053,6 +2048,11 @@
   "b632057894d6": {
    "doc": "skill.template.json",
    "sentence": "\"fields\": \"mathAcademy {id, username, firstName, lastName, created, deactivated, currentCourse {id, name, startDate, progress, xpRemaining, completed, grade, letterGrade, estimatedScore}, schedule, league} copied as Math Academy serves it (SAT Math Prep: progress null, estimatedScore set, xpRemainin",
+   "reviewed": "owner run"
+  },
+  "02f334d613d6": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "`mathAcademyState` reads it: `not started` (progress 0; say \"not started in <course>\", never \"0 XP left\"; `xpRemainingReading` on every row says how to read the XP figure, print it instead of a bare 0), `in progress`, `at 100, not marked complete` (progress ≥ 0.995), `completed` (Math Academy closed",
    "reviewed": "owner run"
   }
  },
