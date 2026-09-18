@@ -247,11 +247,18 @@ def write_snapshot(ddb, table, snap, nightly=True, source="manual"):
     """Replace the student / tb_unmatched / ma_unmatched rows, append hist rows for the day, rewrite meta. Returns counts."""
     at = snap["snapshotAt"]; day = at[:10]
     old = []
-    for pk in ("student", "tb_unmatched", "ma_unmatched"): old.extend(_query_all(ddb, table, pk, "pk, sk, backfilledAt, backfilledFrom"))
+    for pk in ("student", "tb_unmatched", "ma_unmatched"): old.extend(_query_all(ddb, table, pk, "pk, sk, backfilledAt, backfilledFrom, maId, matchedBy, ma, isTestUser, isLikelyTest, snapshotAt, figuresAsOf, offRosterSince"))
     # per-student attributes written by the backfill and the front between loads survive a load (a load replaces the Math Academy figures, not the activity coverage)
     keep = {it["sk"]["S"]: {k: it[k] for k in ("backfilledAt", "backfilledFrom") if k in it} for it in old if it["pk"]["S"] == "student"}
     _batch(ddb, table, [{"DeleteRequest": {"Key": {"pk": it["pk"], "sk": it["sk"]}}} for it in old])
     items = []
+    # students who left the roster keep a row: last-known Math Academy record, no seats, so history/activity stay readable and the batch never re-pulls them
+    roster = {st["sourcedId"] for st in snap["students"]}
+    for it in old:
+        if it["pk"]["S"] != "student" or it["sk"]["S"] in roster or "maId" not in it: continue
+        row = {k: it[k] for k in ("backfilledAt", "backfilledFrom", "maId", "matchedBy", "ma", "isTestUser", "isLikelyTest", "snapshotAt", "figuresAsOf") if k in it}
+        row.update({"pk": S("student"), "sk": it["sk"], "seats": S("[]"), "courseAgreementAtSnapshot": S("no current timeback seat"), "offRosterSince": it.get("offRosterSince") or S(at)})
+        items.append({"PutRequest": {"Item": row}})
     for st in snap["students"]:
         items.append({"PutRequest": {"Item": {**keep.get(st["sourcedId"], {}), "pk": S("student"), "sk": S(st["sourcedId"]), "ma": S(json.dumps(st["mathAcademy"], ensure_ascii=False)),
                                               "maId": S(st["mathAcademy"].get("id")), "matchedBy": S(st["matchedBy"]), "courseAgreementAtSnapshot": S(st["courseAgreementAtSnapshot"]),

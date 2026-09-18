@@ -145,12 +145,20 @@ async function storeStudent(event, q, sidFromPath) {
     if (un.Item) return resp(200, { ...base, inSnapshot: false, matchedBy: null, isTestUser: un.Item.isTestUser?.BOOL ?? null, seatsAtSnapshot: JSON.parse(un.Item.seats?.S || "[]"), unmatchedReason: un.Item.reason?.S, lastTriedAt: un.Item.lastTriedAt?.S || null, mathAcademy: null, mathAcademyState: "no math academy record", courseAgreementAtSnapshot: "no math academy record", courseAgreement: "no math academy record", note: "on the Timeback roster at snapshot time but no Math Academy record matched (HTTP 404 = no account under this organisation's key; HTTP 401 = account under another organisation's key; 'no email' = nothing to look up by)" });
     return resp(200, { ...base, inSnapshot: false, matchedBy: null, mathAcademy: null, mathAcademyState: null, courseAgreementAtSnapshot: null, courseAgreement: "not in snapshot", note: email ? "not on the Timeback Math Academy roster at the last snapshot; a live Math Academy lookup was tried within the last 24 hours and found nothing (see unmatchedReason on the tb_unmatched row) or the front has no Math Academy key configured" : "not on the Timeback Math Academy roster at the last snapshot and the Timeback user carries no email to look up by" });
   }
-  const ma = JSON.parse(row.Item.ma.S);
+  let ma = JSON.parse(row.Item.ma.S); let refreshed = null;
+  const offRosterSince = row.Item.offRosterSince?.S || null;
+  if (offRosterSince && Date.now() - Date.parse(row.Item.lastTriedAt?.S || row.Item.figuresAsOf?.S || row.Item.snapshotAt?.S || 0) > 864e5 && (await maKey())) {
+    // a student who left the roster is no longer refreshed by the nightly bulk list: refresh on read, once per 24 h, like a miss
+    const live = await maGet(`/students/${encodeURIComponent(row.Item.maId?.S || ma.id)}`); await bumpRead("readMaLookup"); const now = new Date().toISOString();
+    if (live.status === 200 && live.body?.student) { ma = { ...live.body.student, id: live.body.student.id ?? live.body.student.studentId }; refreshed = now;
+      await ddb.send(new UpdateItemCommand({ TableName: ST, Key: { pk: S("student"), sk: S(sid) }, UpdateExpression: "SET ma = :m, figuresAsOf = :t, lastTriedAt = :t, matchedBy = :b", ExpressionAttributeValues: { ":m": S(JSON.stringify(ma)), ":t": S(now), ":b": S("live-lookup") } })); }
+    else await ddb.send(new UpdateItemCommand({ TableName: ST, Key: { pk: S("student"), sk: S(sid) }, UpdateExpression: "SET lastTriedAt = :t", ExpressionAttributeValues: { ":t": S(now) } }));
+  }
   const maCourse = ma.currentCourse?.name || null;
   const agreement = agreementOf(ma, seats);
-  const matchedBy = row.Item.matchedBy?.S;
-  return resp(200, { ...base, inSnapshot: true, matchedBy, matchConfidence: matchedBy === "name" ? "low" : "high",
-    figuresAsOf: row.Item.snapshotAt?.S || meta.snapshotAt,
+  const matchedBy = refreshed ? "live-lookup" : row.Item.matchedBy?.S;
+  return resp(200, { ...base, inSnapshot: true, matchedBy, matchConfidence: matchedBy === "name" ? "low" : "high", offRosterSince, offRosterNote: offRosterSince ? "this student left the Math Academy roster in Timeback (progression moved them on, or the seat was deleted) on or before offRosterSince; the store keeps their last-known Math Academy record and refreshes it by a direct Math Academy call on read, once per 24 h (counted in readCalls.maLookupOnMiss); their history and backfilled activity stay readable" : undefined,
+    figuresAsOf: refreshed || row.Item.figuresAsOf?.S || row.Item.snapshotAt?.S || meta.snapshotAt,
     figuresBasis: ["lookup", "live-lookup"].includes(matchedBy) ? "Math Academy answered a direct per-student call at figuresAsOf" : "Math Academy's bulk list read at figuresAsOf; the list can lag Math Academy's live record by up to a day",
     isTestUser: row.Item.isTestUser?.BOOL ?? null, isLikelyTest: row.Item.isLikelyTest?.BOOL ?? (row.Item.isTestUser?.BOOL ?? null), mathAcademy: minimal ? stripPii(ma) : ma, minimalView: minimal, mathAcademyState: maState(ma.currentCourse), courseAgreement: agreement, courseAgreementAtSnapshot: row.Item.courseAgreementAtSnapshot?.S || null,
     seatsAtSnapshot: JSON.parse(row.Item.seats?.S || "[]"),

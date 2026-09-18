@@ -62,9 +62,10 @@ def handler(event, context):
     if mode == "backfill":
         # one-off: event {"mode":"backfill","start":"2025-07-01","matchFirst":true}; resumes itself via cursor until done
         out = {}
-        if not event.get("cursor"): out["restoredMarkers"] = lib.restore_backfill_markers(ddb, TABLE, event.get("start", "2025-07-01"))
+        out["restoredMarkers"] = lib.restore_backfill_markers(ddb, TABLE, event.get("start", "2025-07-01"))   # every hop: cheap, and a load in between may have dropped rows
         if event.get("matchFirst") and not event.get("cursor"):
             out["match"] = lib.backfill_students_without_rows(c, ddb, TABLE, time_left=time_left)
+            out["restoredMarkersAfterMatch"] = lib.restore_backfill_markers(ddb, TABLE, event.get("start", "2025-07-01"))
         r = lib.run_backfill(c, ddb, TABLE, event.get("start", "2025-07-01"), time_left=time_left, cursor=event.get("cursor"))
         out.update(r)
         if r.get("status") == "partial" and os.environ.get("SELF_FUNCTION") and int(event.get("hop", 0)) < 40:
