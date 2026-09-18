@@ -65,9 +65,9 @@
 <section>
   <h2>What it is, in plain words</h2>
   <p>Every task a student completes on Math Academy is sent to Timeback as an event and stored there. That covers <em>what students did</em>. But several things Math Academy knows never reach Timeback: the course Math Academy is actually running the student in, the exact XP left, the course grade, the SAT score estimate, how much of the time on a task was attentive or productive, and the per-topic knowledge map.</p>
-  <p>This skill does two things. It <strong>explains Timeback's Math Academy data</strong>: every field, how it is born, the traps, and twelve worked recipes an agent can follow. And it <strong>keeps a nightly copy of Math Academy's own records</strong>, matched to Timeback students, so agents get the missing figures from one place, and Math Academy's API is called a few hundred times a night instead of thousands of times a day.</p>
+  <p>This skill does two things, in this order. It <strong>keeps Math Academy's own records</strong> for every student, matched to Timeback and served behind the reader's Timeback key, so agents answer every question about a student's work from Math Academy's own data without calling Math Academy. And it <strong>explains Timeback's Math Academy data</strong>: every field, how it is born, the traps, and twelve worked recipes an agent can follow. And it <strong>keeps a nightly copy of Math Academy's own records</strong>, matched to Timeback students, so agents get the missing figures from one place, and Math Academy's API is called a few hundred times a night instead of thousands of times a day.</p>
   <div class="grid">
-    <div class="card"><h3>The documents</h3><p>A <a href="/DICTIONARY.md">dictionary</a> (meaning of every field, 26 named traps, open questions) and an <a href="/ENABLEMENT.md">enablement</a> (12 capabilities with step-by-step recipes). An agent reads the <a href="/skill">front page</a> first; it points at both.</p></div>
+    <div class="card"><h3>The documents</h3><p>A <a href="/DICTIONARY.md">dictionary</a> (meaning of every field, 27 named traps, open questions) and an <a href="/ENABLEMENT.md">enablement</a> (12 capabilities: eleven Math-Academy-first store recipes and nine Timeback recipes for the roster half). An agent reads the <a href="/skill">front page</a> first; it points at both.</p></div>
     <div class="card"><h3>The store</h3><p>Math Academy's record per student: true course and start date, progress, exact XP remaining, grade, SAT estimate, completion date, account state; per-task engaged and productive time; a nightly history; knowledge maps on request.</p></div>
     <div class="card"><h3>The feedback wire</h3><p>Anyone can file a finding at <code>POST /feedback</code>. Tickets are public, mirrored to GitHub daily, and every one filed so far has been fixed or answered. <a href="/feedback?state=all">See them</a>.</p></div>
   </div>
@@ -108,16 +108,16 @@
   <h2>The twelve questions it answers</h2>
   <table>
     <tr><th>#</th><th>Question a guide or lead asks</th><th>Where the answer comes from</th></tr>
-    <tr><td>1</td><td>What did this student do on Math Academy this week?</td><td>Timeback results, task by task, with type, topic, XP and accuracy</td></tr>
-    <tr><td>2</td><td>How many minutes and XP per day?</td><td>Timeback's daily rollups (engaged minutes)</td></tr>
-    <tr><td>3</td><td>What course is she in and how far along?</td><td>The store first (exact figures, dated), Timeback's newest result for today's percent</td></tr>
-    <tr><td>4</td><td>Who has gone quiet in this course?</td><td>Roster minus the estate's results, then the store says why (moved on, not started, wrong course, no record)</td></tr>
-    <tr><td>5</td><td>Who finished, and were they moved on?</td><td>Results first (the platform deletes the finished seat), confirmed by Math Academy's completion date</td></tr>
-    <tr><td>6</td><td>Where is he struggling, and did he recover?</td><td>Not-credited tasks by topic, latest attempt decides</td></tr>
-    <tr><td>7</td><td>Is anyone in the wrong Timeback course?</td><td>The store's course list, definitively; a weak Timeback-only heuristic as fallback</td></tr>
-    <tr><td>8</td><td>How much Math Academy happened across the school yesterday?</td><td>Every result of the school day, attributed to the course it was filed under</td></tr>
-    <tr><td>9</td><td>Tell me this student's whole Math Academy story</td><td>Every seat, every event under it, gaps, where 100 was reached</td></tr>
-    <tr><td>10</td><td>What are Math Academy's own figures for this student?</td><td>The store: true course, exact XP left, grade, SAT estimate, agreement with the seat</td></tr>
+    <tr><td>1</td><td>What did this student do on Math Academy this week?</td><td>The store: Math Academy's own tasks with type, topic, course, XP awarded and three clocks</td></tr>
+    <tr><td>2</td><td>How many minutes and XP per day?</td><td>The store's day totals: elapsed, engaged and productive minutes, XP, pace and habits</td></tr>
+    <tr><td>3</td><td>What course is she in and how far along?</td><td>The store: Math Academy's course, progress, XP remaining, grade, dated, with the Timeback seat beside it</td></tr>
+    <tr><td>4</td><td>Who is active, who has gone quiet in this course?</td><td>The store's course roster and day totals, then one ordered reason per quiet student</td></tr>
+    <tr><td>5</td><td>Who finished, and were they moved on?</td><td>Math Academy's own completed flag across every student who ever held a seat, plus the nightly history; Timeback's rounded 100 for the older half</td></tr>
+    <tr><td>6</td><td>Where is he struggling, and did he recover?</td><td>Penalised and failed tasks by Math Academy topic, latest attempt decides, with the knowledge map beside it</td></tr>
+    <tr><td>7</td><td>Is anyone in the wrong Timeback course?</td><td>The store's course agreement per student, definitively</td></tr>
+    <tr><td>8</td><td>How much Math Academy happened across the school yesterday?</td><td>The store's course-day totals for every course; the Timeback-filed view on request</td></tr>
+    <tr><td>9</td><td>Tell me this student's whole Math Academy story</td><td>Math Academy's course episodes since July 2025, the nightly history, and Timeback's seats beside them</td></tr>
+    <tr><td>10</td><td>The estate picture and roster hygiene</td><td>The store's counts and course lists: agree, disagree, no record, never started, two seats, below grade 4, test accounts</td></tr>
     <tr><td>11</td><td>Was he really working? Elapsed vs engaged vs productive</td><td>The store's activity rows; Timeback holds only the engaged clock</td></tr>
     <tr><td>12</td><td>What does this student actually know?</td><td>The knowledge map: retention per topic for the course and its prerequisites</td></tr>
   </table>
