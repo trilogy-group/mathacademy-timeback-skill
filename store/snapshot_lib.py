@@ -275,7 +275,7 @@ def write_snapshot(ddb, table, snap, nightly=True, source="manual"):
         items.append({"PutRequest": {"Item": hist_row(st, day)}})
     for u in snap["tb_unmatched"]:
         items.append({"PutRequest": {"Item": {"pk": S("tb_unmatched"), "sk": S(u["sourcedId"]), "reason": S(u["reason"]), "seats": S(json.dumps(u["seats"])),
-                                              "isTestUser": {"BOOL": bool(u["isTestUser"])}, "isLikelyTest": {"BOOL": bool(u.get("isLikelyTest", u["isTestUser"]))}, "snapshotAt": S(at), "lastTriedAt": S(at), "email": S(u.get("email") or "")}}})
+                                              "isTestUser": {"BOOL": bool(u["isTestUser"])}, "isLikelyTest": {"BOOL": bool(u.get("isLikelyTest", u["isTestUser"]))}, "grades": S(json.dumps(u.get("grades") or [])), "snapshotAt": S(at), "lastTriedAt": S(at), "email": S(u.get("email") or "")}}})
     for m in snap["ma_unmatched"]:
         items.append({"PutRequest": {"Item": {"pk": S("ma_unmatched"), "sk": S(m.get("id")), "ma": S(json.dumps(m, ensure_ascii=False)), "snapshotAt": S(at)}}})
     _batch(ddb, table, items)
@@ -322,6 +322,13 @@ def active_sids_for_day(c, day, tz_offset_hours=None):
     f = f"metadata.appName='Math Academy' AND scoreDate>='{start.strftime('%Y-%m-%dT%H:%M:%SZ')}' AND scoreDate<='{end.strftime('%Y-%m-%dT%H:%M:%SZ')}'"
     rows = c.tb_all("/ims/oneroster/gradebook/v1p2/assessmentResults", "assessmentResults", {"filter": f})
     return sorted({(r.get("student") or {}).get("sourcedId") for r in rows if (r.get("student") or {}).get("sourcedId")})
+
+def day_extra(tasks):
+    """type mix and lesson habit counts for a day: what a course-day reader needs without a per-student loop."""
+    by = {}
+    for t in tasks: k = str(t.get("type") or "?"); by[k] = by.get(k, 0) + 1
+    les = [t for t in tasks if str(t.get("type") or "").lower() == "lesson"]
+    return {"byType": S(json.dumps(by)), "lessons": {"N": str(len(les))}, "lessonsNegative": {"N": str(sum(1 for t in les if int(t.get("xpAwarded") or 0) < 0))}, "lessonsZero": {"N": str(sum(1 for t in les if int(t.get("xpAwarded") or 0) == 0))}}
 
 def task_item(sid, day, t):
     an = t.get("analysis") or {}
@@ -375,7 +382,7 @@ def run_activity(c, ddb, table, day, tz_offset_hours=None, time_left=lambda: 10 
         pending = [[s_, ids[s_]] for s_ in sids if s_ in ids]; no_id = len(sids) - len(pending); total = len(pending); done = 0; errors = 0
         for s_ in sids:
             if s_ not in ids:  # leave a per-day reason on the row a reader will hit
-                ddb.put_item(TableName=table, Item={"pk": S(f"actday#{s_}"), "sk": S(day), "error": S("no Math Academy id for this student (not on the roster; the lookup by Timeback email found no account under this organisation's key)"),
+                ddb.put_item(TableName=table, Item={"pk": S(f"actday#{s_}"), "sk": S(day), "error": S("no Math Academy id for this student (the lookup by Timeback email found no account under this organisation's key)"),
                                                     "fetchedAt": S(datetime.datetime.now(UTC).isoformat(timespec="seconds"))})
         c.log(f"activity {day}: {len(sids)} active students, {len(missing)} without a stored id ({found} found by lookup), {total} to pull, window {day_start.isoformat()}..{day_end.isoformat()}")
     def save(status):
@@ -393,7 +400,7 @@ def run_activity(c, ddb, table, day, tz_offset_hours=None, time_left=lambda: 10 
             tasks = [t for t in ((d.get("activity") or {}).get("tasks") or []) if lo_ms <= int(t.get("completed") or 0) < hi_ms]
             for t in tasks: items.append({"PutRequest": {"Item": task_item(sid, day, t)}})
             an = lambda k: sum(int((t.get("analysis") or {}).get(k) or 0) for t in tasks)
-            items.append({"PutRequest": {"Item": {"pk": S(f"actday#{sid}"), "sk": S(day), "numTasks": {"N": str(len(tasks))},
+            items.append({"PutRequest": {"Item": {"pk": S(f"actday#{sid}"), "sk": S(day), "numTasks": {"N": str(len(tasks))}, **day_extra(tasks),
                                                   "timeElapsedMs": {"N": str(an("timeElapsed"))}, "timeEngagedMs": {"N": str(an("timeEngaged"))}, "timeProductiveMs": {"N": str(an("timeProductive"))},
                                                   "xpAwarded": {"N": str(sum(int(t.get("xpAwarded") or 0) for t in tasks))},
                                                   "questions": {"N": str(sum(int(t.get("questions") or 0) for t in tasks))}, "questionsCorrect": {"N": str(sum(int(t.get("questionsCorrect") or 0) for t in tasks))},
@@ -496,7 +503,7 @@ def run_backfill(c, ddb, table, start_day, time_left=lambda: 10 ** 9, cursor=Non
         for day, tasks in by_day.items():
             for t in tasks: items.append({"PutRequest": {"Item": task_item(sid, day, t)}})
             an = lambda k: sum(int((t.get("analysis") or {}).get(k) or 0) for t in tasks)
-            items.append({"PutRequest": {"Item": {"pk": S(f"actday#{sid}"), "sk": S(day), "numTasks": {"N": str(len(tasks))},
+            items.append({"PutRequest": {"Item": {"pk": S(f"actday#{sid}"), "sk": S(day), "numTasks": {"N": str(len(tasks))}, **day_extra(tasks),
                                                   "timeElapsedMs": {"N": str(an("timeElapsed"))}, "timeEngagedMs": {"N": str(an("timeEngaged"))}, "timeProductiveMs": {"N": str(an("timeProductive"))},
                                                   "xpAwarded": {"N": str(sum(int(t.get("xpAwarded") or 0) for t in tasks))},
                                                   "questions": {"N": str(sum(int(t.get("questions") or 0) for t in tasks))}, "questionsCorrect": {"N": str(sum(int(t.get("questionsCorrect") or 0) for t in tasks))},

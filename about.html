@@ -49,7 +49,7 @@
 
 <section>
   <h2>Right now</h2>
-  <p class="muted">Read live from the store's status page each time this page loads. Nothing here is a student value.</p>
+  <p class="muted">Read live from the store's status page each time this page loads in a browser (an agent fetching this HTML sees empty tiles: read GET /store instead). Nothing here is a student value.</p>
   <div class="grid" id="live">
     <div class="card"><div class="stat" id="s-snap">…</div><small class="muted">last snapshot of Math Academy's student list</small></div>
     <div class="card"><div class="stat" id="s-age">…</div><small class="muted">hours since that snapshot · <span id="s-stale"></span></small></div>
@@ -64,12 +64,12 @@
 
 <section>
   <h2>What it is, in plain words</h2>
-  <p>Every task a student completes on Math Academy is sent to Timeback as an event and stored there. That covers <em>what students did</em>. But several things Math Academy knows never reach Timeback: the course Math Academy is actually running the student in, Math Academy's own XP-left figure, the course grade, the SAT score estimate, how much of the time on a task was attentive or productive, and the per-topic knowledge map.</p>
+  <p>Nearly every task a student completes on Math Academy is sent to Timeback as an event and stored there (a few never arrive; the store shows which). That covers <em>what students did</em>. But several things Math Academy knows never reach Timeback: the course Math Academy is actually running the student in, Math Academy's own XP-left figure, the course grade, the SAT score estimate, how much of the time on a task was attentive or productive, and the per-topic knowledge map.</p>
   <p>This skill does two things, in this order. It <strong>keeps Math Academy's own records</strong> for every student, matched to Timeback and served behind the reader's Timeback key, so agents answer every question about a student's work from Math Academy's own data without calling Math Academy. And it <strong>explains Timeback's Math Academy data</strong>: every field, how it is born, the traps, and the recipes an agent can follow.</p>
   <div class="grid">
     <div class="card"><h3>The documents</h3><p>A <a href="/DICTIONARY.md">dictionary</a> (meaning of every field, 27 named traps, open questions) and an <a href="/ENABLEMENT.md">enablement</a> (12 capabilities: eleven Math-Academy-first store recipes and nine Timeback recipes for the roster half). An agent reads the <a href="/skill">front page</a> first; it points at both.</p></div>
     <div class="card"><h3>The store</h3><p>Math Academy's record per student: true course and start date, progress, exact XP remaining, grade, SAT estimate, completion date, account state; per-task engaged and productive time; a nightly history; knowledge maps on request.</p></div>
-    <div class="card"><h3>The feedback wire</h3><p>Anyone can file a finding at <code>POST /feedback</code>. Tickets are public, mirrored to GitHub daily, and every one filed so far has been fixed or answered. <a href="/feedback?state=all">See them</a>.</p></div>
+    <div class="card"><h3>The feedback wire</h3><p>Anyone can file a finding at <code>POST /feedback</code>. Tickets are public, mirrored to GitHub daily, and every report filed so far has been fixed; the open tickets are the documented open questions. <a href="/feedback?state=all">See them</a>.</p></div>
   </div>
 </section>
 
@@ -92,7 +92,7 @@
     <tr><td>Activity: one row per Math Academy task, with elapsed, engaged and productive time</td><td>Each unpulled school day, plus a re-pull of the newest one</td><td><span class="pill b">appended</span> by day, keyed by task so re-pulls overwrite</td></tr>
     <tr><td>Knowledge maps</td><td>Untouched</td><td><span class="pill w">on demand</span> cached seven days per student per course</td></tr>
   </table>
-  <p class="muted">Cost to Math Academy per night: 4 bulk calls, one lookup per newly added student, and about one activity call per active student per day pulled; each night re-pulls the previous day as well, so a normal night is roughly 800 to 900 calls, and a catch-up night after a gap costs proportionally more (the first scheduled night pulled three days for 1,143 calls). Nothing is called during the school day except a first-time knowledge map, a student missing from the store, or the first activity read of a student the backfill has not reached.</p>
+  <p class="muted">Cost to Math Academy per night: 4 bulk calls, one lookup per newly added student, and about one activity call per active student per day pulled; each night re-pulls the previous day as well, so a normal night is roughly 800 to 900 calls, and a catch-up night after a gap costs proportionally more (the first scheduled night pulled three days for 1,143 calls). Nothing is called during the school day except a first-time knowledge map, a student missing from the store or one who left the roster (refreshed once a day when read), or the first activity read of a student the backfill has not reached.</p>
 </section>
 
 <section>
@@ -100,7 +100,7 @@
   <div class="grid">
     <div class="card"><h3>No key needed</h3><ul class="tight"><li>The front page, both documents, the reference files</li><li>The status page: freshness, schedule, health, what the last runs cost</li><li>Math Academy's course id to name map (its public catalogue)</li></ul></div>
     <div class="card"><h3>With the reader's own Timeback key</h3><ul class="tight"><li>Counts: how many students per course agree, disagree, never started, with test accounts split out</li><li>A student's Math Academy record, history, activity and knowledge map</li><li>A course's student list with Math Academy's figures per student</li><li>A course's engagement totals for one day</li></ul><p class="muted">The skill replays the reader's token against Timeback and serves a student only if Timeback confirms that token can read them. The skill issues no keys and holds none for readers.</p></div>
-    <div class="card"><h3>Never</h3><ul class="tight"><li>No student value in any document or reference file</li><li>No names or logins to anyone without a token; a <code>?minimal=1</code> view drops them even for readers who have one</li><li>No figures read off the wire in the documents, only the queries that measure them</li></ul></div>
+    <div class="card"><h3>Never</h3><ul class="tight"><li>No student value in any document or reference file</li><li>No names or logins to anyone without a token; a <code>?minimal=1</code> view drops them even for readers who have one</li><li>Figures in the documents are dated observations, kept beside the queries that measure them</li></ul></div>
   </div>
 </section>
 
@@ -131,7 +131,7 @@
     <li><strong>Timeback's Math Academy minutes are engaged minutes</strong>, not wall time. Idle time on an open tab is already excluded; only the store shows it.</li>
     <li><strong>The Timeback-only XP estimate is a rough fallback</strong> that has run from 64 percent too high to 67 percent too low against the exact figure (the dictionary keeps the one current band). The store has the exact figure.</li>
     <li><strong>Students leave Math Academy on purpose.</strong> After finishing, progression gives them other math: TEKS Math, hole-filling, Math Raiders, supplements. That is never a flag.</li>
-    <li><strong>The store began on 17 September 2026.</strong> Nightly history builds from there. Per-task activity is being backfilled from 1 July 2025 for every student who ever held a seat (a batch that runs over several hours; the status page shows how far it has got), and any student the batch has not reached is backfilled the first time someone asks for their activity.</li>
+    <li><strong>The store began on 17 September 2026.</strong> Nightly history builds from there. Per-task activity was backfilled from 1 July 2025 for every student who ever held a seat (complete since 18 September 2026), and any student the batch has not reached is backfilled the first time someone asks for their activity.</li>
     <li><strong>Test accounts fill rosters</strong> (about a third of seats estate-wide; by course anywhere from none to nearly all, the five big grade courses running a fifth to two fifths; some carry no flag and are recognised by a naming pattern or a test campus, in the store, never by a reader) and barely appear in activity. Every count here is shown with them split out.</li>
   </ul>
 </section>

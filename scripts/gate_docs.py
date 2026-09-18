@@ -14,6 +14,8 @@ Four checks, each born from a class of defect the independent cold rounds kept f
 Usage: py -3 scripts/gate_docs.py [--accept-absolutes] [--live]   (--live also reads the deployed /store and compares its keys)
 """
 import hashlib, json, pathlib, re, sys, urllib.request
+try: sys.stdout.reconfigure(encoding="utf-8")
+except Exception: pass
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 ALLOW = ROOT / "scripts" / "gate_allowlist.json"
 allow = json.loads(ALLOW.read_text(encoding="utf-8")) if ALLOW.exists() else {"readerOutputNames": [], "absolutes": {}}
