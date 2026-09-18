@@ -52,7 +52,7 @@ if unserved: fails.append(f"[1 documented-but-not-served] {len(unserved)} identi
 # ---------------------------------------------------------------- 2. one fact, one form
 FACTS = [
  ("accuracy band", r"64 percent too high to 67 percent too low", [r"64 percent too low", r"15 percent (too )?high to 64", r"15 percent below and 114", r"15 percent high to 53"]),
- ("late-row share", r"3 to 7 percent", [r"about 7 percent of (a day|Timeback)", r"about 7 percent of a day"]),
+ ("late-row share", r"3 to 8 percent", [r"about 7 percent of (a day|Timeback)", r"about 7 percent of a day", r"3 to 7 percent"]),
  ("completed at low progress", r"69, 81 and even 0 percent", [r"69 and 80 percent", r"69 and 81 percent", r"69 to 81 percent"]),
  ("pace good zone", r"0\.9 to 1\.1", [r"0\.8 to 1\.2"]),
  ("staleAfterDays", r"two days", [r"seven days as served", r"staleAfterDays.{0,20}7\b"]),

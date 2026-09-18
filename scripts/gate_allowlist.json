@@ -290,11 +290,6 @@
    "sentence": "`inSnapshot: false` with `unmatchedReason` (HTTP 404 = no account under this organisation's key; HTTP 401 = another organisation's key; `no email` = nothing to look up by) is a student Math Academy does not know here; retried at every load and once a day on read.",
    "reviewed": "owner run"
   },
-  "6729c62bbc3f": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "`mathAcademyState` reads it: `not started` (progress 0; say \"not started in <course>\", never \"0 XP left\"), `in progress`, `at 100, not marked complete` (progress ≥ 0.995), `completed` (Math Academy closed the course: usually at the last lesson, but seen at 69, 81 and even 0 percent on a course switc",
-   "reviewed": "owner run"
-  },
   "d41abd1fbb6f": {
    "doc": "ENABLEMENT.md",
    "sentence": "- **Two quirks of Math Academy's own figures.** `xpRemaining` is recomputed on Math Academy's schedule, not per task (it has stayed put while `progress` moved), and it reads 0 at progress 0.97 on some students and on SAT Math Prep: a 0 beside progress under 0.995 means \"unknown, nearly done\", never ",
@@ -370,11 +365,6 @@
    "sentence": "Course ids come from `reference/timeback-math-academy-courses.json`; \"the course\" is every section.",
    "reviewed": "owner run"
   },
-  "136eaf16a523": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "- **Sort each quiet student into exactly one kind, testing in this order**, and report the seat's age (`seatBeginDates`) beside it:",
-   "reviewed": "owner run"
-  },
   "1ec1117b060d": {
    "doc": "ENABLEMENT.md",
    "sentence": "**Math Academy has progress, Timeback has nothing**: `progress` above 0, `/courses` shows an episode, and no Timeback result ever (one Timeback read, B2, per CANDIDATE only: candidates are quiet students with progress above 0 whose `/courses` episodes exist; four of 191 quiet Prealgebra students on ",
@@ -448,11 +438,6 @@
   "c821e5bb67f5": {
    "doc": "ENABLEMENT.md",
    "sentence": "VERIFIED RUN (2026-09-17/18, every cold run): counts summed to the roster on all 22 courses and every `?agreement=` filter returned exactly its bucket; each disagree row's Math Academy course and live seat were reproduced from Timeback.",
-   "reviewed": "owner run"
-  },
-  "e50cfd47a755": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "Quote the day \"as of `pulledAt`\": 3 to 7 percent of Timeback's rows for a day are ingested after the 03:45 pull and land on the next night's re-pull; `pulledAt` is set only on nightly-pulled days (batch-backfilled days carry a note instead); the current day is partial (`dayStatus`).",
    "reviewed": "owner run"
   },
   "f69a7c0af429": {
@@ -933,11 +918,6 @@
   "c04a4a907e1b": {
    "doc": "DICTIONARY.md",
    "sentence": "**Every clock and epoch is milliseconds**, on tasks and on `days[]` alike.",
-   "reviewed": "owner run"
-  },
-  "60de505c1787": {
-   "doc": "DICTIONARY.md",
-   "sentence": "Range: for a student the backfill has not reached, a day is present only if they had a Math Academy result in Timeback on that America/Chicago day and the nightly had run since, so an absent day is unpulled, never zero; for a backfilled student (`coverage.backfilledAt` set) every day from `backfille",
    "reviewed": "owner run"
   },
   "78d439b776dd": {
@@ -1448,11 +1428,6 @@
   "33d90345182c": {
    "doc": "DICTIONARY.md",
    "sentence": "One more source of names: Timeback course and class titles built for one student carry a **person's name**, and it can be the child's (\"<Name>'s Custom … Skill Plan\", \"<Subject> Hole-Filling - <Name>\", \"<Name> – <exam> MCQ Practice\" were all seen on one student's seats on 2026-09-18).",
-   "reviewed": "owner run"
-  },
-  "91e11ea39d48": {
-   "doc": "DICTIONARY.md",
-   "sentence": "Rule: the only course titles a reader may quote are the `Math Academy - …` titles in `reference/timeback-math-academy-courses.json`; every other course or class title on an enrollment row is treated as person-bearing and described by kind (\"a hole-filling course\", \"a custom skill plan\", \"a Math Raid",
    "reviewed": "owner run"
   },
   "94fd034f08f7": {
@@ -2028,6 +2003,36 @@
   "843a21dd1402": {
    "doc": "ENABLEMENT.md",
    "sentence": "- Seatless students (finished and moved on, or filing under a deleted seat) are not on any roster and so not in these totals; `GET /store` `lastActivityRun.students` counts every student pulled for the day, roster or not, EXCLUDING roster students whose Timeback rows all arrived after the pull and s",
+   "reviewed": "owner run"
+  },
+  "d2572f734a39": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "`mathAcademyState` reads it: `not started` (progress 0; say \"not started in <course>\", never \"0 XP left\"; `xpRemainingReading` on every row says how to read the XP figure, print it instead of a bare 0), `in progress`, `at 100, not marked complete` (progress ≥ 0.995), `completed` (Math Academy closed",
+   "reviewed": "owner run"
+  },
+  "785981c8dbc3": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "- **The roster is the store's list** (a Timeback roster at `rosterReadAt`, section by section via `classSourcedIds`); filter to your section there (a section's title, school and status come from Timeback's `classes/{id}`; on the big grade courses one automanaged section holds nearly every real stude",
+   "reviewed": "owner run"
+  },
+  "d59b3bd49a63": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "**Sort each quiet student into exactly one kind, testing in this order**, and report the seat's age (`seatBeginDates`) beside it:",
+   "reviewed": "owner run"
+  },
+  "b065b3b5fbe8": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "Quote the day \"as of `pulledAt`\": 3 to 8 percent of Timeback's rows for a day are ingested after the 03:45 pull and land on the next night's re-pull; `pulledAt` is set only on nightly-pulled days (batch-backfilled days carry a note instead); the current day holds nothing in the store until tonight's",
+   "reviewed": "owner run"
+  },
+  "2ef85eef8b89": {
+   "doc": "DICTIONARY.md",
+   "sentence": "Range: for a student the backfill has not reached, a day is present only if they had a Math Academy result in Timeback on that America/Chicago day and the nightly had run since, so an absent day is unpulled, never zero; for a backfilled student (`coverage.backfilledAt` set) every day from `backfille",
+   "reviewed": "owner run"
+  },
+  "dc780c18d8d9": {
+   "doc": "DICTIONARY.md",
+   "sentence": "Rule: the only course titles a reader may quote are the `Math Academy - …` titles in `reference/timeback-math-academy-courses.json`; every other course or class title on an enrollment row is treated as person-bearing and described by kind (a section titled with the course title plus \"Class\", Timebac",
    "reviewed": "owner run"
   }
  },

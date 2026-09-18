@@ -79,14 +79,14 @@
     "DICTIONARY.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/DICTIONARY.md",
       "purpose": "DICTIONARY.md carries what the OpenAPI cannot: the store's containers and fields first (Math Academy's record as this skill serves it, its genesis, range and traps), then how each Math Academy field inside Timeback is born, what its values mean, the containers and their range, the invariants and the numbered traps. Open it before trusting any field.",
-      "sha256": "bbee73380c63bc211086f06c4fd1c76698c5479dfe675fbb01a03350fd97b7f3",
-      "gitVersion": "b1fb2b4"
+      "sha256": "979cf08512b7ebddf12c3d664048985ee97ad9afae7bf9ab675339597a7276cb",
+      "gitVersion": "3fd4d6f"
     },
     "ENABLEMENT.md": {
       "url": "https://vgdv4g6yf4xf6jdlbfxq5mzoou0xsegi.lambda-url.us-east-1.on.aws/ENABLEMENT.md",
       "purpose": "ENABLEMENT.md puts the source to work, Math Academy first: twelve capabilities, a question-to-call catalog, eleven store recipes (Part A, exact routes, output shapes, failure modes) and nine Timeback recipes (Part B: the roster half, today, the filed-course view, and fallbacks for readers without store access). Open it when you need to act.",
-      "sha256": "85fd40beb2e43d81a6239baae680e9a77d2743f641bf4dd063ae7f4336d7eb57",
-      "gitVersion": "b1fb2b4"
+      "sha256": "7a5ff5417875f6341fb974721c1d5237f9f5084732dd5d8d493599ed6d8d1237",
+      "gitVersion": "3fd4d6f"
     },
     "note": "sha256 + gitVersion pin the exact bytes served at each url on this deploy; the .md routes echo them as X-Doc-SHA256 / X-Doc-Version headers."
   },
