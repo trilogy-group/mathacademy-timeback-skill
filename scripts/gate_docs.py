@@ -64,6 +64,8 @@ FACTS = [
  ("nightly cost", r"800 to 900", [r"roughly 400\b", r"a few hundred times a night"]),
  ("traps count", r"27 named traps", [r"26 named traps", r"25 named traps"]),
  ("test share", r"about a third of seats", [r"from a fifth to two fifths by course;"]),
+ ("SAT Math Prep xpRemaining", r"UNRELIABLE there|unreliable there|treat XP left as unknown", [r"IS served and exact on SAT Math Prep", r"including on SAT Math Prep; read it first", r"served on SAT Math Prep too\)\."]),
+ ("finishers default since", r"defaults to all time when omitted", [r"defaults to the beginning of the store"]),
 ]
 for label, canonical, stale in FACTS:
     where = [n for n, t in SERVED.items() if re.search(canonical, strip_html(t))]
@@ -74,7 +76,7 @@ for label, canonical, stale in FACTS:
 # ---------------------------------------------------------------- 3. leftover phrases
 BANNED = [r"results-first", r"never reaches Math Academy", r"\bex\. \d+\b", r"\bexample \d+\b", r"twelve worked recipes", r"count finishers from results", r"The only served flag",
           r"the exact XP left", r"two activity calls per student", r"Timeback receives only the first", r"most FINISHED students are absent", r"examples 10 to 12", r"'no credential'",
-          r"shows only the snapshot's own buckets", r"only when it has finished", r"Nothing is called during the school day except a first-time knowledge map or a missing student\."]
+          r"shows only the snapshot's own buckets", r"only when it has finished", r"Nothing is called during the school day except a first-time knowledge map or a missing student\.", r"Every task a student completes on Math Academy (reaches|is sent to) Timeback", r"No figures read off the wire in the documents", r"no figure of this document's travels with it", r"a student progression has moved out of Math Academy, or left seatless, is otherwise absent"]
 for rx in BANNED:
     for n, t in SERVED.items():
         for m in re.finditer(rx, t):
