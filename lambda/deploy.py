@@ -68,6 +68,8 @@ if a.cmd == "--create-roles":
     print("policies attached (basic execution + DynamoDB on", TABLE, "and", STORE_TABLE, "+ GetSecretValue on", SECRET, ")"); sys.exit(0)
 
 if a.cmd == "deploy":
+    # the documentation gate refuses the deploy on a documented-but-unserved field, a fact stated two ways, a leftover phrase or an unreviewed absolute claim
+    subprocess.check_call([sys.executable, str(ROOT / "scripts" / "gate_docs.py")])
     subprocess.check_call([sys.executable, str(ROOT / "scripts" / "build_public.py")])
     try: git = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, text=True).strip()
     except Exception: git = "unversioned"

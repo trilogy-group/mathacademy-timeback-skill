@@ -12,6 +12,7 @@ Timeback credential and never call Math Academy; the store's Math Academy key li
 | Path | What |
 |---|---|
 | `DICTIONARY.md` | the product lens: containers, field genesis, invariants, 26 numbered traps, open questions (tickets 7–11, 19–24) |
+| `scripts/gate_docs.py` | the documentation gate, run by `lambda/deploy.py deploy` before every front deploy: documented-but-unserved fields, one fact stated two ways, leftover phrases, unreviewed absolute claims (reviewed list in `scripts/gate_allowlist.json`; `--accept-absolutes` after reading new ones; `--live` compares /store keys) |
 | `ENABLEMENT.md` | 12 capabilities, question→call catalog, Part A: eleven Math-Academy-first store recipes, Part B: nine Timeback recipes (roster half, today, filed-course view, fallbacks) |
 | `store/snapshot_lib.py`, `store/agreement.py` | the store library: bulk pull, roster, match chain (known id → username → email → lookup → name), agreement rule, DynamoDB layout, activity pull |
 | `lambda/nightly/handler.py`, `lambda/nightly/deploy.py` | the nightly Lambda (python3.12, 900 s; modes `snapshot` and `activity`, resumable) and its roles + EventBridge schedules |
