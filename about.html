@@ -77,7 +77,7 @@
   <h2>The nightly cycle</h2>
   <div class="flow">
     <div class="step"><div class="t">3:00 am Central</div><div class="h">Snapshot</div>Pull Math Academy's full student list (4 pages) and Timeback's Math Academy roster. Match them: first by the id stored last night, then by login, then one lookup per new student. Rewrite every student's current state. Append tonight's row to each student's history.</div>
-    <div class="step"><div class="t">3:45 am Central</div><div class="h">Activity</div>For every student who had a Math Academy result on each school day since the last pull, fetch Math Academy's per-task record with its three clocks. The newest already-pulled day is re-pulled to catch late rows; rows are keyed by task, so nothing duplicates.</div>
+    <div class="step"><div class="t">3:45 am Central</div><div class="h">Activity</div>For every student who had a Math Academy result on each local day from the day before the last pulled day through yesterday, fetch Math Academy's per-task record with its three clocks. The newest already-pulled day is re-pulled to catch late rows; rows are keyed by task, so nothing duplicates.</div>
     <div class="step"><div class="t">On request</div><div class="h">Knowledge map</div>The first time someone asks for a student's map, one live call fetches it; it is cached for seven days. A student missing from the store is looked up live once, then carried every night after.</div>
     <div class="step"><div class="t">Always</div><div class="h">Health</div>The status page shows every snapshot ever loaded, the last activity run and a <code>stale</code> flag that turns on if a night is missed. Alarms email the owner on any failed or missing run.</div>
   </div>

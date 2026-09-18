@@ -350,11 +350,6 @@
    "sentence": "The store can hold tasks Timeback never received (a per-student Caliper gap: 94 of one student's 182 SAT Math Prep tasks), and Timeback holds a handful of XP-adjustment rows that are not tasks (B1).",
    "reviewed": "owner run"
   },
-  "02af486894e3": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "VERIFIED RUN (2026-09-17 and 2026-09-18, ten cold runs): every task id and XP the runs could check matched Timeback's rows (925/925, 727/727, 355/355, 222/222 among others); `days[]` totals equalled their tasks on every day row; EduBridge's minutes equalled the engaged clock wherever every task had ",
-   "reviewed": "owner run"
-  },
   "cf7a6858c680": {
    "doc": "ENABLEMENT.md",
    "sentence": "- **Do not estimate what you can read.** The Timeback-only estimate of XP remaining (course size × (1 − percent), B4) exists for readers without store access; against Math Academy's own figure it has run from 64 percent too high to 67 percent too low.",
@@ -403,11 +398,6 @@
   "9782597cf0d1": {
    "doc": "ENABLEMENT.md",
    "sentence": "VERIFIED RUN (2026-09-17 and 2026-09-18, five cold runs): the store's roster equalled an independent Timeback enrollment read on every course checked (nine courses, identical id sets); the store's day rows equalled Timeback's results per student on every pulled day (e.g.",
-   "reviewed": "owner run"
-  },
-  "0ad0130fa6fc": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "for the disposition: GET /ims/oneroster/rostering/v1p2/enrollments/?filter=user.sourcedId='<sid>'&limit=3000      # Timeback: every seat, any status; keep course.name starting 'Math Academy' for the math seats;",
    "reviewed": "owner run"
   },
   "0bdbabf75fb4": {
@@ -518,11 +508,6 @@
   "dd899f5d868b": {
    "doc": "ENABLEMENT.md",
    "sentence": "VERIFIED RUN (2026-09-17/18, six cold runs): prerequisite courses first and the requested course last on every read; second reads from cache; `topicCount` equalled the walked topics; a just-failed topic at 0 and freshly learned topics among the lowest non-zero on the first run, which is why the read",
-   "reviewed": "owner run"
-  },
-  "bd85abb3f139": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "- Every count block sums; `byCourse` counts seats (a student with two seats is under both headings; `studentsWithTwoOrMoreSeats` says how many).",
    "reviewed": "owner run"
   },
   "bc3dcd4b4ed7": {
@@ -1535,11 +1520,6 @@
    "sentence": "Rewrite every student's current state.",
    "reviewed": "owner run"
   },
-  "3399dbe31782": {
-   "doc": "about.html",
-   "sentence": "3:45 am Central  Activity For every student who had a Math Academy result on each school day since the last pull, fetch Math Academy's per-task record with its three clocks.",
-   "reviewed": "owner run"
-  },
   "551c72a48e47": {
    "doc": "about.html",
    "sentence": "A student missing from the store is looked up live once, then carried every night after.",
@@ -1870,11 +1850,6 @@
    "sentence": "SAT Math Prep (use = never) -> no Timeback-only estimate (basis 'none: SAT Math Prep reports a score'): Math Academy reports an estimated SAT score there and progress is null; results filed under that course do carry pctCompleteApp values whose meaning is unknown (open question, ticket 22), so never",
    "reviewed": "owner run"
   },
-  "d3d29191d3be": {
-   "doc": "reference/course-xp-size.json",
-   "sentence": "The course figure is expected to equal Math Academy's XP-with-reviews for that course (checked and matching for every course carrying a figure on 2026-09-17); if it lags a re-size the estimate reads low, and DICTIONARY trap 11 carries the measuring query.\",",
-   "reviewed": "owner run"
-  },
   "4dfa533711b1": {
    "doc": "reference/course-xp-size.json",
    "sentence": "Where this skill's store holds the student (ENABLEMENT A1), its mathAcademy.currentCourse.xpRemaining is the exact figure as of figuresAsOf; it is the answer, and the estimate here is shown only as a labelled Timeback-only fallback.\"",
@@ -1928,11 +1903,6 @@
   "980220c6f460": {
    "doc": "ENABLEMENT.md",
    "sentence": "#   quote finishedNonTestCount or workedThroughNonTestCount as \"finishers\", never count",
-   "reviewed": "owner run"
-  },
-  "602600835552": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "For those, B's `/history` keeps the old course's last row (with `completed` if a night saw it) from 2026-09-17 on for roster students and from 2026-09-19 on for students who left the roster (before that an off-roster student's history holds only the nights they were still seated, often none); for fi",
    "reviewed": "owner run"
   },
   "959f4e6518ad": {
@@ -2028,6 +1998,36 @@
   "dac4f0e260f1": {
    "doc": "skill.template.json",
    "sentence": "\"genesis\": \"Written by an agent against the live Timeback wire on 2026-09-16, cross-checked against the Math Academy API during the build (one student's feed, the population's completion percent, task types on three students, XP remaining on ten), then corrected from the estate's registration panel ",
+   "reviewed": "owner run"
+  },
+  "50c8e34d4308": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "VERIFIED RUN (2026-09-17 and 2026-09-18, twelve cold runs): every task present on both sides matched on id, XP and Chicago day (32,847 of 32,847 joined tasks over a month, estate-wide, in the largest run); the two one-sided sets are the documented ones (store-only: tasks Timeback never received; Tim",
+   "reviewed": "owner run"
+  },
+  "428d5d33f2dd": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "for the disposition, ONLY when the row's timebackCourseSourcedIds[] is empty (a non-empty list already says re-seated or parked): GET /ims/oneroster/rostering/v1p2/enrollments/?filter=user.sourcedId='<sid>'&limit=3000      # Timeback: every seat, any status; keep course.name starting 'Math Academy' ",
+   "reviewed": "owner run"
+  },
+  "cbc9fe54da20": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "For those, B's `/history` keeps the old course's last row (with `completed` if a night saw it) from 2026-09-17 on for roster students and from 2026-09-19 on for students who left the roster (before that an off-roster student's history holds only the nights they were still seated, often none); for fi",
+   "reviewed": "owner run"
+  },
+  "ac5af0f0d231": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "- Every count block sums; `byCourse` and the course lists count SEATS (a student with two seats is under both headings and on both lists; `studentsWithTwoOrMoreSeats` says how many), while `counts.nonTest` and `counts.courseAgreement` count STUDENTS, so a bucket can read 15 students on `/store` and ",
+   "reviewed": "owner run"
+  },
+  "e49ebcca1400": {
+   "doc": "DICTIONARY.md",
+   "sentence": "- **A fifth case, the mirror of the fourth: Timeback holds the work, the store's Math Academy account does not.** A roster student with daily Timeback results and `unmatchedReason` HTTP 404 (the account under this organisation's key does not match the one sending events), or a backfilled student who",
+   "reviewed": "owner run"
+  },
+  "7ea0cac7ca72": {
+   "doc": "about.html",
+   "sentence": "3:45 am Central  Activity For every student who had a Math Academy result on each local day from the day before the last pulled day through yesterday, fetch Math Academy's per-task record with its three clocks.",
    "reviewed": "owner run"
   }
  },
