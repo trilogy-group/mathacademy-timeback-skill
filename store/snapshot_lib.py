@@ -195,7 +195,10 @@ def counts_for(bulk, roster, students, tb_unmatched, ma_unmatched):
     overall, by_course = summarise(students, tb_unmatched)
     return {"maBulk": len(bulk), "timebackRoster": len(roster), "timebackTestUsers": sum(1 for r in roster.values() if r["isTestUser"]),
             "timebackLikelyTest": sum(1 for r in roster.values() if r.get("isLikelyTest")),
-            "matched": len(students), "matchedBy": {k: sum(1 for s_ in students if s_["matchedBy"] == k) for k in ("known", "username", "email", "lookup", "name")},
+            "matched": len(students), "matchedBy": {k: sum(1 for s_ in students if s_["matchedBy"] == k) for k in ("known", "username", "email", "lookup", "name", "live-lookup", "activity-lookup", "backfill-lookup")},
+            "maMatchedToMoreThanOneTimebackStudent": len(students) - len({str(s_["mathAcademy"].get("id")) for s_ in students}),
+            "studentsWithTwoOrMoreSeats": sum(1 for r in roster.values() if len({s_["courseSourcedId"] for s_ in r["seats"]}) > 1),
+            "sumsNote": "maBulk = matched distinct Math Academy ids + maUnmatched (+ maMatchedToMoreThanOneTimebackStudent when one record matched two Timeback students); byCourse counts SEATS, so its students sum to timebackRoster + the extra seats of studentsWithTwoOrMoreSeats",
             "tbUnmatched": len(tb_unmatched), "tbUnmatchedByReason": {r: sum(1 for u in tb_unmatched if u["reason"] == r) for r in sorted({u["reason"] for u in tb_unmatched})},
             "maUnmatched": len(ma_unmatched), "maUnmatchedDeactivated": sum(1 for s_ in ma_unmatched if s_.get("deactivated")),
             "maNotStarted": sum(1 for s_ in students if ma_state(s_["mathAcademy"].get("currentCourse")) == "not started"),
@@ -263,7 +266,7 @@ def write_snapshot(ddb, table, snap, nightly=True, source="manual"):
         items.append({"PutRequest": {"Item": {**keep.get(st["sourcedId"], {}), "pk": S("student"), "sk": S(st["sourcedId"]), "ma": S(json.dumps(st["mathAcademy"], ensure_ascii=False)),
                                               "maId": S(st["mathAcademy"].get("id")), "matchedBy": S(st["matchedBy"]), "courseAgreementAtSnapshot": S(st["courseAgreementAtSnapshot"]),
                                               "seats": S(json.dumps(st["seats"])), "isTestUser": {"BOOL": bool(st["isTestUser"])}, "isLikelyTest": {"BOOL": bool(st.get("isLikelyTest", st["isTestUser"]))}, "snapshotAt": S(at),
-                                              "figuresAsOf": S(at if st["matchedBy"] in ("lookup", "live-lookup") else f"bulk list: up to one day before {at}")}}})
+                                              "figuresAsOf": S(at), "grades": S(json.dumps(st.get("grades") or []))}}})
         items.append({"PutRequest": {"Item": hist_row(st, day)}})
     for u in snap["tb_unmatched"]:
         items.append({"PutRequest": {"Item": {"pk": S("tb_unmatched"), "sk": S(u["sourcedId"]), "reason": S(u["reason"]), "seats": S(json.dumps(u["seats"])),

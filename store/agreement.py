@@ -45,7 +45,7 @@ def summarise(students, tb_unmatched):
     """counts by agreement value overall and per Timeback course sourcedId, with a non-test split; no student values."""
     overall, by_course = {}, {}
     def course(seat):
-        return by_course.setdefault(seat["courseSourcedId"] or "unknown", {"courseName": seat["courseName"], "students": 0, "testUsers": 0, "byAgreement": {}, "maNotStarted": 0,
+        return by_course.setdefault(seat["courseSourcedId"] or "unknown", {"courseName": seat["courseName"], "students": 0, "testUsers": 0, "likelyTest": 0, "byAgreement": {}, "maNotStarted": 0,
                                                                             "nonTest": {"students": 0, "byAgreement": {}, "maNotStarted": 0, "byMathAcademyState": {}}})
     for st in students:
         k = st["courseAgreementAtSnapshot"]; _bump(overall, k)
