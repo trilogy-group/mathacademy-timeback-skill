@@ -262,6 +262,11 @@ def write_snapshot(ddb, table, snap, nightly=True, source="manual"):
         row = {k: it[k] for k in ("backfilledAt", "backfilledFrom", "maId", "matchedBy", "ma", "isTestUser", "isLikelyTest", "snapshotAt", "figuresAsOf") if k in it}
         row.update({"pk": S("student"), "sk": it["sk"], "seats": S("[]"), "courseAgreementAtSnapshot": S("no current timeback seat"), "offRosterSince": it.get("offRosterSince") or S(at)})
         items.append({"PutRequest": {"Item": row}})
+        # off-roster students get a history row too (from their last-known record, refreshed by the front on read), so a Math Academy-side move after they left the roster keeps the old course's completed date
+        try:
+            ma_prev = json.loads(it["ma"]["S"]) if "ma" in it else None
+            if ma_prev and ma_prev.get("currentCourse"): items.append({"PutRequest": {"Item": hist_row({"sourcedId": it["sk"]["S"], "mathAcademy": ma_prev, "courseAgreementAtSnapshot": "no current timeback seat", "seats": []}, day)}})
+        except Exception: pass
     for st in snap["students"]:
         items.append({"PutRequest": {"Item": {**keep.get(st["sourcedId"], {}), "pk": S("student"), "sk": S(st["sourcedId"]), "ma": S(json.dumps(st["mathAcademy"], ensure_ascii=False)),
                                               "maId": S(st["mathAcademy"].get("id")), "matchedBy": S(st["matchedBy"]), "courseAgreementAtSnapshot": S(st["courseAgreementAtSnapshot"]),
@@ -325,7 +330,7 @@ def task_item(sid, day, t):
             "questions": {"N": str(t.get("questions") or 0)}, "questionsCorrect": {"N": str(t.get("questionsCorrect") or 0)},
             "startedEpochMs": {"N": str(t.get("started") or 0)}, "completedEpochMs": {"N": str(t.get("completed") or 0)},
             "courseId": S((t.get("course") or {}).get("id")), "courseName": S((t.get("course") or {}).get("name")),
-            "topicId": S((t.get("topic") or {}).get("id")), "topicName": S((t.get("topic") or {}).get("name")),
+            "topicId": S((t.get("topic") or {}).get("id") or ""), "topicName": S((t.get("topic") or {}).get("name") or ""),
             "timeElapsedMs": {"N": str(an.get("timeElapsed") or 0)}, "timeEngagedMs": {"N": str(an.get("timeEngaged") or 0)}, "timeProductiveMs": {"N": str(an.get("timeProductive") or 0)}}
 
 def _delete_day(ddb, table, sid, day):
