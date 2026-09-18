@@ -66,7 +66,8 @@ FACTS = [
  ("test share", r"about a third of seats", [r"from a fifth to two fifths by course;"]),
  ("SAT Math Prep xpRemaining", r"UNRELIABLE there|unreliable there|treat XP left as unknown", [r"IS served and exact on SAT Math Prep", r"including on SAT Math Prep; read it first", r"served on SAT Math Prep too\)\."]),
  ("finishers default since", r"defaults to all time when omitted", [r"defaults to the beginning of the store"]),
- ("completed under 0.9", r"not decidable here", [r"is a course switch\b(?! or)"]),
+ ("completed under 0.9", r"not decidable here|never a finish", [r"is a course switch\b(?! or)"]),
+ ("completed rule", r"fewer than 100 XP remain", [r"Finished = Math Academy says so", r"completed = Math Academy set the flag on or after since \(read"]),
  ("review-heavy pace", r"0\.3 to 0\.9", [r"review-heavy week reads 0\.2 to 0\.4"]),
 ]
 for label, canonical, stale in FACTS:

@@ -1890,11 +1890,6 @@
    "sentence": "What the two extra clocks mean is Math Academy's own analysis and its exact rules are **truly unknown**; the tells that held in cold runs: elapsed far above engaged = a task left open; engaged near elapsed but productive low = attentive but stuck (multistep problems run about a third productive); pl",
    "reviewed": "owner run"
   },
-  "043a0cc58ea8": {
-   "doc": "DICTIONARY.md",
-   "sentence": "- **`mathAcademyState`** — read from Math Academy's own figures **for the current Math Academy course only**: `completed` (`currentCourse.completed` set: Math Academy closed the course, which has been seen at the last lesson and also at 69, 81 and even 0 percent progress with thousands of XP left (a",
-   "reviewed": "owner run"
-  },
   "268e52ec6775": {
    "doc": "DICTIONARY.md",
    "sentence": "**Over ALL tasks of the window**, with the task mix beside it; a second figure over lessons only may be added, labelled \"lessons only\", and the good zone applies to the lesson-heavy reading.",
@@ -1933,11 +1928,6 @@
   "a5bbc1d5c05d": {
    "doc": "skill.template.json",
    "sentence": "\"courseActivity\": \"GET X/store/course/{course.sourcedId}/activity?date=YYYY-MM-DD  (the reader's token; day totals for every roster student with a store row who had a pulled America/Chicago day, milliseconds; carries rosterStudents, rosterNonTest, studentsWithStoreRow, rosterWithoutMathAcademyRecord",
-   "reviewed": "owner run"
-  },
-  "6289c1211f7d": {
-   "doc": "skill.template.json",
-   "sentence": "\"finishers\": \"GET X/store/finishers?since=YYYY-MM-DD[&mathAcademyCourseId=<id>]  (the reader's token; every store row, roster or not, whose CURRENT Math Academy course carries completed on or after since, sits at progress >= 0.995, or (no current seat) sits at 0.95 to 0.994; {since, snapshotAt, stal",
    "reviewed": "owner run"
   },
   "dac4f0e260f1": {
@@ -2035,24 +2025,49 @@
    "sentence": "for finishers still on a roster: GET <front base>/store/student/<sid>/history          # course changes and the old course's completed date, one row per night since 2026-09-17 (off-roster students gain history rows from the load of 2026-09-19 on, planned; before that their history holds only the nig",
    "reviewed": "owner run"
   },
-  "aa4b2172ecd0": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "Report `progress` beside every completion date: Math Academy has set `completed` at 69, 81 and even 0 percent (a course switch, or an early administrative close that then sits for months), and those are not finishes.",
-   "reviewed": "owner run"
-  },
   "fc12e5df0f6c": {
    "doc": "skill.template.json",
    "sentence": "It answers, numbered to match ENABLEMENT § Capabilities: (1) a student's task history; (2) daily and weekly totals with the pace and habits measures (minutes to earn 1 XP against Math Academy's one-focused-minute calibration, 0.9 to 1.1 the good zone for lesson-heavy work; share of lessons with nega",
    "reviewed": "owner run"
   },
-  "b632057894d6": {
-   "doc": "skill.template.json",
-   "sentence": "\"fields\": \"mathAcademy {id, username, firstName, lastName, created, deactivated, currentCourse {id, name, startDate, progress, xpRemaining, completed, grade, letterGrade, estimatedScore}, schedule, league} copied as Math Academy serves it (SAT Math Prep: progress null, estimatedScore set, xpRemainin",
+  "93c8350c08f7": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "`mathAcademyState` reads it: `not started` (progress 0; say \"not started in <course>\", never \"0 XP left\"; `xpRemainingReading` on every row says how to read the XP figure, print it instead of a bare 0), `in progress`, `at 100, not marked complete` (progress ≥ 0.995), `completed` (Math Academy's stam",
    "reviewed": "owner run"
   },
-  "02f334d613d6": {
+  "36b1063d16ec": {
    "doc": "ENABLEMENT.md",
-   "sentence": "`mathAcademyState` reads it: `not started` (progress 0; say \"not started in <course>\", never \"0 XP left\"; `xpRemainingReading` on every row says how to read the XP figure, print it instead of a bare 0), `in progress`, `at 100, not marked complete` (progress ≥ 0.995), `completed` (Math Academy closed",
+   "sentence": "the near-finisher and flag-only buckets; finishedCount / finishedNonTestCount = completed + at-100 buckets; workedThroughNonTestCount also drops likely placement pass-throughs; byBucket",
+   "reviewed": "owner run"
+  },
+  "d2a33858dfa5": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "The stamp alone is not a finish: Math Academy has set it at 69, 81 and even 0 percent on students who then worked the course for months, so those rows are served as `completed flag set, not finished` and are never counted.",
+   "reviewed": "owner run"
+  },
+  "6e310853abbd": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "Report `progress` and `xpRemaining` beside every completion date.",
+   "reviewed": "owner run"
+  },
+  "1f8efda228ff": {
+   "doc": "DICTIONARY.md",
+   "sentence": "- **`mathAcademyState`** — read from Math Academy's own figures **for the current Math Academy course only**: `completed` (`currentCourse.completed` set AND `xpRemaining` below 100; owner rule 2026-09-18: Math Academy's stamp alone is not a finish, it has been seen at 69 and 81 percent on students w",
+   "reviewed": "owner run"
+  },
+  "939531652fa6": {
+   "doc": "DICTIONARY.md",
+   "sentence": "Owner ruling 2026-09-18, after a live pull of one SAT Math Fundamentals student showed `completed 2025-06-19` beside progress 0.805, 2,421 XP remaining and 131 tasks done in the course after that date: the stamp is a finish only with fewer than 100 XP remaining; otherwise it is served as `completed ",
+   "reviewed": "owner run"
+  },
+  "abd1f68b2ca0": {
+   "doc": "skill.template.json",
+   "sentence": "\"finishers\": \"GET X/store/finishers?since=YYYY-MM-DD[&mathAcademyCourseId=<id>]  (the reader's token; every store row, roster or not, whose CURRENT Math Academy course carries completed on or after since, sits at progress >= 0.995, or (no current seat) sits at 0.95 to 0.994; {since, snapshotAt, stal",
+   "reviewed": "owner run"
+  },
+  "8de5aa06813f": {
+   "doc": "skill.template.json",
+   "sentence": "\"fields\": \"mathAcademy {id, username, firstName, lastName, created, deactivated, currentCourse {id, name, startDate, progress, xpRemaining, completed, grade, letterGrade, estimatedScore}, schedule, league} copied as Math Academy serves it (SAT Math Prep: progress null, estimatedScore set, xpRemainin",
    "reviewed": "owner run"
   }
  },

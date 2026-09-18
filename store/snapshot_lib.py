@@ -207,7 +207,7 @@ def counts_for(bulk, roster, students, tb_unmatched, ma_unmatched):
                         "maNotStarted": sum(1 for s_ in students if not s_.get("isLikelyTest") and ma_state(s_["mathAcademy"].get("currentCourse")) == "not started"),
                         "byAgreement": {**{k: sum(1 for s_ in students if not s_.get("isLikelyTest") and s_["courseAgreementAtSnapshot"] == k) for k in sorted({s_["courseAgreementAtSnapshot"] for s_ in students})},
                                         "no math academy record": sum(1 for u in tb_unmatched if not u.get("isLikelyTest"))},
-                        "byMathAcademyState": {**{k: sum(1 for s_ in students if not s_.get("isLikelyTest") and ma_state(s_["mathAcademy"].get("currentCourse")) == k) for k in ("not started", "in progress", "at 100, not marked complete", "completed")},
+                        "byMathAcademyState": {**{k: sum(1 for s_ in students if not s_.get("isLikelyTest") and ma_state(s_["mathAcademy"].get("currentCourse")) == k) for k in ("not started", "in progress", "at 100, not marked complete", "completed", "completed flag set, not finished")},
                                                "no math academy record": sum(1 for u in tb_unmatched if not u.get("isLikelyTest"))}},
             "courseAgreement": overall}, by_course
 

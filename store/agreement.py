@@ -20,10 +20,18 @@ def norm(s):
     n = re.sub(r"^math academy\s*-\s*", "", n); n = re.sub(r"\s+class$", "", n); n = re.sub(r"\s+math$", "", n)
     return re.sub(r"^(\d+)(st|nd|rd|th)\s+grade$", r"\1th grade", n)
 
+def finished(cc):
+    """Owner ruling 2026-09-18: the completed stamp is a finish only with fewer than 100 XP remaining (SAT Math Prep: progress null, XP unreliable, the stamp alone counts)."""
+    cc = cc or {}
+    if not cc.get("completed"): return False
+    if cc.get("progress") is None: return True
+    return (cc.get("xpRemaining") or 0) < 100
+
 def ma_state(cc):
     cc = cc or {}
     if not cc: return None
-    if cc.get("completed"): return "completed"
+    if finished(cc): return "completed"
+    if cc.get("completed"): return "completed flag set, not finished"
     p = cc.get("progress")
     if p is None: return "in progress"          # SAT Math Prep serves progress null (estimatedScore instead): no state can be read from it
     if p >= 0.995: return "at 100, not marked complete"
@@ -35,7 +43,7 @@ def agreement(ma_record, seat_course_names):
     name = cc.get("name")
     if not name: return "math academy has no current course"
     if not seat_course_names: return "no current timeback seat"
-    done = bool(cc.get("completed"))
+    done = finished(cc)
     if any(norm(n) == norm(name) for n in seat_course_names): return "agree, math academy course completed" if done else "agree"
     return "disagree, math academy course completed" if done else "disagree"
 
