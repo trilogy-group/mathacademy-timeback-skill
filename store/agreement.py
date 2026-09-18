@@ -54,6 +54,7 @@ def summarise(students, tb_unmatched):
             c = course(seat); c["students"] += 1; _bump(c["byAgreement"], k)
             if state == "not started": c["maNotStarted"] += 1
             if st["isTestUser"]: c["testUsers"] += 1
+            if st.get("isLikelyTest", st["isTestUser"]): c["likelyTest"] = c.get("likelyTest", 0) + 1
             else:
                 c["nonTest"]["students"] += 1; _bump(c["nonTest"]["byAgreement"], k); _bump(c["nonTest"]["byMathAcademyState"], state or "unknown")
                 if state == "not started": c["nonTest"]["maNotStarted"] += 1
@@ -62,6 +63,7 @@ def summarise(students, tb_unmatched):
         for seat in u["seats"]:
             c = course(seat); c["students"] += 1; _bump(c["byAgreement"], "no math academy record")
             if u["isTestUser"]: c["testUsers"] += 1
+            if u.get("isLikelyTest", u["isTestUser"]): c["likelyTest"] = c.get("likelyTest", 0) + 1
             else: c["nonTest"]["students"] += 1; _bump(c["nonTest"]["byAgreement"], "no math academy record"); _bump(c["nonTest"]["byMathAcademyState"], "no math academy record")
     return overall, by_course
 

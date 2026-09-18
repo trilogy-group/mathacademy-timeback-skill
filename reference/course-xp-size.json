@@ -17,7 +17,7 @@
   "none: SAT Math Prep reports a score",
   "none: no percent yet"
  ],
- "accuracy_note": "Poor, and the sign is not guaranteed. Against Math Academy's exact xpRemaining (denominator: the exact figure) the estimate ran from 15 percent too high to 64 percent too low across the students checked on 2026-09-17 (ten owner-picked, eight cold-run), usually low because Math Academy awards extra XP on failed reviews and retries. Never publish it as a number; 'a lot / a little / nearly done' at most. The exact figure is in the store.",
+ "accuracy_note": "Poor, and the sign is not guaranteed. The current accuracy band is stated once, in DICTIONARY.md \u00a7 Derived quantities (on 2026-09-17: 64 percent too high to 67 percent too low against the exact figure across about thirty students; usually low because Math Academy awards extra XP on failed reviews; wildly high near the end of a course). Never publish it as a number; 'a lot / a little / nearly done' at most. The exact figure is in the store.",
  "courses_note": "Course ids and titles are in reference/timeback-math-academy-courses.json; regenerate with GET .../courses/?filter=title~'Math Academy'.",
  "retired": "Until 2026-09-17 this file carried a per-course size calibrated against the Math Academy API. The owner ruled that Timeback's course totalXp is the figure to use and corrected the eight courses whose figure was low the same day; the calibration was removed so there is one basis, read live. Until 2026-09-17 evening rule 1 read the enrollment's percent with 'primary preferred'; a cold run showed that contradicts example 3 and mis-attributes a percent filed under another course, so rules 1 and 2 were rewritten.",
  "never": [

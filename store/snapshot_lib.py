@@ -104,6 +104,13 @@ def in_window(e, today):
     return True
 
 
+TEST_NAME = re.compile(r"\b(shadow|test|demo|e2e|guide sixth grade|mock|placeholder|sample)\b", re.I)
+TEST_ORG = re.compile(r"(100for100|guide school|mock|lwai|e2e|sandbox)", re.I)
+def likely_test(u, is_flagged):
+    """isTestUser OR a synthetic naming pattern OR a test campus, judged here so no reader has to look at names."""
+    name = f"{u.get('givenName') or ''} {u.get('familyName') or ''}"; org = (u.get("primaryOrg") or {}).get("name") or ""
+    return bool(is_flagged or TEST_NAME.search(name) or TEST_ORG.search(org) or re.search(r"\b(grade|g)\s*\d+\s*shadow", name, re.I))
+
 def pull_roster(c, today):
     """Every student with a current in-window active enrollment in a class titled 'Math Academy…'."""
     courses = [x for x in c.tb_all("/ims/oneroster/rostering/v1p2/courses/", "courses", {"filter": "title~'Math Academy'"})
@@ -128,6 +135,7 @@ def pull_roster(c, today):
                                           "givenName": u.get("givenName") or "", "familyName": u.get("familyName") or "",
                                           "identifier": u.get("identifier"), "grades": u.get("grades") or [],
                                           "isTestUser": bool((u.get("metadata") or {}).get("isTestUser")),
+                                          "isLikelyTest": likely_test(u, bool((u.get("metadata") or {}).get("isTestUser"))),
                                           "org": (u.get("primaryOrg") or {}).get("name"), "maUsername": ma_user, "seats": []})
             rec["seats"].append({"classSourcedId": cid, "courseSourcedId": (e.get("course") or {}).get("sourcedId"),
                                  "courseName": (e.get("course") or {}).get("name") or re.sub(r"\s+class$", "", cl.get("title") or "", flags=re.I),
@@ -186,16 +194,18 @@ def match(c, bulk, roster, known_ids=None, time_left=lambda: 10 ** 9, lookup=Tru
 def counts_for(bulk, roster, students, tb_unmatched, ma_unmatched):
     overall, by_course = summarise(students, tb_unmatched)
     return {"maBulk": len(bulk), "timebackRoster": len(roster), "timebackTestUsers": sum(1 for r in roster.values() if r["isTestUser"]),
+            "timebackLikelyTest": sum(1 for r in roster.values() if r.get("isLikelyTest")),
             "matched": len(students), "matchedBy": {k: sum(1 for s_ in students if s_["matchedBy"] == k) for k in ("known", "username", "email", "lookup", "name")},
             "tbUnmatched": len(tb_unmatched), "tbUnmatchedByReason": {r: sum(1 for u in tb_unmatched if u["reason"] == r) for r in sorted({u["reason"] for u in tb_unmatched})},
             "maUnmatched": len(ma_unmatched), "maUnmatchedDeactivated": sum(1 for s_ in ma_unmatched if s_.get("deactivated")),
             "maNotStarted": sum(1 for s_ in students if ma_state(s_["mathAcademy"].get("currentCourse")) == "not started"),
-            "nonTest": {"students": sum(1 for r in roster.values() if not r["isTestUser"]),
-                        "maNotStarted": sum(1 for s_ in students if not s_["isTestUser"] and ma_state(s_["mathAcademy"].get("currentCourse")) == "not started"),
-                        "byAgreement": {**{k: sum(1 for s_ in students if not s_["isTestUser"] and s_["courseAgreementAtSnapshot"] == k) for k in sorted({s_["courseAgreementAtSnapshot"] for s_ in students})},
-                                        "no math academy record": sum(1 for u in tb_unmatched if not u["isTestUser"])},
-                        "byMathAcademyState": {**{k: sum(1 for s_ in students if not s_["isTestUser"] and ma_state(s_["mathAcademy"].get("currentCourse")) == k) for k in ("not started", "in progress", "at 100, not marked complete", "completed")},
-                                               "no math academy record": sum(1 for u in tb_unmatched if not u["isTestUser"])}},
+            "nonTest": {"basis": "isLikelyTest false: not flagged isTestUser AND no synthetic naming pattern AND not a test campus",
+                        "students": sum(1 for r in roster.values() if not r.get("isLikelyTest")),
+                        "maNotStarted": sum(1 for s_ in students if not s_.get("isLikelyTest") and ma_state(s_["mathAcademy"].get("currentCourse")) == "not started"),
+                        "byAgreement": {**{k: sum(1 for s_ in students if not s_.get("isLikelyTest") and s_["courseAgreementAtSnapshot"] == k) for k in sorted({s_["courseAgreementAtSnapshot"] for s_ in students})},
+                                        "no math academy record": sum(1 for u in tb_unmatched if not u.get("isLikelyTest"))},
+                        "byMathAcademyState": {**{k: sum(1 for s_ in students if not s_.get("isLikelyTest") and ma_state(s_["mathAcademy"].get("currentCourse")) == k) for k in ("not started", "in progress", "at 100, not marked complete", "completed")},
+                                               "no math academy record": sum(1 for u in tb_unmatched if not u.get("isLikelyTest"))}},
             "courseAgreement": overall}, by_course
 
 
@@ -243,12 +253,12 @@ def write_snapshot(ddb, table, snap, nightly=True, source="manual"):
     for st in snap["students"]:
         items.append({"PutRequest": {"Item": {"pk": S("student"), "sk": S(st["sourcedId"]), "ma": S(json.dumps(st["mathAcademy"], ensure_ascii=False)),
                                               "maId": S(st["mathAcademy"].get("id")), "matchedBy": S(st["matchedBy"]), "courseAgreementAtSnapshot": S(st["courseAgreementAtSnapshot"]),
-                                              "seats": S(json.dumps(st["seats"])), "isTestUser": {"BOOL": bool(st["isTestUser"])}, "snapshotAt": S(at),
+                                              "seats": S(json.dumps(st["seats"])), "isTestUser": {"BOOL": bool(st["isTestUser"])}, "isLikelyTest": {"BOOL": bool(st.get("isLikelyTest", st["isTestUser"]))}, "snapshotAt": S(at),
                                               "figuresAsOf": S(at if st["matchedBy"] in ("lookup", "live-lookup") else f"bulk list: up to one day before {at}")}}})
         items.append({"PutRequest": {"Item": hist_row(st, day)}})
     for u in snap["tb_unmatched"]:
         items.append({"PutRequest": {"Item": {"pk": S("tb_unmatched"), "sk": S(u["sourcedId"]), "reason": S(u["reason"]), "seats": S(json.dumps(u["seats"])),
-                                              "isTestUser": {"BOOL": bool(u["isTestUser"])}, "snapshotAt": S(at), "lastTriedAt": S(at), "email": S(u.get("email") or "")}}})
+                                              "isTestUser": {"BOOL": bool(u["isTestUser"])}, "isLikelyTest": {"BOOL": bool(u.get("isLikelyTest", u["isTestUser"]))}, "snapshotAt": S(at), "lastTriedAt": S(at), "email": S(u.get("email") or "")}}})
     for m in snap["ma_unmatched"]:
         items.append({"PutRequest": {"Item": {"pk": S("ma_unmatched"), "sk": S(m.get("id")), "ma": S(json.dumps(m, ensure_ascii=False)), "snapshotAt": S(at)}}})
     _batch(ddb, table, items)
@@ -260,7 +270,7 @@ def write_snapshot(ddb, table, snap, nightly=True, source="manual"):
             "calls": S(json.dumps(snap["calls"])), "counts": S(json.dumps(snap["counts"])), "byCourse": S(json.dumps(snap.get("byCourse") or {})),
             "history": S(json.dumps(history[-400:])), "staleAfterDays": {"N": "7" if not nightly else "2"}, "nightly": {"BOOL": bool(nightly)},
             "maCourses": S(json.dumps(ma_courses(snap["students"], snap["ma_unmatched"])))}
-    for k in ("activityLastDate", "lastActivityRun", "readMaLookup", "readMaKnowledge"):
+    for k in ("activityLastDate", "lastActivityRun", "readMaLookup", "readMaKnowledge", "readMaActivityBackfill", "readMaActivityBackfillStudents", "backfill"):
         if prev and k in prev: meta[k] = prev[k]
     ddb.put_item(TableName=table, Item=meta)
     return {"removed": len(old), "written": len(items)}
@@ -425,6 +435,13 @@ def backfill_students_without_rows(c, ddb, table, time_left=lambda: 10 ** 9):
     c.log(f"backfill: matched {found} of {len(missing)} previously unmatched students")
     return {"everSeated": len(sids), "missing": len(missing), "found": found}
 
+def _backfill_meta(ddb, table, start_day, end, status, tasks_this_hop, remaining):
+    """meta.backfill: counts every student row with backfilledAt (batch or on-demand), so the figure is true across hops."""
+    covered = sum(1 for it in _query_all(ddb, table, "student", "sk, backfilledAt") if "backfilledAt" in it)
+    body = {"status": status, "from": start_day, "to": end.isoformat(), "studentsBackfilled": covered, "studentsRemaining": remaining, "updatedAt": datetime.datetime.now(UTC).isoformat(timespec="seconds")}
+    if status == "complete": body["finishedAt"] = body["updatedAt"]
+    ddb.update_item(TableName=table, Key={"pk": S("meta"), "sk": S("snapshot")}, UpdateExpression="SET backfill = :b", ExpressionAttributeValues={":b": S(json.dumps(body))})
+
 def run_backfill(c, ddb, table, start_day, time_left=lambda: 10 ** 9, cursor=None):
     """Per store student with a Math Academy id, pull activity from start_day to today in ~quarter ranges; write task rows under
     their America/Chicago day and recompute day totals. Resumable through a cursor (the last student id done)."""
@@ -433,7 +450,9 @@ def run_backfill(c, ddb, table, start_day, time_left=lambda: 10 ** 9, cursor=Non
     if cursor: rows = [r for r in rows if r[0] > cursor]
     done = 0; tasks_written = 0; last = cursor; days_touched = set()
     for sid, ma_id in rows:
-        if time_left() < 150: return {"status": "partial", "cursor": last, "studentsDone": done, "tasksWritten": tasks_written, "daysTouched": len(days_touched), "calls": c.calls}
+        if time_left() < 150:
+            _backfill_meta(ddb, table, start_day, end, "in progress", tasks_written, remaining=len(rows) - done)
+            return {"status": "partial", "cursor": last, "studentsDone": done, "tasksWritten": tasks_written, "daysTouched": len(days_touched), "calls": c.calls}
         by_day = {}
         for a, b in _quarters(start, end):
             d, err = c.ma(f"/students/{ma_id}/activity?startDate={a}&endDate={b}", "ma_activity")
@@ -455,6 +474,5 @@ def run_backfill(c, ddb, table, start_day, time_left=lambda: 10 ** 9, cursor=Non
         _batch(ddb, table, items); tasks_written += sum(len(v) for v in by_day.values()); done += 1; last = sid
         ddb.update_item(TableName=table, Key={"pk": S("student"), "sk": S(sid)}, UpdateExpression="SET backfilledAt = :t, backfilledFrom = :f", ExpressionAttributeValues={":t": S(datetime.datetime.now(UTC).isoformat(timespec="seconds")), ":f": S(start_day)})
         if done % 50 == 0: c.log(f"backfill: {done} students, {tasks_written} tasks, {len(days_touched)} distinct days, calls {c.calls['ma_activity']}")
-    ddb.update_item(TableName=table, Key={"pk": S("meta"), "sk": S("snapshot")}, UpdateExpression="SET backfill = :b",
-                    ExpressionAttributeValues={":b": S(json.dumps({"from": start_day, "to": end.isoformat(), "students": done, "tasks": tasks_written, "finishedAt": datetime.datetime.now(UTC).isoformat(timespec="seconds")}))})
+    _backfill_meta(ddb, table, start_day, end, "complete", tasks_written, remaining=0)
     return {"status": "done", "studentsDone": done, "tasksWritten": tasks_written, "daysTouched": len(days_touched), "calls": c.calls}
