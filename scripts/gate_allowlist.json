@@ -375,24 +375,9 @@
    "sentence": "**placed weeks ago, never started this course**: `not started` and the seat older than two weeks.",
    "reviewed": "owner run"
   },
-  "4d5ac89b171a": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "**never any task at all**: `/courses` empty and the seat older than the window.",
-   "reviewed": "owner run"
-  },
   "5e0f0d1ab3a2": {
    "doc": "ENABLEMENT.md",
    "sentence": "\"Moved on within math\" is a disposition for a student with no current Math Academy seat (A5), never a reason to drop a quiet student who still has one.",
-   "reviewed": "owner run"
-  },
-  "9782597cf0d1": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "VERIFIED RUN (2026-09-17 and 2026-09-18, five cold runs): the store's roster equalled an independent Timeback enrollment read on every course checked (nine courses, identical id sets); the store's day rows equalled Timeback's results per student on every pulled day (e.g.",
-   "reviewed": "owner run"
-  },
-  "0bdbabf75fb4": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "Report `progress` beside every completion date: Math Academy has set `completed` at 69, 81 and even 0 percent on a course switch, and those are not finishes.",
    "reviewed": "owner run"
   },
   "7a845ca1ff2a": {
@@ -1715,11 +1700,6 @@
    "sentence": "Never loop the per-student route over a roster to find unmatched students: use /store/course/{id}/students?agreement=no math academy record.\",",
    "reviewed": "owner run"
   },
-  "47f26d6ad7c4": {
-   "doc": "skill.template.json",
-   "sentence": "\"fields\": \"mathAcademy {id, username, firstName, lastName, created, deactivated, currentCourse {id, name, startDate, progress, xpRemaining, completed, grade, letterGrade, estimatedScore}, schedule, league} copied as Math Academy serves it (SAT Math Prep: progress null, estimatedScore set, xpRemainin",
-   "reviewed": "owner run"
-  },
   "4017e534e450": {
    "doc": "skill.template.json",
    "sentence": "\"keyKind\": \"a Timeback API client (OAuth 2.0 client id + secret on the Cognito pool above) with READ-ONLY scopes covering OneRoster rostering + gradebook reads and EduBridge analytics reads (the scopes named powerpath.readonly and analytics/v1p0/readOnly were sufficient for every call in ENABLEMENT.",
@@ -1828,11 +1808,6 @@
   "cf908561f9a7": {
    "doc": "reference/course-xp-size.json",
    "sentence": "Never publish it as a number; 'a lot / a little / nearly done' at most.",
-   "reviewed": "owner run"
-  },
-  "4b86fb52c66c": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "- **The students are children.** Key everything on `user.sourcedId` (not uniformly a uuid: some ids are `user_...` or `pcb-course-...` strings; never truncate them, two 5th-grade ids share their first eight characters); resolve an email or a name to an id once, at the start (names collide: Part B1 g",
    "reviewed": "owner run"
   },
   "0efac13e35b6": {
@@ -2005,16 +1980,6 @@
    "sentence": "- Seatless students (finished and moved on, or filing under a deleted seat) are not on any roster and so not in these totals; `GET /store` `lastActivityRun.students` counts every student pulled for the day, roster or not, EXCLUDING roster students whose Timeback rows all arrived after the pull and s",
    "reviewed": "owner run"
   },
-  "d2572f734a39": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "`mathAcademyState` reads it: `not started` (progress 0; say \"not started in <course>\", never \"0 XP left\"; `xpRemainingReading` on every row says how to read the XP figure, print it instead of a bare 0), `in progress`, `at 100, not marked complete` (progress ≥ 0.995), `completed` (Math Academy closed",
-   "reviewed": "owner run"
-  },
-  "785981c8dbc3": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "- **The roster is the store's list** (a Timeback roster at `rosterReadAt`, section by section via `classSourcedIds`); filter to your section there (a section's title, school and status come from Timeback's `classes/{id}`; on the big grade courses one automanaged section holds nearly every real stude",
-   "reviewed": "owner run"
-  },
   "d59b3bd49a63": {
    "doc": "ENABLEMENT.md",
    "sentence": "**Sort each quiet student into exactly one kind, testing in this order**, and report the seat's age (`seatBeginDates`) beside it:",
@@ -2033,6 +1998,61 @@
   "dc780c18d8d9": {
    "doc": "DICTIONARY.md",
    "sentence": "Rule: the only course titles a reader may quote are the `Math Academy - …` titles in `reference/timeback-math-academy-courses.json`; every other course or class title on an enrollment row is treated as person-bearing and described by kind (a section titled with the course title plus \"Class\", Timebac",
+   "reviewed": "owner run"
+  },
+  "8bd2b735cb09": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "- **The students are children.** Key everything on `user.sourcedId` (not uniformly a uuid: some ids are `user_...` or `pcb-course-...` strings; never truncate any id, student or course, in a join: two 5th-grade student ids share their first eight characters and two course ids share `pcb-course-`); r",
+   "reviewed": "owner run"
+  },
+  "1795fc2d5e36": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "`mathAcademyState` reads it: `not started` (progress 0; say \"not started in <course>\", never \"0 XP left\"; `xpRemainingReading` on every row says how to read the XP figure, print it instead of a bare 0), `in progress`, `at 100, not marked complete` (progress ≥ 0.995), `completed` (Math Academy closed",
+   "reviewed": "owner run"
+  },
+  "4fdb8e3cc170": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "- **The roster is the store's list at `rosterReadAt`, that is TODAY's roster, whatever day you ask about.** The course-day route counts today's members on every past day (`rosterAsOf` on the response): a student who left the course since is not counted, a student who joined since is counted with wor",
+   "reviewed": "owner run"
+  },
+  "4488a65d3deb": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "The list is section by section via `classSourcedIds`; filter to your section there (a section's title, school and status come from Timeback's `classes/{id}`; on the big grade courses one automanaged section holds nearly every real student and the other sections are near-empty, so \"the section\" is of",
+   "reviewed": "owner run"
+  },
+  "82deb3d3c673": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "**never any task at all**: `/courses` empty, `deactivated` false, and the seat older than the window.",
+   "reviewed": "owner run"
+  },
+  "6c0f83ee376a": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "VERIFIED RUN (2026-09-17 and 2026-09-18, five cold runs): the store's roster equalled an independent Timeback enrollment read on every course checked (nine courses, identical id sets); the store's day rows equalled Timeback's results per student on every pulled day where Timeback had ingested the da",
+   "reviewed": "owner run"
+  },
+  "1a4621ca01a5": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "96 = 96 and 17 = 17 active students in a week; 328/328 task ids on the six most active students), and where they differed the store held MORE: Timeback missed whole days for some students (47 tasks of 1 and 2 September 2026 across seven students never arrived), so join by task id when a Timeback fig",
+   "reviewed": "owner run"
+  },
+  "349d0cfbba5c": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "for finishers still on a roster: GET <front base>/store/student/<sid>/history          # course changes and the old course's completed date, one row per night since 2026-09-17 (off-roster students gain history rows from the load of 2026-09-19 on, planned; before that their history holds only the nig",
+   "reviewed": "owner run"
+  },
+  "aa4b2172ecd0": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "Report `progress` beside every completion date: Math Academy has set `completed` at 69, 81 and even 0 percent (a course switch, or an early administrative close that then sits for months), and those are not finishes.",
+   "reviewed": "owner run"
+  },
+  "fc12e5df0f6c": {
+   "doc": "skill.template.json",
+   "sentence": "It answers, numbered to match ENABLEMENT § Capabilities: (1) a student's task history; (2) daily and weekly totals with the pace and habits measures (minutes to earn 1 XP against Math Academy's one-focused-minute calibration, 0.9 to 1.1 the good zone for lesson-heavy work; share of lessons with nega",
+   "reviewed": "owner run"
+  },
+  "b632057894d6": {
+   "doc": "skill.template.json",
+   "sentence": "\"fields\": \"mathAcademy {id, username, firstName, lastName, created, deactivated, currentCourse {id, name, startDate, progress, xpRemaining, completed, grade, letterGrade, estimatedScore}, schedule, league} copied as Math Academy serves it (SAT Math Prep: progress null, estimatedScore set, xpRemainin",
    "reviewed": "owner run"
   }
  },

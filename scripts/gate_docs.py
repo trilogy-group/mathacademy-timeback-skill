@@ -25,7 +25,7 @@ def read(p): return (ROOT / p).read_text(encoding="utf-8")
 EN, DI, AB = read("ENABLEMENT.md"), read("DICTIONARY.md"), read("about.html")
 TPL = read("skill.template.json"); XP = read("reference/course-xp-size.json")
 CODE = read("lambda/index.mjs") + read("store/snapshot_lib.py") + read("store/agreement.py") + read("lambda/nightly/handler.py")
-SERVED = {"ENABLEMENT.md": EN, "DICTIONARY.md": DI, "about.html": AB, "skill.template.json": TPL, "reference/course-xp-size.json": XP}
+SERVED = {"ENABLEMENT.md": EN, "DICTIONARY.md": DI, "about.html": AB, "skill.template.json": TPL, "reference/course-xp-size.json": XP, "reference/topic-course-map.json": read("reference/topic-course-map.json")[:4000]}
 def strip_html(t): return re.sub(r"<[^>]+>", " ", t)
 
 # ---------------------------------------------------------------- 1. documented but not served
@@ -66,6 +66,8 @@ FACTS = [
  ("test share", r"about a third of seats", [r"from a fifth to two fifths by course;"]),
  ("SAT Math Prep xpRemaining", r"UNRELIABLE there|unreliable there|treat XP left as unknown", [r"IS served and exact on SAT Math Prep", r"including on SAT Math Prep; read it first", r"served on SAT Math Prep too\)\."]),
  ("finishers default since", r"defaults to all time when omitted", [r"defaults to the beginning of the store"]),
+ ("completed under 0.9", r"not decidable here", [r"is a course switch\b(?! or)"]),
+ ("review-heavy pace", r"0\.3 to 0\.9", [r"review-heavy week reads 0\.2 to 0\.4"]),
 ]
 for label, canonical, stale in FACTS:
     where = [n for n, t in SERVED.items() if re.search(canonical, strip_html(t))]
