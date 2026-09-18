@@ -247,11 +247,13 @@ def write_snapshot(ddb, table, snap, nightly=True, source="manual"):
     """Replace the student / tb_unmatched / ma_unmatched rows, append hist rows for the day, rewrite meta. Returns counts."""
     at = snap["snapshotAt"]; day = at[:10]
     old = []
-    for pk in ("student", "tb_unmatched", "ma_unmatched"): old.extend(_query_all(ddb, table, pk, "pk, sk"))
+    for pk in ("student", "tb_unmatched", "ma_unmatched"): old.extend(_query_all(ddb, table, pk, "pk, sk, backfilledAt, backfilledFrom"))
+    # per-student attributes written by the backfill and the front between loads survive a load (a load replaces the Math Academy figures, not the activity coverage)
+    keep = {it["sk"]["S"]: {k: it[k] for k in ("backfilledAt", "backfilledFrom") if k in it} for it in old if it["pk"]["S"] == "student"}
     _batch(ddb, table, [{"DeleteRequest": {"Key": {"pk": it["pk"], "sk": it["sk"]}}} for it in old])
     items = []
     for st in snap["students"]:
-        items.append({"PutRequest": {"Item": {"pk": S("student"), "sk": S(st["sourcedId"]), "ma": S(json.dumps(st["mathAcademy"], ensure_ascii=False)),
+        items.append({"PutRequest": {"Item": {**keep.get(st["sourcedId"], {}), "pk": S("student"), "sk": S(st["sourcedId"]), "ma": S(json.dumps(st["mathAcademy"], ensure_ascii=False)),
                                               "maId": S(st["mathAcademy"].get("id")), "matchedBy": S(st["matchedBy"]), "courseAgreementAtSnapshot": S(st["courseAgreementAtSnapshot"]),
                                               "seats": S(json.dumps(st["seats"])), "isTestUser": {"BOOL": bool(st["isTestUser"])}, "isLikelyTest": {"BOOL": bool(st.get("isLikelyTest", st["isTestUser"]))}, "snapshotAt": S(at),
                                               "figuresAsOf": S(at if st["matchedBy"] in ("lookup", "live-lookup") else f"bulk list: up to one day before {at}")}}})
@@ -441,6 +443,20 @@ def _backfill_meta(ddb, table, start_day, end, status, tasks_this_hop, remaining
     body = {"status": status, "from": start_day, "to": end.isoformat(), "studentsBackfilled": covered, "studentsRemaining": remaining, "updatedAt": datetime.datetime.now(UTC).isoformat(timespec="seconds")}
     if status == "complete": body["finishedAt"] = body["updatedAt"]
     ddb.update_item(TableName=table, Key={"pk": S("meta"), "sk": S("snapshot")}, UpdateExpression="SET backfill = :b", ExpressionAttributeValues={":b": S(json.dumps(body))})
+
+def restore_backfill_markers(ddb, table, start_day="2025-07-01"):
+    """After a load that dropped the markers: any student with a day row whose source is backfill gets backfilledAt back (no Math Academy call)."""
+    fixed = 0
+    for it in _query_all(ddb, table, "student", "sk, maId, backfilledAt"):
+        if "backfilledAt" in it: continue
+        sid = it["sk"]["S"]
+        r = ddb.query(TableName=table, KeyConditionExpression="pk = :p", FilterExpression="#s = :b", ExpressionAttributeNames={"#s": "source"},
+                      ExpressionAttributeValues={":p": S(f"actday#{sid}"), ":b": S("backfill")}, ProjectionExpression="sk, fetchedAt")
+        rows = r.get("Items") or []
+        if not rows: continue
+        at = max(x.get("fetchedAt", {}).get("S", "") for x in rows) or datetime.datetime.now(UTC).isoformat(timespec="seconds")
+        ddb.update_item(TableName=table, Key={"pk": S("student"), "sk": S(sid)}, UpdateExpression="SET backfilledAt = :t, backfilledFrom = :f", ExpressionAttributeValues={":t": S(at), ":f": S(start_day)}); fixed += 1
+    return fixed
 
 def run_backfill(c, ddb, table, start_day, time_left=lambda: 10 ** 9, cursor=None):
     """Per store student with a Math Academy id, pull activity from start_day to today in ~quarter ranges; write task rows under

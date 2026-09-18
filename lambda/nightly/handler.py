@@ -62,6 +62,7 @@ def handler(event, context):
     if mode == "backfill":
         # one-off: event {"mode":"backfill","start":"2025-07-01","matchFirst":true}; resumes itself via cursor until done
         out = {}
+        if not event.get("cursor"): out["restoredMarkers"] = lib.restore_backfill_markers(ddb, TABLE, event.get("start", "2025-07-01"))
         if event.get("matchFirst") and not event.get("cursor"):
             out["match"] = lib.backfill_students_without_rows(c, ddb, TABLE, time_left=time_left)
         r = lib.run_backfill(c, ddb, TABLE, event.get("start", "2025-07-01"), time_left=time_left, cursor=event.get("cursor"))
