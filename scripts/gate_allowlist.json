@@ -2030,11 +2030,6 @@
    "sentence": "It answers, numbered to match ENABLEMENT § Capabilities: (1) a student's task history; (2) daily and weekly totals with the pace and habits measures (minutes to earn 1 XP against Math Academy's one-focused-minute calibration, 0.9 to 1.1 the good zone for lesson-heavy work; share of lessons with nega",
    "reviewed": "owner run"
   },
-  "93c8350c08f7": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "`mathAcademyState` reads it: `not started` (progress 0; say \"not started in <course>\", never \"0 XP left\"; `xpRemainingReading` on every row says how to read the XP figure, print it instead of a bare 0), `in progress`, `at 100, not marked complete` (progress ≥ 0.995), `completed` (Math Academy's stam",
-   "reviewed": "owner run"
-  },
   "36b1063d16ec": {
    "doc": "ENABLEMENT.md",
    "sentence": "the near-finisher and flag-only buckets; finishedCount / finishedNonTestCount = completed + at-100 buckets; workedThroughNonTestCount also drops likely placement pass-throughs; byBucket",
@@ -2050,11 +2045,6 @@
    "sentence": "Report `progress` and `xpRemaining` beside every completion date.",
    "reviewed": "owner run"
   },
-  "1f8efda228ff": {
-   "doc": "DICTIONARY.md",
-   "sentence": "- **`mathAcademyState`** — read from Math Academy's own figures **for the current Math Academy course only**: `completed` (`currentCourse.completed` set AND `xpRemaining` below 100; owner rule 2026-09-18: Math Academy's stamp alone is not a finish, it has been seen at 69 and 81 percent on students w",
-   "reviewed": "owner run"
-  },
   "939531652fa6": {
    "doc": "DICTIONARY.md",
    "sentence": "Owner ruling 2026-09-18, after a live pull of one SAT Math Fundamentals student showed `completed 2025-06-19` beside progress 0.805, 2,421 XP remaining and 131 tasks done in the course after that date: the stamp is a finish only with fewer than 100 XP remaining; otherwise it is served as `completed ",
@@ -2065,7 +2055,17 @@
    "sentence": "\"finishers\": \"GET X/store/finishers?since=YYYY-MM-DD[&mathAcademyCourseId=<id>]  (the reader's token; every store row, roster or not, whose CURRENT Math Academy course carries completed on or after since, sits at progress >= 0.995, or (no current seat) sits at 0.95 to 0.994; {since, snapshotAt, stal",
    "reviewed": "owner run"
   },
-  "8de5aa06813f": {
+  "566617f33ac0": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "`mathAcademyState` reads it: `not started` (progress 0; say \"not started in <course>\", never \"0 XP left\"; `xpRemainingReading` on every row says how to read the XP figure, print it instead of a bare 0), `in progress`, `at 100, not marked complete` (progress ≥ 0.995), `completed` (Math Academy's stam",
+   "reviewed": "owner run"
+  },
+  "3be28d3465ee": {
+   "doc": "DICTIONARY.md",
+   "sentence": "- **`mathAcademyState`** — read from Math Academy's own figures **for the current Math Academy course only**: `completed` (`currentCourse.completed` set AND `xpRemaining` below 100; owner rule 2026-09-18: Math Academy's stamp alone is not a finish, it has been seen at 69 percent and at 81 percent on",
+   "reviewed": "owner run"
+  },
+  "02f05ae4b7c9": {
    "doc": "skill.template.json",
    "sentence": "\"fields\": \"mathAcademy {id, username, firstName, lastName, created, deactivated, currentCourse {id, name, startDate, progress, xpRemaining, completed, grade, letterGrade, estimatedScore}, schedule, league} copied as Math Academy serves it (SAT Math Prep: progress null, estimatedScore set, xpRemainin",
    "reviewed": "owner run"
