@@ -322,9 +322,10 @@ export const handler = async (event) => {
       if (afterWindow && meta.snapshotAgeHours > 30) problems.push("no snapshot since the last 03:00 Central window");
       if (afterWindow && meta.activityLastDate && meta.activityLastDate < ydayStr) problems.push(`activity not caught up: newest pulled day ${meta.activityLastDate}, expected ${ydayStr}`);
       if (meta.lastActivityRun && (meta.lastActivityRun.errors || 0) > 0) problems.push(`last activity run had ${meta.lastActivityRun.errors} student errors`);
-      if (meta.lastActivityRun && meta.lastActivityRun.noMaId > 0) problems.push(`${meta.lastActivityRun.noMaId} active students still without a Math Academy id after lookup`);
+      const warnings = [];
+      if (meta.lastActivityRun && meta.lastActivityRun.noMaId > 0) (meta.lastActivityRun.noMaId > 20 ? problems : warnings).push(`${meta.lastActivityRun.noMaId} active students still without a Math Academy id after lookup (a data condition, not a store failure, unless it climbs above 20)`);
       if (!meta.schedule.firstScheduledRunHasHappened && nowChi >= new Date("2026-09-18T06:00:00")) problems.push("the scheduled 03:00 run has never fired");
-      meta.health = { ok: problems.length === 0, checkedAt: new Date().toISOString(), problems, note: "computed from the fields on this response; the repo's daily health-check workflow opens a GitHub issue when ok is false" };
+      meta.health = { ok: problems.length === 0, checkedAt: new Date().toISOString(), problems, warnings, note: "computed from the fields on this response; the repo's daily health-check workflow opens a GitHub issue when ok is false" };
     }
     if (meta) {
       const auth = await tokenOk(event);
