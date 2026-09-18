@@ -92,7 +92,7 @@
     <tr><td>Activity: one row per Math Academy task, with elapsed, engaged and productive time</td><td>Each unpulled school day, plus a re-pull of the newest one</td><td><span class="pill b">appended</span> by day, keyed by task so re-pulls overwrite</td></tr>
     <tr><td>Knowledge maps</td><td>Untouched</td><td><span class="pill w">on demand</span> cached seven days per student per course</td></tr>
   </table>
-  <p class="muted">Cost to Math Academy per night: 4 bulk calls, one lookup per newly added student, and two activity calls per student who was active that day (two Math Academy days cover one Central day), roughly 800 to 900. Nothing is called during the school day except a first-time knowledge map or a missing student.</p>
+  <p class="muted">Cost to Math Academy per night: 4 bulk calls, one lookup per newly added student, and about one activity call per active student per day pulled; each night re-pulls the previous day as well, so a normal night is roughly 800 to 900 calls, and a catch-up night after a gap costs proportionally more (the first scheduled night pulled three days for 1,143 calls). Nothing is called during the school day except a first-time knowledge map or a missing student.</p>
 </section>
 
 <section>
@@ -132,7 +132,7 @@
     <li><strong>The Timeback-only XP estimate is a rough fallback</strong> that has run from 64 percent too high to 67 percent too low against the exact figure (the dictionary keeps the one current band). The store has the exact figure.</li>
     <li><strong>Students leave Math Academy on purpose.</strong> After finishing, progression gives them other math: TEKS Math, hole-filling, Math Raiders, supplements. That is never a flag.</li>
     <li><strong>The store began on 17 September 2026.</strong> Nightly history builds from there. Per-task activity is being backfilled from 1 July 2025 for every student who ever held a seat (a batch that runs over several hours; the status page shows how far it has got), and any student the batch has not reached is backfilled the first time someone asks for their activity.</li>
-    <li><strong>Test accounts fill rosters</strong> (about a third of seats estate-wide, from a fifth to two fifths by course; some carry no flag and are recognised by a naming pattern or a test campus, in the store, never by a reader) and barely appear in activity. Every count here is shown with them split out.</li>
+    <li><strong>Test accounts fill rosters</strong> (about a third of seats estate-wide; by course anywhere from none to nearly all, the five big grade courses running a fifth to two fifths; some carry no flag and are recognised by a naming pattern or a test campus, in the store, never by a reader) and barely appear in activity. Every count here is shown with them split out.</li>
   </ul>
 </section>
 

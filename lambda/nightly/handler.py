@@ -58,6 +58,13 @@ def handler(event, context):
         done_days = [x["day"] for x in results if x.get("status") == "done"]
         if done_days:
             ddb.update_item(TableName=TABLE, Key={"pk": {"S": "meta"}, "sk": {"S": "snapshot"}}, UpdateExpression="SET activityLastDate = :d", ExpressionAttributeValues={":d": {"S": max(done_days)}})
+        # the run summary names every day this run pulled (the overlap day first), so the re-pull is visible on /store
+        try:
+            cur = json.loads((ddb.get_item(TableName=TABLE, Key={"pk": {"S": "meta"}, "sk": {"S": "snapshot"}}).get("Item") or {}).get("lastActivityRun", {}).get("S") or "{}")
+            cur["daysPulled"] = [{"day": x["day"], "status": x.get("status"), "students": x.get("total"), "errors": x.get("errors"), "rePull": bool(forces.get(x["day"], False))} for x in results]
+            cur["maCallsWholeRun"] = c.calls.get("ma_activity")
+            ddb.update_item(TableName=TABLE, Key={"pk": {"S": "meta"}, "sk": {"S": "snapshot"}}, UpdateExpression="SET lastActivityRun = :r", ExpressionAttributeValues={":r": {"S": json.dumps(cur)}})
+        except Exception as e: print("daysPulled summary failed", e)
         return {"mode": mode, "window": days, "runs": results, "calls": c.calls}
     if mode == "backfill":
         # one-off: event {"mode":"backfill","start":"2025-07-01","matchFirst":true}; resumes itself via cursor until done
