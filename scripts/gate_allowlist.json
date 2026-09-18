@@ -455,11 +455,6 @@
    "sentence": "Quote the day \"as of `pulledAt`\": 3 to 7 percent of Timeback's rows for a day are ingested after the 03:45 pull and land on the next night's re-pull; `pulledAt` is set only on nightly-pulled days (batch-backfilled days carry a note instead); the current day is partial (`dayStatus`).",
    "reviewed": "owner run"
   },
-  "aaa6ba3ab87d": {
-   "doc": "ENABLEMENT.md",
-   "sentence": "- Seatless students (finished and moved on, or filing under a deleted seat) are not on any roster and so not in these totals; `GET /store` `lastActivityRun.students` counts every student pulled for the day, roster or not.",
-   "reviewed": "owner run"
-  },
   "f69a7c0af429": {
    "doc": "ENABLEMENT.md",
    "sentence": "VERIFIED RUN (2026-09-18, two cold runs): course-day totals equalled the sum of their rows on every field and equalled Timeback's per-student results for the same roster students on every pulled day checked (four courses, six days).",
@@ -2028,6 +2023,11 @@
   "7ea0cac7ca72": {
    "doc": "about.html",
    "sentence": "3:45 am Central  Activity For every student who had a Math Academy result on each local day from the day before the last pulled day through yesterday, fetch Math Academy's per-task record with its three clocks.",
+   "reviewed": "owner run"
+  },
+  "843a21dd1402": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "- Seatless students (finished and moved on, or filing under a deleted seat) are not on any roster and so not in these totals; `GET /store` `lastActivityRun.students` counts every student pulled for the day, roster or not, EXCLUDING roster students whose Timeback rows all arrived after the pull and s",
    "reviewed": "owner run"
   }
  },
