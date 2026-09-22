@@ -2065,7 +2065,7 @@
    "sentence": "- **`mathAcademyState`** — read from Math Academy's own figures **for the current Math Academy course only**: `completed` (`currentCourse.completed` set AND `xpRemaining` below 100; owner rule 2026-09-18: Math Academy's stamp alone is not a finish, it has been seen at 69 percent and at 81 percent on",
    "reviewed": "owner run"
   },
-  "02f05ae4b7c9": {
+  "ef3ba2abdf20": {
    "doc": "skill.template.json",
    "sentence": "\"fields\": \"mathAcademy {id, username, firstName, lastName, created, deactivated, currentCourse {id, name, startDate, progress, xpRemaining, completed, grade, letterGrade, estimatedScore}, schedule, league} copied as Math Academy serves it (SAT Math Prep: progress null, estimatedScore set, xpRemainin",
    "reviewed": "owner run"
