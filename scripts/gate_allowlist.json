@@ -1165,11 +1165,6 @@
    "sentence": "- **Estimated XP remaining in the current course.** Math Academy does not send its XP-remaining figure to Timeback; the snapshot store carries it exactly, dated.",
    "reviewed": "owner run"
   },
-  "e72b6c7e8e23": {
-   "doc": "DICTIONARY.md",
-   "sentence": "Every input for the estimate is on the wire: `remaining ≈ course.metadata.metrics.totalXp × (1 − pct / 100)`, where `pct` is the newest result's `pctCompleteApp` **whose line item is filed under the seat's course** (check the line item; a percent filed under another course means no estimate and a fl",
-   "reviewed": "owner run"
-  },
   "e605c9a73f54": {
    "doc": "DICTIONARY.md",
    "sentence": "The rule order, including the no-estimate cases, is in `reference/course-xp-size.json`: no `totalXp` on the course (the bare `Math Academy` and `Beyond AI` courses, where no real student belongs); no percent anywhere yet; SAT Math Prep (Math Academy reports an estimated SAT score there instead of pr",
@@ -1293,16 +1288,6 @@
   "103ce7729836": {
    "doc": "DICTIONARY.md",
    "sentence": "There is **no reliable Timeback-side tell** for \"finished on Math Academy but not moved\": the \"reviews only after 100\" idea failed on every actionable case in a cold run (all had lessons after the 100).",
-   "reviewed": "owner run"
-  },
-  "ccf4067f616a": {
-   "doc": "DICTIONARY.md",
-   "sentence": "**A course's `totalXp` can lag Math Academy's XP-with-reviews figure.** The school sets `course.metadata.metrics.totalXp` by hand from Math Academy's published per-course XP; on 2026-09-17 every course carrying a figure was checked against the school's table and matched after a correction that day.",
-   "reviewed": "owner run"
-  },
-  "4b8a9a966d5c": {
-   "doc": "DICTIONARY.md",
-   "sentence": "Never use `totalXp` as a denominator for progress; progress is `pctCompleteApp`.",
    "reviewed": "owner run"
   },
   "19b7de250562": {
@@ -1780,11 +1765,6 @@
    "sentence": "Evidence in a ticket is a class, a field, a rule or a query; never a student's name, contact or identifying row.\"",
    "reviewed": "owner run"
   },
-  "e7ea26baec32": {
-   "doc": "reference/course-xp-size.json",
-   "sentence": "The size of every course is Timeback's own course.metadata.metrics.totalXp, which the school sets from Math Academy's published XP-with-reviews figure per course.",
-   "reviewed": "owner run"
-  },
   "89708eb4d64c": {
    "doc": "reference/course-xp-size.json",
    "sentence": "Read it LIVE from GET /ims/oneroster/rostering/v1p2/courses/{course.sourcedId}; this file carries the rules and points at the course ids, never a copy of the figure.",
@@ -2068,6 +2048,46 @@
   "ef3ba2abdf20": {
    "doc": "skill.template.json",
    "sentence": "\"fields\": \"mathAcademy {id, username, firstName, lastName, created, deactivated, currentCourse {id, name, startDate, progress, xpRemaining, completed, grade, letterGrade, estimatedScore}, schedule, league} copied as Math Academy serves it (SAT Math Prep: progress null, estimatedScore set, xpRemainin",
+   "reviewed": "owner run"
+  },
+  "b2718f89a6f3": {
+   "doc": "ENABLEMENT.md",
+   "sentence": "Never compute a child's percent of the course as XP earned ÷ the course's `totalXp`: the course figure is a baseline for a B/B+ student with few gaps (Jason Roberts, Math Academy's founder, via the owner; DICTIONARY trap 11), and a child with gaps from earlier grades has lessons added to the queue w",
+   "reviewed": "owner run"
+  },
+  "a0c30217ea59": {
+   "doc": "DICTIONARY.md",
+   "sentence": "So it is the denominator of the Timeback-only XP-remaining FALLBACK (trap 11) and nothing else: a child's percent of the course is `pctCompleteApp` (Math Academy's own progress figure, on the results), never XP earned ÷ `totalXp`; a child's exact XP left is the store's `mathAcademy.currentCourse.xpR",
+   "reviewed": "owner run"
+  },
+  "c3ebd6369154": {
+   "doc": "DICTIONARY.md",
+   "sentence": "Every input for the estimate is on the wire: `remaining ≈ course.metadata.metrics.totalXp × (1 − pct / 100)` (where `totalXp` is a baseline for a B/B+ student with few gaps, trap 11, which is the main reason the estimate misses), where `pct` is the newest result's `pctCompleteApp` **whose line item ",
+   "reviewed": "owner run"
+  },
+  "b51513fda552": {
+   "doc": "DICTIONARY.md",
+   "sentence": "**A course's `totalXp` is a baseline for one kind of student, not the XP any given child will earn.** The school sets `course.metadata.metrics.totalXp` by hand from the per-course \"XP (with reviews)\" table Jason Roberts, Math Academy's founder, gave the school; on 2026-09-17 every course carrying a ",
+   "reviewed": "owner run"
+  },
+  "1fea217bfbfc": {
+   "doc": "DICTIONARY.md",
+   "sentence": "Never use `totalXp` as a denominator for progress; progress is `pctCompleteApp`, and the XP left per child is the store's `xpRemaining` (unreliable on SAT Math Prep).",
+   "reviewed": "owner run"
+  },
+  "96e86e5f5172": {
+   "doc": "reference/course-xp-size.json",
+   "sentence": "The size of every course is Timeback's own course.metadata.metrics.totalXp, which the school sets from the per-course 'XP (with reviews)' baseline table Jason Roberts, Math Academy's founder, gave the school; it fits a B/B+ student with few gaps and is not what any given student will earn (rule 7).",
+   "reviewed": "owner run"
+  },
+  "94e7a18ebc59": {
+   "doc": "reference/course-xp-size.json",
+   "sentence": "The course figure is the baseline Jason Roberts, Math Academy's founder, gave the school per course ('XP (with reviews)'; checked against Timeback on 2026-09-17, all matching).",
+   "reviewed": "owner run"
+  },
+  "7b83f5771310": {
+   "doc": "reference/course-xp-size.json",
+   "sentence": "So it does NOT equal the xpRemaining Math Academy serves on any one student (10,473 on a not-started Integrated Math II (Honors) student against a course figure of 5,051; 1,862 left on a grade-8 student at 53 percent against a course figure of 1,638), the estimate here inherits that spread in both d",
    "reviewed": "owner run"
   }
  },

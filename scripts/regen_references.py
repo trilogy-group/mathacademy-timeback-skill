@@ -32,7 +32,7 @@ courses = [{"sourcedId": c["sourcedId"], "title": c.get("title"), "status": c.ge
             "metrics_totalXp": ((c.get("metadata") or {}).get("metrics") or {}).get("totalXp"), "metrics_totalLessons": ((c.get("metadata") or {}).get("metrics") or {}).get("totalLessons")}
            for c in sorted(cs, key=lambda c: c.get("title") or "")]
 (ROOT / "reference" / "timeback-math-academy-courses.json").write_text(json.dumps({
-    "_about": "OneRoster courses whose title contains 'Math Academy', read live by scripts/regen_references.py. This is the DOMAIN of the course field for Math Academy data in Timeback (structure). metrics_totalXp is the course's size in XP as the school sets it from Math Academy's XP-with-reviews table; it is a SNAPSHOT as of `readAt` and can lag an edit, so the XP-remaining estimate reads it live from the course object (DICTIONARY trap 11). Regenerate with the call below.",
+    "_about": "OneRoster courses whose title contains 'Math Academy', read live by scripts/regen_references.py. This is the DOMAIN of the course field for Math Academy data in Timeback (structure). metrics_totalXp is the course's baseline size in XP as the school sets it from the 'XP (with reviews)' table Jason Roberts, Math Academy's founder, gave (a B/B+ student's figure, not any one student's; DICTIONARY trap 11); it is a SNAPSHOT as of `readAt` and can lag an edit, so the XP-remaining estimate reads it live from the course object (DICTIONARY trap 11). Regenerate with the call below.",
     "readAt": TODAY.isoformat(), "regenerate": "GET https://api.alpha-1edtech.ai/ims/oneroster/rostering/v1p2/courses/?filter=title~'Math Academy'&limit=100", "courses": courses}, indent=1), encoding="utf-8")
 print("courses:", len(courses))
 
