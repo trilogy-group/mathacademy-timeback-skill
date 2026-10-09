@@ -32,8 +32,15 @@ jobs:
           problems = list(h.get("problems") or [])
           if not h: problems.append("the status route carries no health block (old front?)")
           force = os.environ.get("FORCE") == "true"
-          title = f"Store health: {'TEST' if force and not problems else 'unhealthy'} {d.get('snapshotAt','')[:10]}"
+          # One issue per DISTINCT problem set. A comment on an old open issue emails nobody who is not subscribed to it
+          # (ten stale nights went unread that way, 30 Sept - 9 Oct 2026), so a new problem set opens a NEW issue and
+          # mentions the owner; the same problem set keeps commenting on its own issue.
+          import re
+          kinds = sorted({re.sub(r"\d+", "N", p).strip() for p in problems})
+          key = "none" if not kinds else re.sub(r"[^a-z0-9]+", "-", " | ".join(kinds).lower()).strip("-")[:80]
+          title = f"Store health: {'TEST' if force and not problems else 'unhealthy'} [{key}]"
           body = "\n".join([
+              "@ruchialphamath", "",
               f"Status route: {os.environ['BASE']}/store", "",
               f"- snapshotAt: {d.get('snapshotAt')}  (age {d.get('snapshotAgeHours')} h, stale={d.get('stale')})",
               f"- activityLastDate: {d.get('activityLastDate')}",
@@ -46,7 +53,8 @@ jobs:
           if not problems and not force:
               print("healthy:", json.dumps(h)); raise SystemExit(0)
           repo = os.environ["REPO"]
-          existing = subprocess.run(["gh", "issue", "list", "--repo", repo, "--label", "store-health", "--state", "open", "--json", "number", "--jq", ".[0].number"], capture_output=True, text=True).stdout.strip()
+          listing = subprocess.run(["gh", "issue", "list", "--repo", repo, "--label", "store-health", "--state", "open", "--json", "number,title"], capture_output=True, text=True).stdout
+          existing = next((str(i["number"]) for i in json.loads(listing or "[]") if f"[{key}]" in i.get("title", "")), "")
           subprocess.run(["gh", "label", "create", "store-health", "--repo", repo, "--color", "B60205", "--description", "nightly store health check", "--force"], check=False)
           if existing:
               subprocess.run(["gh", "issue", "comment", existing, "--repo", repo, "--body", body], check=True); print("commented on issue", existing)

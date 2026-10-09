@@ -58,10 +58,10 @@ class Clients:
                 if i < retry: time.sleep(3 * (i + 1)); continue
                 raise
 
-    def tb_all(self, path, key, params):
+    def tb_all(self, path, key, params, limit=3000):
         items, offset = [], 0
         while True:
-            d = self.tb(path, dict(params, limit=3000, offset=offset)); batch = d.get(key) or []
+            d = self.tb(path, dict(params, limit=limit, offset=offset)); batch = d.get(key) or []
             items.extend(batch); offset += len(batch); total = d.get("totalCount")
             if not batch or (total is not None and offset >= total): break
         return items
@@ -120,13 +120,28 @@ def pull_roster(c, today):
         for x in c.tb_all("/ims/oneroster/rostering/v1p2/classes/", "classes", {"filter": f"course.sourcedId='{co['sourcedId']}'"}):
             if x["sourcedId"] not in seen: seen.add(x["sourcedId"]); classes.append(x)
     c.log(f"Timeback Math Academy courses: {len(courses)}; sections: {len(classes)}")
-    roster = {}
+    roster, user_cache, sections_fallen_back = {}, {}, 0
     for cl in classes:
         cid = cl["sourcedId"]
         enr = c.tb_all("/ims/oneroster/rostering/v1p2/enrollments/", "enrollments", {"filter": f"class.sourcedId='{cid}' AND status='active'"})
         live = [e for e in enr if e.get("role") == "student" and in_window(e, today)]
         if not live: continue
-        users = {u["sourcedId"]: u for u in c.tb_all(f"/ims/oneroster/rostering/v1p2/classes/{cid}/students", "users", {})}
+        # User details (email, names, profiles) for the live seats. The section students route is paged at 500: one section
+        # answered 502 at 3,000 from 2026-09-29 and killed every snapshot for ten nights. If it still fails, read the users
+        # one by one instead of giving up on the night (DICTIONARY trap 20: the roster itself always comes from enrollments).
+        try:
+            users = {u["sourcedId"]: u for u in c.tb_all(f"/ims/oneroster/rostering/v1p2/classes/{cid}/students", "users", {}, limit=500)}
+        except (urllib.error.HTTPError, urllib.error.URLError, OSError) as e:
+            sections_fallen_back += 1
+            c.log(f"section {cid} students route failed ({e}); reading {len(live)} users one by one")
+            users = {}
+            for e_ in live:
+                uid_ = (e_.get("user") or {}).get("sourcedId")
+                if not uid_ or uid_ in users: continue
+                if uid_ in user_cache: users[uid_] = user_cache[uid_]; continue
+                try: users[uid_] = (c.tb(f"/ims/oneroster/rostering/v1p2/users/{uid_}") or {}).get("user") or {}
+                except (urllib.error.HTTPError, urllib.error.URLError, OSError) as e2: c.log(f"user {uid_} unreadable ({e2})"); users[uid_] = {}
+        user_cache.update(users)
         for e in live:
             uid = (e.get("user") or {}).get("sourcedId"); u = users.get(uid) or {}
             ma_user = next((cr.get("username") for p in (u.get("userProfiles") or []) if p.get("vendorId") == "math_academy"
@@ -141,7 +156,7 @@ def pull_roster(c, today):
                                  "courseName": (e.get("course") or {}).get("name") or re.sub(r"\s+class$", "", cl.get("title") or "", flags=re.I),
                                  "beginDate": e.get("beginDate"), "endDate": e.get("endDate"), "primary": e.get("primary"),
                                  "pctCompleteApp": (e.get("metadata") or {}).get("pctCompleteApp")})
-    c.log(f"Timeback roster: {len(roster)} students")
+    c.log(f"Timeback roster: {len(roster)} students" + (f"; {sections_fallen_back} section(s) read user by user" if sections_fallen_back else ""))
     return roster
 
 
