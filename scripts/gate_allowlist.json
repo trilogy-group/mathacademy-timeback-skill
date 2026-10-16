@@ -955,11 +955,6 @@
    "sentence": "Since the backfill of 2026-09-18 every student who ever held a Math Academy seat has a row (`matchedBy: backfill-lookup` for those matched by the batch), so a cohort of finished students who have lost their seat is already in the store (`offRosterSince` set, `courseAgreementAtSnapshot: \"no current t",
    "reviewed": "owner run"
   },
-  "e2cdedfb0cf0": {
-   "doc": "DICTIONARY.md",
-   "sentence": "- **`matchedBy`** — how the Timeback student was tied to a Math Academy record: `known` (the Math Academy id stored on an earlier night was found in tonight's bulk list; the normal case after the first night), `live-lookup` (the student was missing when a reader asked, and one live Math Academy call",
-   "reviewed": "owner run"
-  },
   "727bd29a0305": {
    "doc": "DICTIONARY.md",
    "sentence": "(`counts.matchedBy` on `/store` carries every bucket, with `live-lookup`, `activity-lookup` and `backfill-lookup` normally 0: a row added between loads by one of those becomes `known` at the next load.) `backfill-lookup` (the batch backfill found a student who ever held a seat but had no store row, ",
@@ -2088,6 +2083,11 @@
   "7b83f5771310": {
    "doc": "reference/course-xp-size.json",
    "sentence": "So it does NOT equal the xpRemaining Math Academy serves on any one student (10,473 on a not-started Integrated Math II (Honors) student against a course figure of 5,051; 1,862 left on a grade-8 student at 53 percent against a course figure of 1,638), the estimate here inherits that spread in both d",
+   "reviewed": "owner run"
+  },
+  "e5377ccdeb5b": {
+   "doc": "DICTIONARY.md",
+   "sentence": "- **`matchedBy`** — how the Timeback student was tied to a Math Academy record: `known` (the Math Academy id stored on an earlier night was found in tonight's bulk list; the normal case after the first night), `live-lookup` (the student was missing when a reader asked, and one live Math Academy call",
    "reviewed": "owner run"
   }
  },

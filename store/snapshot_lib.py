@@ -191,11 +191,14 @@ def match(c, bulk, roster, known_ids=None, time_left=lambda: 10 ** 9, lookup=Tru
         by_name.setdefault(f"{(s_.get('firstName') or '').strip().lower()} {(s_.get('lastName') or '').strip().lower()}", []).append(s_)
     students, tb_unmatched, used = [], [], set()
     def attach(rec, ma_rec, how):
-        used.add(str(ma_rec.get("id"))); students.append({**rec, "matchedBy": how, "mathAcademy": ma_rec})
+        used.add(str(ma_rec.get("id"))); students.append({**{k_: v_ for k_, v_ in rec.items() if not k_.startswith("_")}, "matchedBy": how, "mathAcademy": ma_rec})
     todo = []
     for rec in roster.values():
         k = known_ids.get(rec["sourcedId"])
-        if k and str(k) in by_id: attach(rec, by_id[str(k)], "known"); continue
+        # a known id whose bulk record is deactivated is an old account (Math Academy merges accounts; the merged-away id answers 401):
+        # fall through to the username / e-mail / lookup chain so the live account replaces it (one grade-8 student, 2026-10-16)
+        if k and str(k) in by_id and not by_id[str(k)].get("deactivated"): attach(rec, by_id[str(k)], "known"); continue
+        if k and str(k) in by_id: rec["_deactivatedKnown"] = by_id[str(k)]   # kept as the fallback if no live account is found
         m = by_username.get((rec["maUsername"] or "").lower()) if rec["maUsername"] else None
         if m: attach(rec, m, "username"); continue
         m = by_username.get(rec["email"]) if rec["email"] else None
@@ -215,7 +218,9 @@ def match(c, bulk, roster, known_ids=None, time_left=lambda: 10 ** 9, lookup=Tru
         if not done and reason not in ("deferred: out of time tonight",):
             cands = by_name.get(f"{rec['givenName'].strip().lower()} {rec['familyName'].strip().lower()}", [])
             if len(cands) == 1 and str(cands[0].get("id")) not in used: attach(rec, cands[0], "name"); done = True
-        if not done: tb_unmatched.append({**rec, "reason": reason})
+        if not done and rec.get("_deactivatedKnown") is not None and str(rec["_deactivatedKnown"].get("id")) not in used:
+            attach(rec, rec["_deactivatedKnown"], "known"); done = True   # a deactivated account with no live successor is still the record
+        if not done: tb_unmatched.append({**{k_: v_ for k_, v_ in rec.items() if not k_.startswith("_")}, "reason": reason})
         if i % 100 == 0: log(f"lookups {i}/{len(todo)}")
     for s_ in students:
         s_["courseAgreementAtSnapshot"] = agreement(s_["mathAcademy"], [x["courseName"] for x in s_["seats"]])
@@ -427,6 +432,20 @@ def run_activity(c, ddb, table, day, tz_offset_hours=None, time_left=lambda: 10 
         if force: _delete_day(ddb, table, sid, day)
         d, err = c.ma(f"/students/{ma_id}/activity?startDate={day}&endDate={next_day}", "ma_activity")
         now = datetime.datetime.now(UTC).isoformat(timespec="seconds")
+        if d is None and err in ("HTTP 401", "HTTP 404"):
+            # the stored id no longer answers: Math Academy merged or replaced the account. Re-resolve once through the Timeback
+            # e-mail and the math_academy profile username; a different live id replaces the stored one and the call is retried.
+            try:
+                usr = c.tb(f"/ims/oneroster/rostering/v1p2/users/{sid}").get("user") or {}
+                st, _e = ma_find(c, (usr.get("email") or usr.get("username") or "").lower(), profile_username(usr))
+            except Exception as ex:
+                st = None; c.log(f"re-resolve {sid[:8]} failed: {ex}")
+            if st and str(st["id"]) != str(ma_id) and not st.get("deactivated"):
+                c.log(f"student {sid[:8]}: stored Math Academy id {ma_id} answers {err}; live account is {st['id']} -> replaced")
+                ddb.update_item(TableName=table, Key={"pk": S("student"), "sk": S(sid)}, UpdateExpression="SET maId = :i, ma = :m, matchedBy = :b, figuresAsOf = :t",
+                                ExpressionAttributeValues={":i": S(str(st["id"])), ":m": S(json.dumps(st, ensure_ascii=False)), ":b": S("re-resolved"), ":t": S(now)})
+                ma_id = str(st["id"]); ids[sid] = ma_id
+                d, err = c.ma(f"/students/{ma_id}/activity?startDate={day}&endDate={next_day}", "ma_activity")
         if d is not None:
             tasks = [t for t in ((d.get("activity") or {}).get("tasks") or []) if lo_ms <= int(t.get("completed") or 0) < hi_ms]
             for t in tasks: items.append({"PutRequest": {"Item": task_item(sid, day, t)}})
