@@ -161,6 +161,26 @@ def pull_roster(c, today):
 
 
 # ---- match ----------------------------------------------------------------------------------------------------
+def profile_username(u):
+    """The Math Academy login Timeback keeps on the user's math_academy profile (often an email that differs from the Timeback email)."""
+    return next((cr.get("username") for p in (u.get("userProfiles") or []) if p.get("vendorId") == "math_academy"
+                 for cr in (p.get("credentials") or []) if cr.get("username")), None)
+
+def ma_find(c, email, ma_username=None):
+    """Math Academy per-student lookup: by Timeback email first, then by the math_academy profile username when it differs.
+    A Timeback email change leaves the Math Academy login behind (one grade-9 student, 2026-10-15: email 404, username 200).
+    -> (student dict with 'id', None) or (None, reason)."""
+    tried, reason = [], "no email"
+    for ident in (email, ma_username):
+        ident = (ident or "").strip().lower()
+        if not ident or ident in tried: continue
+        tried.append(ident)
+        d, err = c.ma(f"/students/{urllib.parse.quote(ident)}", "ma_lookup")
+        if d is not None and (d.get("student") or {}):
+            st = d["student"]; return {**st, "id": st.get("id") or st.get("studentId")}, None
+        reason = err or "empty"
+    return None, reason
+
 def match(c, bulk, roster, known_ids=None, time_left=lambda: 10 ** 9, lookup=True, log=print):
     """known_ids: {tb sid: ma id} from the previous snapshot (step 0, no call). Returns (students, tb_unmatched)."""
     known_ids = known_ids or {}
@@ -186,14 +206,11 @@ def match(c, bulk, roster, known_ids=None, time_left=lambda: 10 ** 9, lookup=Tru
         done, reason = False, None
         if not lookup: reason = "lookup disabled"
         elif time_left() < 90: reason = "deferred: out of time tonight"
-        elif not rec["email"]: reason = "no email"
+        elif not rec["email"] and not rec.get("maUsername"): reason = "no email"
         else:
-            d, err = c.ma(f"/students/{urllib.parse.quote(rec['email'])}", "ma_lookup")
-            if d is not None and (d.get("student") or {}):
-                st = d["student"]; st = {**st, "id": st.get("id") or st.get("studentId")}
-                attach(rec, st, "lookup"); done = True
-            else:
-                reason = err or "empty"
+            st, err = ma_find(c, rec["email"], rec.get("maUsername"))
+            if st: attach(rec, st, "lookup"); done = True
+            else: reason = err
             time.sleep(0.15)
         if not done and reason not in ("deferred: out of time tonight",):
             cands = by_name.get(f"{rec['givenName'].strip().lower()} {rec['familyName'].strip().lower()}", [])
@@ -383,9 +400,8 @@ def run_activity(c, ddb, table, day, tz_offset_hours=None, time_left=lambda: 10 
             try: u = c.tb(f"/ims/oneroster/rostering/v1p2/users/{s_}").get("user") or {}
             except Exception: continue
             email = (u.get("email") or u.get("username") or "").lower(); now = datetime.datetime.now(UTC).isoformat(timespec="seconds")
-            d, err = c.ma(f"/students/{urllib.parse.quote(email)}", "ma_lookup") if email else (None, "no email")
-            if d is not None and (d.get("student") or {}):
-                st = d["student"]; st = {**st, "id": st.get("id") or st.get("studentId")}
+            st, err = ma_find(c, email, profile_username(u))
+            if st:
                 ddb.put_item(TableName=table, Item={"pk": S("student"), "sk": S(s_), "ma": S(json.dumps(st, ensure_ascii=False)), "maId": S(st["id"]), "matchedBy": S("activity-lookup"),
                                                     "courseAgreementAtSnapshot": S(agreement(st, [])), "seats": S("[]"), "isTestUser": {"BOOL": bool((u.get("metadata") or {}).get("isTestUser"))},
                                                     "snapshotAt": S(now), "figuresAsOf": S(now)})
@@ -462,9 +478,8 @@ def backfill_students_without_rows(c, ddb, table, time_left=lambda: 10 ** 9):
         try: usr = c.tb(f"/ims/oneroster/rostering/v1p2/users/{s_}").get("user") or {}
         except Exception: continue
         email = (usr.get("email") or usr.get("username") or "").lower(); now = datetime.datetime.now(UTC).isoformat(timespec="seconds")
-        d, err = c.ma(f"/students/{urllib.parse.quote(email)}", "ma_lookup") if email else (None, "no email")
-        if d is not None and (d.get("student") or {}):
-            st = d["student"]; st = {**st, "id": st.get("id") or st.get("studentId")}
+        st, err = ma_find(c, email, profile_username(usr))
+        if st:
             ddb.put_item(TableName=table, Item={"pk": S("student"), "sk": S(s_), "ma": S(json.dumps(st, ensure_ascii=False)), "maId": S(st["id"]), "matchedBy": S("backfill-lookup"),
                                                 "courseAgreementAtSnapshot": S(agreement(st, [])), "seats": S("[]"), "isTestUser": {"BOOL": bool((usr.get("metadata") or {}).get("isTestUser"))}, "snapshotAt": S(now), "figuresAsOf": S(now)})
             found += 1

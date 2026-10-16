@@ -125,8 +125,11 @@ async function storeStudent(event, q, sidFromPath) {
     // live Math Academy lookup on a miss: once per 24 h per student, keyed on the Timeback email the reader is already entitled to see
     const lastTried = un.Item?.lastTriedAt?.S ? Date.parse(un.Item.lastTriedAt.S) : 0;
     const email = gate.body?.user?.email;
+    // then by the math_academy profile username when it differs: a Timeback email change leaves the Math Academy login behind (2026-10-16)
+    const profileUser = (gate.body?.user?.userProfiles || []).find(p => p.vendorId === "math_academy")?.credentials?.find(c => c.username)?.username;
     if (email && Date.now() - lastTried > 864e5 && (await maKey())) {
-      const live = await maGet(`/students/${encodeURIComponent(email)}`);
+      let live = await maGet(`/students/${encodeURIComponent(email)}`);
+      if (!(live.status === 200 && live.body?.student) && profileUser && profileUser.toLowerCase() !== email.toLowerCase()) live = await maGet(`/students/${encodeURIComponent(profileUser)}`);
       const now = new Date().toISOString();
       if (live.status === 200 && live.body?.student) {
         const ma = { ...live.body.student, id: live.body.student.id ?? live.body.student.studentId };
